@@ -17,7 +17,7 @@ def keep_token(keepapi, userid):
    #  keyring.delete_password('google-keep-token', userid)
 
 
-def keep_login(keepapi, userid):
+def keep_login(keepapi, userid, pw):
     try:
       keepapi.login(userid, pw)
     except:
@@ -29,10 +29,17 @@ def keep_login(keepapi, userid):
 
 
 def main(argv):
-    print ("Welcome to Keep it Markdown or Kim!")
+    print ("\r\nWelcome to Keep it Markdown or KIM!")
+
     userid = input('Enter your Google username: ')
     pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None) 
     print (userid, pw)
+
+    kapi = keep_init()
+    if keep_login(kapi, userid, pw):
+      print ("You've succesfully logged into Google Keep")
+
+  
  
 
 
