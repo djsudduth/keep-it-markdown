@@ -90,7 +90,6 @@ def keep_query_convert(keepapi, keepquery):
       print (note_labels)
       print (note_date)
 
-
       keep_save_md_file(note_title, note_text, note_labels, note_date, str(gnote.timestamps.created), str(gnote.id))
 
 
