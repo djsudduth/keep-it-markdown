@@ -4,6 +4,7 @@ import gkeepapi
 import keyring
 import getpass
 import re
+from pathlib import Path
 
 KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
@@ -42,6 +43,21 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
+def keep_save_md_file(note_title, note_text, note_labels, note_date, note_created, note_id):
+
+    md_file = Path(note_title + ".md")
+    if md_file.exists():
+      note_title = note_title + note_date
+
+    f=open(note_title + ".md","w+", errors="ignore")
+    f.write(note_text + "\r\n")
+    f.write(note_labels + "\r\n")
+    f.write(note_created + "\r\n")
+    f.write("https://keep.google.com/#NOTE/" + note_id)
+
+    f.close
+  
+
 
 def keep_query_convert(keepapi, keepquery):
 
@@ -61,7 +77,7 @@ def keep_query_convert(keepapi, keepquery):
 
       note_title = re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
  
-      note_text = gnote.text.replace('”','"').replace('“','"').replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]')
+      note_text = gnote.text.replace('”','"').replace('“','"').replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ')
 
       note_label_list = gnote.labels 
       labels = note_label_list.all()
@@ -75,20 +91,8 @@ def keep_query_convert(keepapi, keepquery):
       print (note_date)
 
 
+      keep_save_md_file(note_title, note_text, note_labels, note_date, str(gnote.timestamps.created), str(gnote.id))
 
-   # my_file = Path(note_title + ".md")
-   # if my_file.exists():
-   #   note_title = note_title + note_date
-
-   # f=open(note_title + ".md","w+", errors="ignore")
-   # f.write(n + "\r\n")
-   # for label in l:
-   #   ll = " #" + str(label).replace(' ','-')
-      #print (ll)
-   #   f.write(ll)
-
-   # f.close
-  
 
 
 def main(argv):
