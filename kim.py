@@ -4,10 +4,59 @@ import gkeepapi
 import keyring
 import getpass
 import re
+import configparser
 from pathlib import Path
 
 KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
+CONFIG_FILE = "settings.dat"
+DEFAULT_SECTION = "SETTINGS"
+USERID_EMPTY = 'Add your Google ID here'
+OUTPUTPATH_EMPTY = ''
+
+
+CONFIG_FILE_MESSAGE = "Your " + CONFIG_FILE + " file contains to the following [" + DEFAULT_SECTION + "] values. Be sure to edit it with your information."
+MALFORMED_CONFIG_FILE = "The " + CONFIG_FILE + " default settings file exists but has a malformed header - header should be [DEFAULT]"
+UNKNOWNN_CONFIG_FILE = "There is an unknown configuration file issue - " + CONFIG_FILE + " or file system may be locked or corrupted. Try deleting the file and recreating it."
+MISSING_CONFIG_FILE = "The configuration file - " + CONFIG_FILE + " is missing. Please check the documention on recreating it"
+BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system issue such as locked or corrupted"
+
+
+default_settings = {
+    'google_userid': USERID_EMPTY,
+    'output_path': OUTPUTPATH_EMPTY
+    }
+
+
+class ConfigurationException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return self.msg
+
+def load_config():
+    config = configparser.ConfigParser()
+  
+    try:
+        cfile = config.read(CONFIG_FILE)
+    except configparser.MissingSectionHeaderError:
+        raise ConfigurationException(MALFORMED_CONFIG_FILE)
+    except Exception:
+        raise ConfigurationException(UNKNOWNN_CONFIG_FILE)
+    
+    configdict = {}
+    if not cfile:
+        config[DEFAULT_SECTION] = default_settings
+        try:
+            with open(CONFIG_FILE, 'w') as configfile:
+                config.write(configfile)
+        except Exception as e:
+            raise (e)
+    options = config.options(DEFAULT_SECTION)
+    for option in options:
+        configdict[option] = config.get(DEFAULT_SECTION, option)
+    return configdict 
+    
 
 def keep_init():
     keepapi = gkeepapi.Keep()
@@ -106,6 +155,8 @@ def main(argv):
     kapi = keep_init()
 
     print ("\r\nWelcome to Keep it Markdown or KIM!\r\n")
+    default_values = load_config()
+    print(default_values)
 
     userid = input('Enter your Google account username: ')
     for opt, arg in opts:
