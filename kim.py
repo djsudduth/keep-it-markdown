@@ -143,6 +143,9 @@ def keep_query_convert(keepapi, keepquery):
 
 
 
+
+
+
 def ui_check_opts(argv):
 
   try:
@@ -150,14 +153,14 @@ def ui_check_opts(argv):
       argv = sys.argv[1:]
       opts, args = getopt.getopt(argv,"r:")
       for opt, arg in opts:
-        print (arg)
         if opt == "-r" and arg == "pw":
           pw_reset = True
         else:
-          raise 
+          raise
   except:
-      print ("\r\n Incorrect syntax for resetting your password. Please use: 'python kim.py -r pw'") 
+      print ("\r\nIncorrect syntax for resetting your password. Please use: 'python kim.py -r pw'") 
       exit()
+      
 
   return (pw_reset)
 
@@ -217,11 +220,7 @@ def main(argv):
 
     kapi = keep_init()
 
-    keyring_reset = ui_check_opts(argv)
-
-    defaults = ui_welcome_config()
-
-    ui_login(kapi, defaults, keyring_reset)
+    ui_login(kapi, ui_welcome_config(), ui_check_opts(argv))
 
     ui_query(kapi)
    
