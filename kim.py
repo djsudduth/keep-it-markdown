@@ -11,7 +11,7 @@ KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
 CONFIG_FILE = "settings.dat"
 DEFAULT_SECTION = "SETTINGS"
-USERID_EMPTY = 'Add your Google ID here'
+USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH_EMPTY = ''
 
 
@@ -126,7 +126,7 @@ def keep_query_convert(keepapi, keepquery):
 
       note_title = re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
  
-      note_text = gnote.text.replace('”','"').replace('“','"').replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ')
+      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--')
 
       note_label_list = gnote.labels 
       labels = note_label_list.all()
@@ -143,48 +143,89 @@ def keep_query_convert(keepapi, keepquery):
 
 
 
-def main(argv):
-      
-    try:
+def ui_check_opts(argv):
+
+  try:
+      pw_reset = False
       argv = sys.argv[1:]
       opts, args = getopt.getopt(argv,"r:")
-    except:
+      for opt, arg in opts:
+        print (arg)
+        if opt == "-r" and arg == "pw":
+          pw_reset = True
+        else:
+          raise 
+  except:
       print ("\r\n Incorrect syntax for resetting your password. Please use: 'python kim.py -r pw'") 
       exit()
 
-    kapi = keep_init()
+  return (pw_reset)
 
+
+def ui_welcome_config():
     print ("\r\nWelcome to Keep it Markdown or KIM!\r\n")
-    default_values = load_config()
-    print(default_values)
+    return load_config()
 
-    userid = input('Enter your Google account username: ')
-    for opt, arg in opts:
-      if opt == "-r":
-        keep_clear_keyring(kapi, userid)
-  
-    ktoken = keep_token(kapi, userid)
-    if ktoken == None:
-      pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None) 
-      print ("\r\n")
 
-      ktoken = keep_login(kapi, userid, pw)
-      if ktoken:
-        print ("You've succesfully logged into Google Keep! Your password has been securely stored in this computer's keyring.")
+def ui_login(keepapi, defaults, keyring_reset):
+
+    try:
+      userid = defaults.get("google_userid").strip().lower()
+    
+      if userid == USERID_EMPTY:
+        userid = input('Enter your Google account username: ')
       else:
-        print ("Invalid Google userid or pw! Please try again.")
+        print("Your Google account name in the config.dat file is: " + userid + " -- Welcome!")
+  
+      if keyring_reset:
+        print ("Clearing keyring")
+        keep_clear_keyring(keepapi, userid)
+    
+      ktoken = keep_token(keepapi, userid)
+      if ktoken == None:
+        pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None) 
+        print ("\r\n")
 
-    else:
-      print ("You've succesfully logged into Google Keep using local keyring password!")
+        ktoken = keep_login(keepapi, userid, pw)
+        if ktoken:
+          print ("You've succesfully logged into Google Keep! Your password has been securely stored in this computer's keyring.")
+        else:
+          print ("Invalid Google userid or pw! Please try again.")
 
-    keep_resume(kapi, ktoken, userid)
+      else:
+        print ("You've succesfully logged into Google Keep using local keyring password!")
 
-    kquery = "start"
+      keep_resume(keepapi, ktoken, userid)
+      return (ktoken)
+
+    except:
+      print ("\r\nUsername or password is incorrect") 
+      exit()
+
+
+def ui_query(keepapi):
+
+    kquery = "kquery"
     while kquery:
       kquery = input("\r\nEnter a keyword search or '--all' for all notes to convert to Markdown or just press Enter to exit: ")
       if kquery:
-        keep_query_convert(kapi, kquery)
-  
+        keep_query_convert(keepapi, kquery)
+ 
+
+
+def main(argv):
+
+    kapi = keep_init()
+
+    keyring_reset = ui_check_opts(argv)
+
+    defaults = ui_welcome_config()
+
+    ui_login(kapi, defaults, keyring_reset)
+
+    ui_query(kapi)
+   
+ 
 
 
 if __name__ == '__main__':
