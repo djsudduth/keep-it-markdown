@@ -156,11 +156,10 @@ def ui_check_opts(argv):
         if opt == "-r" and arg == "pw":
           pw_reset = True
         else:
-          raise
+          raise Exception
   except:
       print ("\r\nIncorrect syntax for resetting your password. Please use: 'python kim.py -r pw'") 
       exit()
-      
 
   return (pw_reset)
 
