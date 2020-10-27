@@ -34,6 +34,8 @@ class ConfigurationException(Exception):
     def __str__(self):
         return self.msg
 
+
+
 def load_config():
     config = configparser.ConfigParser()
   
@@ -209,7 +211,7 @@ def ui_query(keepapi):
 
     kquery = "kquery"
     while kquery:
-      kquery = input("\r\nEnter a keyword search or '--all' for all notes to convert to Markdown or just press Enter to exit: ")
+      kquery = input("\r\nEnter a keyword search, label search or '--all' for all notes to convert to Markdown or just press Enter to exit: ")
       if kquery:
         keep_query_convert(keepapi, kquery)
  
