@@ -9,7 +9,8 @@ from pathlib import Path
 
 KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
-CONFIG_FILE = "settings.dat"
+KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
+CONFIG_FILE = "settings.cfg"
 DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH_EMPTY = ''
@@ -104,7 +105,7 @@ def keep_save_md_file(note_title, note_text, note_labels, note_date, note_create
     f.write(note_text + "\r\n")
     f.write(note_labels + "\r\n")
     f.write(note_created + "\r\n")
-    f.write("https://keep.google.com/#NOTE/" + note_id)
+    f.write(KEEP_NOTE_URL + note_id)
 
     f.close
   
@@ -179,7 +180,7 @@ def ui_login(keepapi, defaults, keyring_reset):
       if userid == USERID_EMPTY:
         userid = input('Enter your Google account username: ')
       else:
-        print("Your Google account name in the config.dat file is: " + userid + " -- Welcome!")
+        print("Your Google account name in the " + CONFIG_FILE + "file is: " + userid + " -- Welcome!")
   
       if keyring_reset:
         print ("Clearing keyring")
