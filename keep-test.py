@@ -38,7 +38,8 @@ def ui_login(keepapi):
         if ktoken:
             print ("Test worked!! You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!")
         else:
-            print ("Invalid Google userid or pw! Please try again.")
+            raise Exception
+            #print ("Invalid Google userid or pw! Please try again.")
 
         return (ktoken)
 
