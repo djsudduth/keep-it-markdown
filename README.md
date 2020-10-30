@@ -44,7 +44,7 @@ Congrats! You can now run KIM. Simply start by running
 ```
 This will execute your first query to export a note or set of notes as individual markdown files.
 
-**NOTE: first time you execute, exported md files will be created in a default KIM suddirectory called 'mdfiles' within your install directory. This can be changed later**. 
+**NOTE: first time you execute, exported md files will be created in a default KIM sub-directory called 'mdfiles' within your install directory. This can be changed later**. 
 
 For the first test, search for a keyword that returns only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your search term).
 
