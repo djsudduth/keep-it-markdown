@@ -15,6 +15,7 @@ DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH_EMPTY = ''
 
+TECH_ERR = " Technical Error Message: "
 
 CONFIG_FILE_MESSAGE = "Your " + CONFIG_FILE + " file contains to the following [" + DEFAULT_SECTION + "] values. Be sure to edit it with your information."
 MALFORMED_CONFIG_FILE = "The " + CONFIG_FILE + " default settings file exists but has a malformed header - header should be [DEFAULT]"
@@ -97,17 +98,24 @@ def keep_resume(keepapi, keeptoken, userid):
 
 def keep_save_md_file(note_title, note_text, note_labels, note_date, note_created, note_id):
 
-    md_file = Path(note_title + ".md")
-    if md_file.exists():
-      note_title = note_title + note_date
+    try:
+      outpath = load_config().get("output_path")
 
-    f=open(note_title + ".md","w+", errors="ignore")
-    f.write(note_text + "\r\n")
-    f.write(note_labels + "\r\n")
-    f.write(note_created + "\r\n")
-    f.write(KEEP_NOTE_URL + note_id)
+      md_file = Path(outpath, note_title + ".md")
+      if md_file.exists():
+        note_title = note_title + note_date
+      md_file = Path(outpath, note_title + ".md")
+      f=open(md_file,"w+", errors="ignore")
+      f.write(note_text + "\r\n")
+      f.write(note_labels + "\r\n")
+      f.write(note_created + "\r\n")
+      f.write(KEEP_NOTE_URL + note_id)
 
-    f.close
+      f.close
+    except Exception as e:
+      raise Exception("Invalid md export file path: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
+
+
   
 
 
@@ -220,12 +228,16 @@ def ui_query(keepapi):
 
 def main(argv):
 
+  try:
     kapi = keep_init()
 
     ui_login(kapi, ui_welcome_config(), ui_check_opts(argv))
 
     ui_query(kapi)
-   
+      
+      
+  except Exception as e:
+    print (e)
  
 
 if __name__ == '__main__':
