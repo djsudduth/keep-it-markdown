@@ -1,4 +1,5 @@
 import sys
+import os
 import getopt
 import gkeepapi
 import keyring
@@ -13,7 +14,7 @@ KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
 DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
-OUTPUTPATH_EMPTY = ''
+OUTPUTPATH = 'mdfiles'
 
 TECH_ERR = " Technical Error Message: "
 
@@ -26,7 +27,7 @@ BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system iss
 
 default_settings = {
     'google_userid': USERID_EMPTY,
-    'output_path': OUTPUTPATH_EMPTY
+    'output_path': OUTPUTPATH
     }
 
 
@@ -96,10 +97,13 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
-def keep_save_md_file(note_title, note_text, note_labels, note_date, note_created, note_id):
+def keep_save_md_file(note_title, note_text, note_labels, note_date, note_created, note_updated, note_id):
 
     try:
       outpath = load_config().get("output_path")
+      if outpath == OUTPUTPATH:
+        if not os.path.exists(OUTPUTPATH):
+          os.mkdir(OUTPUTPATH)
 
       md_file = Path(outpath, note_title + ".md")
       if md_file.exists():
@@ -108,7 +112,7 @@ def keep_save_md_file(note_title, note_text, note_labels, note_date, note_create
       f=open(md_file,"w+", errors="ignore")
       f.write(note_text + "\r\n")
       f.write(note_labels + "\r\n")
-      f.write(note_created + "\r\n")
+      f.write("Created: " + note_created + "  Updated: " + note_updated + "\r\n")
       f.write(KEEP_NOTE_URL + note_id)
 
       f.close
@@ -148,9 +152,9 @@ def keep_query_convert(keepapi, keepquery):
       print (note_title)
       #print (note_text)
       print (note_labels)
-      print (note_date)
+      print (note_date + "\r\n")
 
-      keep_save_md_file(note_title, note_text, note_labels, note_date, str(gnote.timestamps.created), str(gnote.id))
+      keep_save_md_file(note_title, note_text, note_labels, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id))
 
 
 

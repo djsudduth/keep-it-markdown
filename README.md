@@ -63,6 +63,7 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 3. Note titles are truncated to 100 characters max.
 4. Notes without Keep titles are given titles using the date-time of when the note was created. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other.
 5. If you have login errors after reboot or long idle periods you may need to re-approve KIM access through Step 4's URL - (https://accounts.google.com/DisplayUnlockCaptcha)
+6. All notes are appended by their create date, update date and link back to the original note.
 
 
 ## Obsidian Use
