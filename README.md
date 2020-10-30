@@ -79,9 +79,9 @@ When you run KIM for the first time it will store your Google password in your c
 ```
 
 ## Feature Todos
--[] Use OAuth login to launch browser window and authenticate automatically
--[] Build a simple installer
--[] Tie Keep notes to Notion links for cross-linking of md imports
--[] Email notes to Keep 
--[] Roam imports
+-[ ] Use OAuth login to launch browser window and authenticate automatically  
+-[ ] Build a simple installer  
+-[ ] Tie Keep notes to Notion links for cross-linking of md imports  
+-[ ] Email notes to Keep   
+-[ ] Roam imports  
 
