@@ -51,9 +51,9 @@ For the first test, search for a keyword that returns only a few notes at most (
 You can search by a single word, a phrase or by a label. All searches ignore notes in archive and trash. KIM will stay active to do more conversions until you just press enter or Ctrl-C.
 
 ## Using Settings
-At first launch KIM will create a setting.cfg file in the directory where you chose to install KIM. You can modify these settings with a text editor:
+At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
 
-**google_userid** = your-google-account-id (allows you to bypass typing in your id)
+**google_userid** = your-google-account-id (allows you to bypass typing in your id)  
 **output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
 
 
@@ -66,11 +66,22 @@ At first launch KIM will create a setting.cfg file in the directory where you ch
 
 
 ## Obsidian Use
-Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types should convert successfully.
+Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. 
+Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them.
+
+## Notion Use
+KIM markdown exports seem to import into Notion successfully. However, Notion ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags in Notion which are searchable.
 
 ## Password Storage
-When you run KIM for the first time it will store your Google password in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM. If you need to change or reset your password, just run
+When you run KIM for the first time it will store your Google password in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM. If you need to change or reset your password, just run:
 ```bash
 > python kim.py -r pw
 ```
+
+## Feature Todos
+-[] Use OAuth login to launch browser window and authenticate automatically
+-[] Build a simple installer
+-[] Tie Keep notes to Notion links for cross-linking of md imports
+-[] Email notes to Keep 
+-[] Roam imports
 
