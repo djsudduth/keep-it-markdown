@@ -4,7 +4,7 @@ Keep-it-markdown or KIM converts Google Keep notes to markdown using the unoffic
 The overall goal is to utilize Google Keep as an easy way to capture raw notes on all devices or additionally using the browswer plugin. Then, notes can be queried for export to markdown files directly into notetaking apps such as Obsidian or imported into Notion. 
 
 ## Installation
-KIM is a command line script that requires Python 3.7 or greater and utilizes the unofficial gkeepapi. 
+Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that requires Python 3.7 or greater and utilizes the unofficial gkeepapi. 
 
 **NOTE: Warning! Be aware that 'unofficial' implies that Google could break the API at any time!!**
 
@@ -13,7 +13,7 @@ Install Python (there are plenty of tutorials online for installation instructio
 ```bash
 > python --version
 ```
-If you have Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps.
+If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.7+.
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the 'Code' button on this page and 'Download ZIP'. Unzip the files within your chosen directory.
@@ -23,7 +23,7 @@ Start your command prompt, shell or terminal, find your download directory and r
 ```bash
 > pip install -r requirements.txt
 ```
-This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users will want to setup a virtual environment for this.
+(you may need to use 'pip3' instead of 'pip' if you have both python versions installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4: 
 Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and manually approve access with a browswer. From within your command prompt or shell and run 
@@ -65,7 +65,9 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 **output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
 
 ### Password Storage
-When you run KIM for the first time it will store your Google password in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM. If you need to change or reset your password, just run:
+When you run KIM for the first time it will store your Google password in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
+
+If you need to change or reset your password, just run:
 ```bash
 > python kim.py -r pw
 ```
@@ -80,6 +82,7 @@ When you run KIM for the first time it will store your Google password in your c
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. 
+
 Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them.
 
 ## Notion Use
@@ -89,7 +92,11 @@ KIM markdown exports seem to import into Notion successfully. However, Notion ti
 ## Feature Todos
 -[ ] Use OAuth login to launch browser window and authenticate automatically  
 -[ ] Build a simple installer  
+-[ ] Create setup scripts for Windows, macOS and Linux
 -[ ] Tie Keep notes to Notion links for cross-linking of md imports  
 -[ ] Email notes to Keep   
 -[ ] Roam imports  
 
+## Thank You
+Thanks for trying this markdown converter! I hope you find it useful.
+There's always room for improvement. Feel free to add issues to the issues list.
