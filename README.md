@@ -92,7 +92,7 @@ KIM markdown exports seem to import into Notion successfully. However, Notion ti
 ## Feature Todos
 -[ ] Use OAuth login to launch browser window and authenticate automatically  
 -[ ] Build a simple installer  
--[ ] Create setup scripts for Windows, macOS and Linux
+-[ ] Create setup scripts for Windows, macOS and Linux  
 -[ ] Tie Keep notes to Notion links for cross-linking of md imports  
 -[ ] Email notes to Keep   
 -[ ] Roam imports  
