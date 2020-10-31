@@ -9,10 +9,14 @@ KIM is a command line script that requires Python 3.7 or greater and utilizes th
 **NOTE: Warning! Be aware that 'unofficial' implies that Google could break the API at any time!!**
 
 #### Step 1: 
-Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. 
+Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. Start your command prompt, shell or terminal and verify your python version by running:
+```bash
+> python --version
+```
+If you have Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps.
 
 #### Step 2: 
-Download this project's zip file into any new directory of you choice. Select the 'Code' button on this page and 'Download ZIP'. Unzip the files within your chosen directory
+Download this project's zip file into any new directory of you choice. Select the 'Code' button on this page and 'Download ZIP'. Unzip the files within your chosen directory.
 
 #### Step 3:
 Start your command prompt, shell or terminal, find your download directory and run 
@@ -30,7 +34,6 @@ This will attempt a simple login using your Google ID and password. **NOTE: firs
 
 If you believe you typed in your Google account name and password correctly, copy and paste or click on this URL (https://accounts.google.com/DisplayUnlockCaptcha) into your browswer address bar and approve the request by pressing the 'Continue' button.
 
-
 Run the script again
 ```bash
 > python keep-test.py
@@ -42,13 +45,18 @@ Congrats! You can now run KIM. Simply start by running
 ```bash
 > python kim.py
 ```
-This will execute your first query to export a note or set of notes as individual markdown files.
+After logging in you should see:
+```bash
+> Enter a keyword search, label search or '--all' for all notes to convert to Markdown or just press Enter to exit:
+```
+
+Entering a query term and pressing Enter will execute your first export of a note or set of notes as individual markdown files.
 
 **NOTE: first time you execute, exported md files will be created in a default KIM sub-directory called 'mdfiles' within your install directory. This can be changed later**. 
 
-For the first test, search for a keyword that returns only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your search term).
+For the first test, use a keyword query that returns and converts only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your query/convert term).
 
-You can search by a single word, a phrase or by a label. All searches ignore notes in archive and trash. KIM will stay active to do more conversions until you just press enter or Ctrl-C.
+You can convert to md by using a single word, a phrase or by a label. All queries to convert ignore notes in archive and trash. KIM will stay active to do more conversions until you just press enter or Ctrl-C.
 
 ### Using Settings
 At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
