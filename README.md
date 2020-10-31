@@ -6,7 +6,7 @@ The overall goal is to utilize Google Keep as an easy way to capture raw notes o
 ## Installation
 Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that requires Python 3.7 or greater and utilizes the unofficial gkeepapi. 
 
-**NOTE: Warning! Be aware that 'unofficial' implies that Google could break the API at any time!!**
+**NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
 #### Step 1: 
 Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. Start your command prompt, shell or terminal and verify your python version by running:
