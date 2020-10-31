@@ -110,9 +110,9 @@ def keep_save_md_file(note_title, note_text, note_labels, note_date, note_create
         note_title = note_title + note_date
       md_file = Path(outpath, note_title + ".md")
       f=open(md_file,"w+", errors="ignore")
-      f.write(note_text + "\r\n")
-      f.write(note_labels + "\r\n")
-      f.write("Created: " + note_created + "  Updated: " + note_updated + "\r\n")
+      f.write(note_text + "\n")
+      f.write("\n" + note_labels + "\n\n")
+      f.write("Created: " + note_created + "      Updated: " + note_updated + "\n\n")
       f.write(KEEP_NOTE_URL + note_id)
 
       f.close
@@ -192,7 +192,7 @@ def ui_login(keepapi, defaults, keyring_reset):
       if userid == USERID_EMPTY:
         userid = input('Enter your Google account username: ')
       else:
-        print("Your Google account name in the " + CONFIG_FILE + "file is: " + userid + " -- Welcome!")
+        print("Your Google account name in the " + CONFIG_FILE + " file is: " + userid + " -- Welcome!")
   
       if keyring_reset:
         print ("Clearing keyring")
