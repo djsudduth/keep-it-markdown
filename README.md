@@ -30,7 +30,7 @@ Keep does not yet have an official API from Google. So, you must first test your
 ```bash
 > python keep-test.py
 ```
-This will attempt a simple login using your Google ID and password. **NOTE: first time attempting to login will fail**. 
+This will attempt a simple login using your Google ID and password. **NOTE: first time attempting to login may fail**. 
 
 If you believe you typed in your Google account name and password correctly, copy and paste or click on this URL (https://accounts.google.com/DisplayUnlockCaptcha) into your browswer address bar and approve the request by pressing the 'Continue' button.
 
