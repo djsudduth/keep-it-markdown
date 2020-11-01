@@ -3,6 +3,8 @@ Keep-it-markdown or KIM converts Google Keep notes to markdown using the unoffic
 
 The overall goal is to utilize Google Keep as an easy way to capture raw notes on all devices or additionally using the browswer plugin. Then, notes can be queried for export to markdown files directly into notetaking apps such as Obsidian or imported into Notion. 
 
+**Keep media files are not yet supported**
+
 ## Installation
 Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that requires Python 3.7 or greater and utilizes the unofficial gkeepapi. 
 
@@ -90,12 +92,14 @@ KIM markdown exports seem to import into Notion successfully. However, Notion ti
 
 
 ## Feature Todos
+-[ ] Add Keep media files
 -[ ] Use OAuth login to launch browser window and authenticate automatically  
 -[ ] Build a simple installer  
 -[ ] Create setup scripts for Windows, macOS and Linux  
 -[ ] Tie Keep notes to Notion links for cross-linking of md imports  
 -[ ] Email notes to Keep   
 -[ ] Roam imports  
+-[ ] Docker version  
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful.
