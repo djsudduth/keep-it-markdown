@@ -18,7 +18,9 @@ Install Python (there are plenty of tutorials online for installation instructio
 If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.7+.
 
 #### Step 2: 
-Download this project's zip file into any new directory of you choice. Select the green **'Code'** button near the top center of this page and 'Download ZIP'. Unzip the files within your chosen directory.
+Download this project's zip file into any new directory of you choice. Select the green **'Code'** button near the top center of this page and 'Download ZIP' or use this link:  
+https://github.com/djsudduth/keep-it-markdown/archive/main.zip
+Unzip the files within your chosen directory.  
 
 #### Step 3:
 Start your command prompt, shell or terminal, find your download directory and run 
