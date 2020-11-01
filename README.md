@@ -19,7 +19,8 @@ If you had Python 2 installed already you may need to type 'python3' instead of 
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the green **'Code'** button near the top center of this page and 'Download ZIP' or use this link:  
-https://github.com/djsudduth/keep-it-markdown/archive/main.zip
+https://github.com/djsudduth/keep-it-markdown/archive/main.zip  
+
 Unzip the files within your chosen directory.  
 
 #### Step 3:
