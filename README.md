@@ -105,5 +105,5 @@ KIM markdown exports seem to import into Notion successfully. However, Notion ti
 -[ ] Docker version  
 
 ## Thank You
-Thanks for trying this markdown converter! I hope you find it useful.
+Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
