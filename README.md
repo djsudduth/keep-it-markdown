@@ -107,3 +107,9 @@ KIM markdown exports seem to import into Notion successfully. However, Notion ti
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
+
+## 0.2.0 
+- Added standard jpeg and png media file downloads
+- Fixed ignore of archive and trash for label search
+- Fixed standard markdown of Keep note backlinks
+- Added replace of em dash with 2 dashes

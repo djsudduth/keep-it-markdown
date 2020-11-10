@@ -4,9 +4,14 @@ import getopt
 import gkeepapi
 import keyring
 import getpass
+import requests
+import imghdr
+import shutil
 import re
+import time
 import configparser
 from pathlib import Path
+
 
 KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
@@ -15,6 +20,7 @@ CONFIG_FILE = "settings.cfg"
 DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
+MEDIADEFAULTPATH = "media/"
 
 TECH_ERR = " Technical Error Message: "
 
@@ -29,6 +35,8 @@ default_settings = {
     'google_userid': USERID_EMPTY,
     'output_path': OUTPUTPATH
     }
+
+media_downloaded = False
 
 
 class ConfigurationException(Exception):
@@ -97,30 +105,71 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
-def keep_save_md_file(note_title, note_text, note_labels, note_date, note_created, note_updated, note_id):
+
+
+def keep_download_blob(blob_url, blob_name, blob_path):
+
+    dest_path = blob_path + "/" + blob_name
+    data_file = blob_name + ".dat"
+
+    r = requests.get(blob_url)
+    if r.status_code == 200:
+
+      with open(data_file,'wb') as f:
+        f.write(r.content)
+
+      if imghdr.what(data_file) == 'png':
+        media_name = blob_name + ".png"
+        blob_final_path = dest_path + ".png"
+      elif imghdr.what(data_file) == 'jpeg':
+        media_name = blob_name + ".jpg"
+        blob_final_path = dest_path + ".jpg"
+      else:
+        media_name = data_file
+        blob_final_path = dest_path + ".dat"
+
+      shutil.copyfile(data_file, blob_final_path)
+    else:
+      blob_final_path = "Media could not be retrieved"
+
+    if os.path.exists(data_file):
+      os.remove(data_file)
+
+    return("![[" + MEDIADEFAULTPATH + media_name + "]]")
+
+
+def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, note_date, note_created, note_updated, note_id):
 
     try:
       outpath = load_config().get("output_path")
+  
       if outpath == OUTPUTPATH:
         if not os.path.exists(OUTPUTPATH):
           os.mkdir(OUTPUTPATH)
+      mediapath = outpath + "/" + MEDIADEFAULTPATH
+      if not os.path.exists(mediapath):
+          os.mkdir(mediapath)
 
       md_file = Path(outpath, note_title + ".md")
       if md_file.exists():
         note_title = note_title + note_date
-      md_file = Path(outpath, note_title + ".md")
+        md_file = Path(outpath, note_title + ".md")
+
+      for idx, blob in enumerate(note_blobs):
+        image_url = keepapi.getMediaLink(blob)
+        image_name = note_title + str(idx)
+        blob_file = keep_download_blob(image_url, image_name, mediapath)
+        note_text = blob_file + "\n" + note_text 
+ 
       f=open(md_file,"w+", errors="ignore")
       f.write(note_text + "\n")
       f.write("\n" + note_labels + "\n\n")
       f.write("Created: " + note_created + "      Updated: " + note_updated + "\n\n")
-      f.write(KEEP_NOTE_URL + note_id)
-
+      f.write("["+ KEEP_NOTE_URL + note_id + "](" + KEEP_NOTE_URL + note_id + ")")
       f.close
     except Exception as e:
-      raise Exception("Invalid md export file path: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
+      raise Exception("Problem with markdown file creation: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
 
-
-  
 
 
 def keep_query_convert(keepapi, keepquery):
@@ -129,7 +178,7 @@ def keep_query_convert(keepapi, keepquery):
       gnotes = keepapi.all()
     else:
       if keepquery[0] == "#":
-        gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])])
+        gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=False, trashed=False)
       else:
         gnotes = keepapi.find(query=keepquery, archived=False, trashed=False)
 
@@ -141,7 +190,8 @@ def keep_query_convert(keepapi, keepquery):
 
       note_title = re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
  
-      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--')
+      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--')
+      #urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', note_text)
 
       note_label_list = gnote.labels 
       labels = note_label_list.all()
@@ -154,7 +204,7 @@ def keep_query_convert(keepapi, keepquery):
       print (note_labels)
       print (note_date + "\r\n")
 
-      keep_save_md_file(note_title, note_text, note_labels, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id))
+      keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id))
 
 
 
@@ -233,6 +283,7 @@ def ui_query(keepapi):
 def main(argv):
 
   try:
+
     kapi = keep_init()
 
     ui_login(kapi, ui_welcome_config(), ui_check_opts(argv))
