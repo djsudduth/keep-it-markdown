@@ -16,8 +16,8 @@ Install Python (there are plenty of tutorials online for installation instructio
 If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.7+.
 
 #### Step 2: 
-Download this project's zip file into any new directory of you choice. Select the green **'Code'** button near the top center of this page and 'Download ZIP' or use this link:  
-https://github.com/djsudduth/keep-it-markdown/archive/main.zip  
+Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
+https://github.com/djsudduth/keep-it-markdown/releases
 
 Unzip the files within your chosen directory.  
 
@@ -85,9 +85,7 @@ If you need to change or reset your password, just run:
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Any unknown types are saved with a .dat extension.
 
 ## Obsidian Use
-Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. 
-
-Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links or URLs in Keep**. KIM will try to map link URLs to markdown format for you.
+Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links or URLs in Keep**. KIM will try to map link URLs to markdown format for you.
 
 However, KIM's goal is to be markdown compliant. Oddly, Obsidian does not use standard markdown formatting for images and links. Non-compliance makes reading markdown easier for Obsidian users but breaks in apps like Notion and Typora. Currently, a strict markdown is enforced in conversion except for images to be as compatible as possible.
 
@@ -106,6 +104,7 @@ KIM tries to adhere to strict markdown to be as compatible as possible. However,
 -[ ] Email notes to Keep   
 -[ ] Roam imports  
 -[ ] Docker version  
+-[ ] Add overwrite flag to replace notes
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
