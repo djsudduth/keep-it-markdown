@@ -55,7 +55,7 @@ After logging in you should see:
 
 Entering a query term and pressing Enter will execute your first export of a note or set of notes as individual markdown files.
 
-**NOTE: first time you execute, exported md files will be created in a default KIM sub-directory called 'mdfiles' within your install directory. This can be changed later**. 
+**NOTE: first time you execute, exported md files will be created in a default KIM sub-directory called 'mdfiles' within your install directory. Images are exported into 'media' within the default directory. This can be changed later**. 
 
 For the first test, use a keyword query that returns and converts only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your query/convert term).
 
@@ -77,7 +77,7 @@ If you need to change or reset your password, just run:
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
-2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file.
+2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact.
 3. Note titles are truncated to 100 characters max.
 4. Notes without Keep titles are given titles using the date-time of when the note was created. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other.
 5. If you have login errors after reboot or long idle periods you may need to re-approve KIM access through Step 4's URL - (https://accounts.google.com/DisplayUnlockCaptcha)
@@ -85,15 +85,15 @@ If you need to change or reset your password, just run:
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Any unknown types are saved with a .dat extension.
 
 ## Obsidian Use
-Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links or URLs in Keep**. KIM will try to map link URLs to markdown format for you.
+Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links or URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
 
-However, KIM's goal is to be markdown compliant. Oddly, Obsidian does not use standard markdown formatting for images and links. Non-compliance makes reading markdown easier for Obsidian users but breaks in apps like Notion and Typora. Currently, a strict markdown is enforced in conversion except for images to be as compatible as possible.
+KIM's goal is to be markdown compliant. Oddly, Obsidian does not use standard markdown formatting for images and links. Non-compliance makes reading markdown easier for Obsidian users but breaks in apps like Notion and Typora. Currently, a strict markdown is enforced in conversion except for images to be as compatible as possible.
 
 ## Notion Use
 KIM markdown text exports seem to import into Notion successfully. However, Notion fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags which are searchable.
 
 ## Typora Use
-KIM tries to adhere to strict markdown to be as compatible as possible. However, Obsidian does not follow strict rules. To be compatible with both Typora and Obsidian, a non-compliant markdown image syntax is used. 
+KIM tries to adhere to strict markdown to be as compatible as possible. However, Obsidian does not follow strict rules. To be compatible with both Typora and Obsidian, a non-compliant markdown image syntax is used. No issues have been discovered using Typora on KIM markdown exports. 
 
 ## Feature Todos
 -[ ] Add Keep audio and drawing files  
