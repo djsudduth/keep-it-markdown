@@ -105,6 +105,22 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
+def url_to_md(text, url_prefix):
+    idx = 0
+    while idx >= 0:
+        idx = text.find(url_prefix, idx)
+        idxend = text.find("\n", idx)
+        if idxend < 0:
+          idxend = text.find(" ", idx)
+        if idxend < 0:
+            idxend = len(text)
+        if idx >= 0:
+            url = text[idx: idxend]
+            text = text.replace(url, url.replace(url, "[" + url + "](" + url + ")"), 1)
+            idxend = idxend + len(url) + 4
+            idx = idxend
+
+    return text
 
 
 def keep_download_blob(blob_url, blob_name, blob_path):
@@ -130,12 +146,13 @@ def keep_download_blob(blob_url, blob_name, blob_path):
 
       shutil.copyfile(data_file, blob_final_path)
     else:
+      media_name = data_file
       blob_final_path = "Media could not be retrieved"
 
     if os.path.exists(data_file):
       os.remove(data_file)
 
-    return("![[" + MEDIADEFAULTPATH + media_name + "]]")
+    return("![[" + MEDIADEFAULTPATH + media_name + "]](" + MEDIADEFAULTPATH + media_name + ")")
 
 
 def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, note_date, note_created, note_updated, note_id):
@@ -162,10 +179,10 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
         note_text = blob_file + "\n" + note_text 
  
       f=open(md_file,"w+", errors="ignore")
-      f.write(note_text + "\n")
+      f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
       f.write("\n" + note_labels + "\n\n")
       f.write("Created: " + note_created + "      Updated: " + note_updated + "\n\n")
-      f.write("["+ KEEP_NOTE_URL + note_id + "](" + KEEP_NOTE_URL + note_id + ")")
+      f.write("["+ KEEP_NOTE_URL + note_id + "](" + KEEP_NOTE_URL + note_id + ")\n\n")
       f.close
     except Exception as e:
       raise Exception("Problem with markdown file creation: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
@@ -190,15 +207,15 @@ def keep_query_convert(keepapi, keepquery):
 
       note_title = re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
  
-      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--')
-      #urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', note_text)
+      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
 
       note_label_list = gnote.labels 
       labels = note_label_list.all()
       note_labels = ""
       for label in labels:
-        note_labels = note_labels + " #" + str(label).replace(' ','-')
-
+        note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
+      note_labels = re.sub('[^A-z0-9-_# ]', '-', note_labels)
+        
       print (note_title)
       #print (note_text)
       print (note_labels)
