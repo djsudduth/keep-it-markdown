@@ -1,4 +1,4 @@
-https://img.shields.io/github/license/djsudduth/keep-it-markdown  
+[![GitHub license](https://img.shields.io/github/license/djsudduth/keep-it-markdown)](https://github.com/djsudduth/keep-it-markdown/blob/main/LICENSE)
 
 # keep-it-markdown
 Keep-it-markdown or KIM converts Google Keep notes to markdown using the unofficial Python Keep API without having to use Google Takeout to export notes first. The script will execute on Windows, MacOS or Linux.
