@@ -98,15 +98,15 @@ KIM markdown text exports seem to import into Notion successfully. However, Noti
 KIM tries to adhere to strict markdown to be as compatible as possible. However, Obsidian does not follow strict rules. To be compatible with both Typora and Obsidian, a non-compliant markdown image syntax is used. No issues have been discovered using Typora on KIM markdown exports. 
 
 ## Feature Todos
--[ ] Add Keep audio and drawing files  
--[ ] Use OAuth login to launch browser window and authenticate automatically  
--[ ] Build a simple installer  
--[ ] Create setup scripts for Windows, macOS and Linux  
--[ ] Tie Keep notes to Notion links for cross-linking of md imports  
--[ ] Email notes to Keep   
--[ ] Roam imports  
--[ ] Docker version  
--[ ] Add overwrite flag to replace notes
+- [ ] Add Keep audio and drawing files  
+- [ ] Use OAuth login to launch browser window and authenticate automatically  
+- [ ] Build a simple installer  
+- [ ] Create setup scripts for Windows, macOS and Linux  
+- [ ] Tie Keep notes to Notion links for cross-linking of md imports  
+- [ ] Email notes to Keep   
+- [ ] Roam imports  
+- [ ] Docker version  
+- [ ] Add overwrite flag to replace notes
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
