@@ -1,0 +1,7 @@
+###### Requirements without Version Specifiers ######`
+gkeepapi
+keyring
+
+###### Requirements with Version Specifiers ######`
+#docopt == 0.6.1     
+     

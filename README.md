@@ -107,6 +107,7 @@ KIM tries to adhere to strict markdown to be as compatible as possible. However,
 - [ ] Roam imports  
 - [ ] Docker version  
 - [ ] Add overwrite flag to replace notes
+- [ ] Clean-up code from MVP
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
