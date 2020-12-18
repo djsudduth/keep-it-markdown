@@ -40,6 +40,8 @@ default_settings = {
 
 media_downloaded = False
 
+name_list = []
+
 
 class ConfigurationException(Exception):
     def __init__(self, msg):
@@ -188,8 +190,14 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
           note_title = note_title + note_date
           md_file = Path(outpath, note_title + ".md")
         else:
+          if note_title in name_list:
+            note_title = note_title + note_date
+            md_file = Path(outpath, note_title + ".md")
+          else:
+            name_list.append(note_title)
           file_exists = False
 
+    
       for idx, blob in enumerate(note_blobs):
         image_url = keepapi.getMediaLink(blob)
         #print (image_url)
@@ -199,7 +207,6 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
  
 
       print (note_title)
-      #print (gnote.archived)
       print (note_labels)
       print (note_date + "\r\n")
   
@@ -240,7 +247,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
       for label in labels:
         note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
       note_labels = re.sub('[^A-z0-9-_# ]', '-', note_labels)
-      
+    
       if archive_only:
         if gnote.archived and gnote.trashed == False:
           keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
@@ -248,6 +255,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
         if gnote.archived == False and gnote.trashed == False:
           keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
 
+    name_list.clear()
 
 
 

@@ -63,7 +63,7 @@ Entering a query term and pressing Enter will execute your first export of a not
 
 For the first test, use a keyword query that returns and converts only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your query/convert term).
 
-You can convert to md by using a single word, a phrase or by a label. All queries to convert ignore notes in archive and trash. KIM will stay active to do more conversions until you just press enter or Ctrl-C.
+You can convert to md by using a single word, a phrase or by a label. All queries to convert ignore notes in archive and trash. KIM will stay active to do more conversions until you just press --x or Ctrl-C.
 
 ### Using Settings
 At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
@@ -71,7 +71,19 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 **google_userid** = your-google-account-id (allows you to bypass typing in your id)  
 **output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
 
-### Password Token Storage
+### Help and Options
+All KIM options can be discovered using
+```bash
+> python kim.py --help
+```
+#### Overwriting
+KIM by default does not overwrite markdown files when exporting, principally because Keep notes can have the same titles. KIM will try to rename duplicate notes. However, notes can be overwritten with
+```bash
+> python kim.py -o
+```
+all exported md files will be overwritten. However, if 2 or more Keep notes have the same name, the create date will be appended on the note to be unique.
+
+#### Password Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
 
 If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
@@ -79,7 +91,7 @@ If you need to change or reset your access token or don't feel comfortable savin
 > python kim.py -r
 ```
 
-### Batch Mode
+#### Batch Mode
 KIM can run through your own script by using the -b flag. For example, running:
 ```bash
 > python kim.py -b 'my search term'
@@ -87,6 +99,19 @@ or
 > python kim.py -b --all
 ```
 will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. 
+
+#### Archive Notes
+KIM has an option to export only Keep archive notes. All other note types are ignored with this option
+```bash
+> python kim.py -a
+```
+Archive export can be combined with the -o and -b options. 
+
+#### Combinations
+Example: to export all achived notes with overwriting in batch:
+```bash
+> python kim.py -a -o -b --all
+```
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
