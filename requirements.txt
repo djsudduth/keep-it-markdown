@@ -4,4 +4,5 @@ keyring
 
 ###### Requirements with Version Specifiers ######`
 #docopt == 0.6.1     
+# click == 7.1.2
      

@@ -10,6 +10,7 @@ import shutil
 import re
 import time
 import configparser
+import click
 from pathlib import Path
 
 
@@ -31,6 +32,7 @@ MISSING_CONFIG_FILE = "The configuration file - " + CONFIG_FILE + " is missing. 
 BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system issue such as locked or corrupted"
 
 
+ 
 default_settings = {
     'google_userid': USERID_EMPTY,
     'output_path': OUTPUTPATH
@@ -69,6 +71,29 @@ def load_config():
     for option in options:
         configdict[option] = config.get(DEFAULT_SECTION, option)
     return configdict 
+
+
+def url_to_md(text, url_prefix):
+    idx = 0
+    idxstart = 0
+    while idx >= 0:
+        idx = text.find(url_prefix, idx)
+        idxend = text.find("\n", idx)
+        if idxend < 0:
+          idxend = text.find(" ", idx)
+        if idxend < 0:
+            idxend = len(text)
+        if idx >= 0:
+            url = text[idx: idxend]
+            textleft = text[0: idx]
+            textright = text[idx: len(text)]
+            textright = textright.replace(url, url.replace(url, "[" + url + "](" + url + ")"), 1)
+            text = textleft + textright
+            idxstart = idx
+            idxend = idxend + len(url) + 4
+            idx = idxend
+
+    return text
     
 
 def keep_init():
@@ -90,14 +115,15 @@ def keep_clear_keyring(keepapi, userid):
       return True
 
 
-def keep_login(keepapi, userid, pw):
+def keep_login(keepapi, userid, pw, keyring_reset):
     try:
       keepapi.login(userid, pw)
     except:
       return None
     else:
       keep_token = keepapi.getMasterToken()
-      keyring.set_password(KEEP_KEYRING_ID, userid, keep_token)
+      if keyring_reset == False:
+        keyring.set_password(KEEP_KEYRING_ID, userid, keep_token)
       return keep_token
 
 
@@ -105,22 +131,7 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
-def url_to_md(text, url_prefix):
-    idx = 0
-    while idx >= 0:
-        idx = text.find(url_prefix, idx)
-        idxend = text.find("\n", idx)
-        if idxend < 0:
-          idxend = text.find(" ", idx)
-        if idxend < 0:
-            idxend = len(text)
-        if idx >= 0:
-            url = text[idx: idxend]
-            text = text.replace(url, url.replace(url, "[" + url + "](" + url + ")"), 1)
-            idxend = idxend + len(url) + 4
-            idx = idxend
 
-    return text
 
 
 def keep_download_blob(blob_url, blob_name, blob_path):
@@ -141,8 +152,10 @@ def keep_download_blob(blob_url, blob_name, blob_path):
         media_name = blob_name + ".jpg"
         blob_final_path = dest_path + ".jpg"
       else:
-        media_name = data_file
-        blob_final_path = dest_path + ".dat"
+        extension = ".m4a"
+        media_name = blob_name + extension
+        blob_final_path = dest_path + extension
+
 
       shutil.copyfile(data_file, blob_final_path)
     else:
@@ -152,10 +165,11 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     if os.path.exists(data_file):
       os.remove(data_file)
 
-    return("![[" + MEDIADEFAULTPATH + media_name + "]](" + MEDIADEFAULTPATH + media_name + ")")
+    media_name = media_name.replace(" ", "%20")
+    return("![" + MEDIADEFAULTPATH + media_name + "](" + MEDIADEFAULTPATH + media_name + ")")
 
 
-def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, note_date, note_created, note_updated, note_id):
+def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, note_date, note_created, note_updated, note_id, overwrite):
 
     try:
       outpath = load_config().get("output_path")
@@ -167,17 +181,28 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
-      md_file = Path(outpath, note_title + ".md")
-      if md_file.exists():
-        note_title = note_title + note_date
+      file_exists = True
+      while file_exists:
         md_file = Path(outpath, note_title + ".md")
+        if md_file.exists() and overwrite == False:
+          note_title = note_title + note_date
+          md_file = Path(outpath, note_title + ".md")
+        else:
+          file_exists = False
 
       for idx, blob in enumerate(note_blobs):
         image_url = keepapi.getMediaLink(blob)
+        #print (image_url)
         image_name = note_title + str(idx)
         blob_file = keep_download_blob(image_url, image_name, mediapath)
         note_text = blob_file + "\n" + note_text 
  
+
+      print (note_title)
+      #print (gnote.archived)
+      print (note_labels)
+      print (note_date + "\r\n")
+  
       f=open(md_file,"w+", errors="ignore")
       f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
       f.write("\n" + note_labels + "\n\n")
@@ -189,15 +214,15 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
 
 
 
-def keep_query_convert(keepapi, keepquery):
+def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
 
     if keepquery == "--all":
       gnotes = keepapi.all()
     else:
       if keepquery[0] == "#":
-        gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=False, trashed=False)
+        gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
       else:
-        gnotes = keepapi.find(query=keepquery, archived=False, trashed=False)
+        gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
 
     for gnote in gnotes:
       note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":","").replace(".", "-"))
@@ -215,49 +240,27 @@ def keep_query_convert(keepapi, keepquery):
       for label in labels:
         note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
       note_labels = re.sub('[^A-z0-9-_# ]', '-', note_labels)
-        
-      print (note_title)
-      #print (note_text)
-      print (note_labels)
-      print (note_date + "\r\n")
-
-      keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id))
-
-
+      
+      if archive_only:
+        if gnote.archived and gnote.trashed == False:
+          keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
+      else: 
+        if gnote.archived == False and gnote.trashed == False:
+          keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
 
 
 
 
-def ui_check_opts(argv):
-
-  try:
-      pw_reset = False
-      argv = sys.argv[1:]
-      opts, args = getopt.getopt(argv,"r:")
-      for opt, arg in opts:
-        if opt == "-r" and arg == "pw":
-          pw_reset = True
-        else:
-          raise Exception
-  except:
-      print ("\r\nIncorrect syntax for resetting your password. Please use: 'python kim.py -r pw'") 
-      exit()
-
-  return (pw_reset)
-
-
-def ui_welcome_config():
-    print ("\r\nWelcome to Keep it Markdown or KIM!\r\n")
-    return load_config()
-
+#--------------------- UI / CLI ------------------------------
 
 def ui_login(keepapi, defaults, keyring_reset):
 
     try:
+      
       userid = defaults.get("google_userid").strip().lower()
     
       if userid == USERID_EMPTY:
-        userid = input('Enter your Google account username: ')
+        userid = click.prompt('Enter your Google account username', type=str)
       else:
         print("Your Google account name in the " + CONFIG_FILE + " file is: " + userid + " -- Welcome!")
   
@@ -268,16 +271,19 @@ def ui_login(keepapi, defaults, keyring_reset):
       ktoken = keep_token(keepapi, userid)
       if ktoken == None:
         pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None) 
-        print ("\r\n")
+        print ("\r\n\r\nOne moment...")
 
-        ktoken = keep_login(keepapi, userid, pw)
+        ktoken = keep_login(keepapi, userid, pw, keyring_reset)
         if ktoken:
-          print ("You've succesfully logged into Google Keep! Your password has been securely stored in this computer's keyring.")
+          if keyring_reset:
+            print ("You've succesfully logged into Google Keep!")
+          else:
+            print ("You've succesfully logged into Google Keep! Your Keep access token has been securely stored in this computer's keyring.")
         else:
           print ("Invalid Google userid or pw! Please try again.")
 
       else:
-        print ("You've succesfully logged into Google Keep using local keyring password!")
+        print ("You've succesfully logged into Google Keep using local keyring access token!")
 
       keep_resume(keepapi, ktoken, userid)
       return (ktoken)
@@ -287,25 +293,39 @@ def ui_login(keepapi, defaults, keyring_reset):
       exit()
 
 
-def ui_query(keepapi):
+def ui_query(keepapi, search_term, overwrite, archive_only):
 
-    kquery = "kquery"
-    while kquery:
-      kquery = input("\r\nEnter a keyword search, label search or '--all' for all notes to convert to Markdown or just press Enter to exit: ")
-      if kquery:
-        keep_query_convert(keepapi, kquery)
- 
+    if search_term != None:
+        keep_query_convert(keepapi, search_term, overwrite, archive_only)
+        exit()
+    else:
+      kquery = "kquery"
+      while kquery:
+        kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
+        if kquery != "--x":
+          keep_query_convert(keepapi, kquery, overwrite, archive_only)
+        else:
+          exit()
+  
+def ui_welcome_config():
+    print ("\r\nWelcome to Keep it Markdown or KIM!\r\n")
+    return load_config()
 
 
-def main(argv):
+@click.command()
+@click.option('-r', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
+@click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
+@click.option('-a', is_flag=True, help="Search and export only archived notes")
+@click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
+def main(r, o, a, search_term):
 
   try:
 
     kapi = keep_init()
 
-    ui_login(kapi, ui_welcome_config(), ui_check_opts(argv))
-
-    ui_query(kapi)
+    ui_login(kapi, ui_welcome_config(), r)
+ 
+    ui_query(kapi, search_term, o, a)
       
       
   except Exception as e:
@@ -313,4 +333,4 @@ def main(argv):
  
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
