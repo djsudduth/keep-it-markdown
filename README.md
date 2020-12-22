@@ -46,6 +46,7 @@ Run the script again
 > python keep-test.py
 ```
 If you entered your Google account id and password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!"
+**If this step keeps failing see 'Key Callouts' #10 below.**
 
 ## Usage
 Congrats! You can now run KIM. Simply start by running 
@@ -98,7 +99,7 @@ KIM can run through your own script by using the -b flag. For example, running:
 or
 > python kim.py -b --all
 ```
-will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. 
+will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. Be sure the -b flag is the last of all option flags when combining them.
 
 #### Archive Notes
 KIM has an option to export only Keep archive notes. All other note types are ignored with this option
@@ -123,6 +124,7 @@ Example: to export all achived notes with overwriting in batch:
 7. All notes' exported text are appended by their create date, update date and link back to the original Keep note.  
 8. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
 9. Keep uses AAC files for audio recordings and are downloaded as M4A files. Most notes apps do not support AAC format. If you need markdown audio support you will have to manually convert the M4A files to MP3.
+10. There seems to be login issues especially for Windows users. If you can, find a Linux or Mac and run 'python keep-test.py -t' which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with 'python kim.py -t <your-token>' which will save it in your keystore.
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
@@ -156,6 +158,7 @@ There's always room for improvement. Feel free to add issues to the issues list.
 - Fixed spaces in image link problem 
 - Fixed multiple similar URL in the same note conversion issue  
 - Fixed export of archived and trashed notes when using all command
+- Fixed overwriting duplication on Keep notes with the same title
 - Added audio file download to m4a format (not recognized in Obsidian yet)
 - Added flag to overwrite exported markdown files
 - Added flag to ignore saving Keep authentication token in the keystore

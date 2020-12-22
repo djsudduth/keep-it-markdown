@@ -17,17 +17,13 @@ def keep_init():
 
 
 def keep_login(keepapi, userid, pw):
-    try:
-      keepapi.login(userid, pw)
-    except:
-      return None
-    else:
-      keep_token = keepapi.getMasterToken()
-      return keep_token
+    keepapi.login(userid, pw)
+    keep_token = keepapi.getMasterToken()
+    return keep_token
 
 
 
-def ui_login(keepapi):
+def ui_login(keepapi, show_token):
 
     try:
         userid = input('\r\nEnter your Google account username: ')
@@ -36,6 +32,8 @@ def ui_login(keepapi):
 
         ktoken = keep_login(keepapi, userid, pw)
         if ktoken:
+            if show_token:
+                print (ktoken)
             print ("Test worked!! You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!")
         else:
             raise Exception
@@ -52,9 +50,15 @@ def ui_login(keepapi):
 def main(argv):
 
     try:
+
+        show_token = False
+        if len(argv) > 1:
+           if argv[1] == "-t":
+               show_token = True
+
         kapi = keep_init()
 
-        ui_login(kapi)
+        ui_login(kapi, show_token)
 
     except Exception as e:
         print (e)

@@ -133,7 +133,8 @@ def keep_resume(keepapi, keeptoken, userid):
     keepapi.resume(userid, keeptoken)
 
 
-
+def keep_save_token(keeptoken, userid):
+    keyring.set_password(KEEP_KEYRING_ID, userid, keeptoken)
 
 
 def keep_download_blob(blob_url, blob_name, blob_path):
@@ -261,7 +262,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
 
 #--------------------- UI / CLI ------------------------------
 
-def ui_login(keepapi, defaults, keyring_reset):
+def ui_login(keepapi, defaults, keyring_reset, master_token):
 
     try:
       
@@ -275,8 +276,12 @@ def ui_login(keepapi, defaults, keyring_reset):
       if keyring_reset:
         print ("Clearing keyring")
         keep_clear_keyring(keepapi, userid)
-    
-      ktoken = keep_token(keepapi, userid)
+
+      if master_token:
+        ktoken = master_token
+        keep_save_token(ktoken, userid)
+      else:
+        ktoken = keep_token(keepapi, userid)
       if ktoken == None:
         pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None) 
         print ("\r\n\r\nOne moment...")
@@ -325,13 +330,14 @@ def ui_welcome_config():
 @click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
 @click.option('-a', is_flag=True, help="Search and export only archived notes")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
-def main(r, o, a, search_term):
+@click.option('-t', '--master-token', help="Log in using master keep token")
+def main(r, o, a, search_term, master_token):
 
   try:
 
     kapi = keep_init()
 
-    ui_login(kapi, ui_welcome_config(), r)
+    ui_login(kapi, ui_welcome_config(), r, master_token)
  
     ui_query(kapi, search_term, o, a)
       
