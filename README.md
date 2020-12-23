@@ -77,6 +77,9 @@ All KIM options can be discovered using
 ```bash
 > python kim.py --help
 ```
+#### Labels
+Searching for notes by labels just requires the # character in front of the search term like '#MyLabel'. On some operating systems like Linux you may need to enclose the term in quotes.
+
 #### Overwriting
 KIM by default does not overwrite markdown files when exporting, principally because Keep notes can have the same titles. KIM will try to rename duplicate notes. However, notes can be overwritten with
 ```bash
