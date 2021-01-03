@@ -31,7 +31,8 @@ UNKNOWNN_CONFIG_FILE = "There is an unknown configuration file issue - " + CONFI
 MISSING_CONFIG_FILE = "The configuration file - " + CONFIG_FILE + " is missing. Please check the documention on recreating it"
 BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system issue such as locked or corrupted"
 
-
+ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
+ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
  
 default_settings = {
     'google_userid': USERID_EMPTY,
@@ -75,27 +76,15 @@ def load_config():
     return configdict 
 
 
-def url_to_md(text, url_prefix):
-    idx = 0
-    idxstart = 0
-    while idx >= 0:
-        idx = text.find(url_prefix, idx)
-        idxend = text.find("\n", idx)
-        if idxend < 0:
-          idxend = text.find(" ", idx)
-        if idxend < 0:
-            idxend = len(text)
-        if idx >= 0:
-            url = text[idx: idxend]
-            textleft = text[0: idx]
-            textright = text[idx: len(text)]
-            textright = textright.replace(url, url.replace(url, "[" + url + "](" + url + ")"), 1)
-            text = textleft + textright
-            idxstart = idx
-            idxend = idxend + len(url) + 4
-            idx = idxend
 
-    return text
+# Note that the use of temporary %%% is because notes can have the same URL repeated and replace would fail
+def url_to_md(text):
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    for url in urls:
+      text = text.replace(url, "[" + url[:1] + "%%%" +url[2:] + "]("+url[:1] + "%%%" +url[2:]+")", 1)
+    return(text.replace("h%%%tp", "http"))
+
+
     
 
 def keep_init():
@@ -172,7 +161,7 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     return("![" + MEDIADEFAULTPATH + media_name + "](" + MEDIADEFAULTPATH + media_name + ")")
 
 
-def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, note_date, note_created, note_updated, note_id, overwrite):
+def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite):
 
     try:
       outpath = load_config().get("output_path")
@@ -186,43 +175,44 @@ def keep_save_md_file(keepapi, note_title, note_text, note_labels, note_blobs, n
 
       file_exists = True
       while file_exists:
-        md_file = Path(outpath, note_title + ".md")
+        md_file = Path(outpath, gnote.title + ".md")
         if md_file.exists() and overwrite == False:
-          note_title = note_title + note_date
-          md_file = Path(outpath, note_title + ".md")
+          gnote.title = gnote.title + note_date
+          md_file = Path(outpath, gnote.title + ".md")
         else:
-          if note_title in name_list:
-            note_title = note_title + note_date
-            md_file = Path(outpath, note_title + ".md")
+          if gnote.title in name_list:
+            gnote.title = gnote.title + note_date
+            md_file = Path(outpath, gnote.title + ".md")
           else:
-            name_list.append(note_title)
+            name_list.append(gnote.title)
           file_exists = False
 
     
-      for idx, blob in enumerate(note_blobs):
+      for idx, blob in enumerate(gnote.blobs):
         image_url = keepapi.getMediaLink(blob)
         #print (image_url)
-        image_name = note_title + str(idx)
+        image_name = gnote.title + str(idx)
         blob_file = keep_download_blob(image_url, image_name, mediapath)
-        note_text = blob_file + "\n" + note_text 
+        gnote.text = blob_file + "\n" + gnote.text 
  
 
-      print (note_title)
+      print (gnote.title)
       print (note_labels)
       print (note_date + "\r\n")
   
-      f=open(md_file,"w+", errors="ignore")
-      f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
+      f=open(md_file,"w+", encoding='utf-8', errors="ignore")
+      #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
+      f.write(url_to_md(gnote.text) + "\n")
       f.write("\n" + note_labels + "\n\n")
-      f.write("Created: " + note_created + "      Updated: " + note_updated + "\n\n")
-      f.write("["+ KEEP_NOTE_URL + note_id + "](" + KEEP_NOTE_URL + note_id + ")\n\n")
+      f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
+      f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
       f.close
     except Exception as e:
       raise Exception("Problem with markdown file creation: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
 
 
 
-def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
+def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels):
 
     if keepquery == "--all":
       gnotes = keepapi.all()
@@ -238,23 +228,27 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only):
       if gnote.title == '':
         gnote.title = note_date
 
-      note_title = re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
+      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
+      #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
  
-      note_text = gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
-
       note_label_list = gnote.labels 
       labels = note_label_list.all()
       note_labels = ""
-      for label in labels:
-        note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
-      note_labels = re.sub('[^A-z0-9-_# ]', '-', note_labels)
+      if preserve_labels:
+        for label in labels:
+          note_labels = note_labels + " #" + str(label)
+      else:
+        for label in labels:
+          note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
+        note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels) #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+       
     
       if archive_only:
         if gnote.archived and gnote.trashed == False:
-          keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
+          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite)
       else: 
         if gnote.archived == False and gnote.trashed == False:
-          keep_save_md_file(keepapi, note_title, note_text, note_labels, gnote.blobs, note_date, str(gnote.timestamps.created), str(gnote.timestamps.updated), str(gnote.id), overwrite)
+          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite)
 
     name_list.clear()
 
@@ -306,17 +300,17 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
       exit()
 
 
-def ui_query(keepapi, search_term, overwrite, archive_only):
+def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels):
 
     if search_term != None:
-        keep_query_convert(keepapi, search_term, overwrite, archive_only)
+        keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels)
         exit()
     else:
       kquery = "kquery"
       while kquery:
         kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
         if kquery != "--x":
-          keep_query_convert(keepapi, kquery, overwrite, archive_only)
+          keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels)
         else:
           exit()
   
@@ -329,17 +323,18 @@ def ui_welcome_config():
 @click.option('-r', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
 @click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
 @click.option('-a', is_flag=True, help="Search and export only archived notes")
+@click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, search_term, master_token):
-
+def main(r, o, a, p, search_term, master_token):
+  
   try:
 
     kapi = keep_init()
 
     ui_login(kapi, ui_welcome_config(), r, master_token)
  
-    ui_query(kapi, search_term, o, a)
+    ui_query(kapi, search_term, o, a, p)
       
       
   except Exception as e:
