@@ -127,7 +127,7 @@ Example: to export all achived notes with overwriting in batch:
 7. All notes' exported text are appended by their create date, update date and link back to the original Keep note.  
 8. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
 9. Keep uses AAC files for audio recordings and are downloaded as M4A files. Most notes apps do not support AAC format. If you need markdown audio support you will have to manually convert the M4A files to MP3.
-10. There seems to be login issues especially for Windows users. If you can, find a Linux or Mac and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
+10. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
@@ -156,7 +156,7 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
-## 0.3.0 Fixes
+## 0.3.0 Changes
 - Fixed overwriting the same keep notes if multiple exports or notes with the same title
 - Fixed spaces in image link problem 
 - Fixed multiple similar URL in the same note conversion issue  
@@ -169,4 +169,9 @@ There's always room for improvement. Feel free to add issues to the issues list.
 - Added capability to run in batch with a script and search term
 - Added help prompt 'kim.py --help'
 - Added download of drawings
+
+## 0.3.1 Changes
+- Added foreign language support
+- Added flag to preserve Keep labels that have spaces and special characters
+
 
