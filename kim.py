@@ -79,7 +79,7 @@ def load_config():
 
 # Note that the use of temporary %%% is because notes can have the same URL repeated and replace would fail
 def url_to_md(text):
-    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
     for url in urls:
       text = text.replace(url, "[" + url[:1] + "%%%" +url[2:] + "]("+url[:1] + "%%%" +url[2:]+")", 1)
     return(text.replace("h%%%tp", "http"))

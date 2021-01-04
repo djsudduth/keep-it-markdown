@@ -171,7 +171,8 @@ There's always room for improvement. Feel free to add issues to the issues list.
 - Added download of drawings
 
 ## 0.3.1 Changes
-- Added foreign language support
+- Added foreign language support and fixed UTF-8 output
 - Added flag to preserve Keep labels that have spaces and special characters
+- Some MVP code cleanup
 
 
