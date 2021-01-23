@@ -332,7 +332,7 @@ def ui_welcome_config():
 @click.option('-a', is_flag=True, help="Search and export only archived notes")
 @click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
-@click.option('-n', is_flag=True, help="Use text within note instead of create date for md filename")
+@click.option('-n', is_flag=True, help="Use starting text within note instead of create date for md filename")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
 def main(r, o, a, p, s, n, search_term, master_token):
@@ -340,7 +340,7 @@ def main(r, o, a, p, s, n, search_term, master_token):
   try:
 
     if o and s:
-        print ("Overwrite and Skip flags are not compatible together. Please use one or the other.")
+        print ("Overwrite and Skip flags are not compatible together -- please use one or the other...")
         exit()
 
     kapi = keep_init()
