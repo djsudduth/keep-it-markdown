@@ -31,7 +31,7 @@ UNKNOWNN_CONFIG_FILE = "There is an unknown configuration file issue - " + CONFI
 MISSING_CONFIG_FILE = "The configuration file - " + CONFIG_FILE + " is missing. Please check the documention on recreating it"
 BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system issue such as locked or corrupted"
 
-ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
+ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
 ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
  
 default_settings = {
@@ -161,7 +161,7 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     return("![" + MEDIADEFAULTPATH + media_name + "](" + MEDIADEFAULTPATH + media_name + ")")
 
 
-def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite):
+def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
 
     try:
       outpath = load_config().get("output_path")
@@ -177,8 +177,11 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite):
       while file_exists:
         md_file = Path(outpath, gnote.title + ".md")
         if md_file.exists() and overwrite == False:
+          if skip_existing:
+            return()
           gnote.title = gnote.title + note_date
           md_file = Path(outpath, gnote.title + ".md")
+           
         else:
           if gnote.title in name_list:
             gnote.title = gnote.title + note_date
@@ -212,7 +215,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite):
 
 
 
-def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels):
+def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     if keepquery == "--all":
       gnotes = keepapi.all()
@@ -226,7 +229,11 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
       note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":","").replace(".", "-"))
       
       if gnote.title == '':
-        gnote.title = note_date
+        if text_for_title:
+          gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', gnote.text[0:50]) #.replace(' ',''))
+        else:
+          gnote.title = note_date
+
 
       gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
       #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
@@ -245,10 +252,10 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
     
       if archive_only:
         if gnote.archived and gnote.trashed == False:
-          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite)
+          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
       else: 
         if gnote.archived == False and gnote.trashed == False:
-          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite)
+          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
 
     name_list.clear()
 
@@ -300,17 +307,17 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
       exit()
 
 
-def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels):
+def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     if search_term != None:
-        keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels)
+        keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
         exit()
     else:
       kquery = "kquery"
       while kquery:
         kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
         if kquery != "--x":
-          keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels)
+          keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
         else:
           exit()
   
@@ -324,17 +331,23 @@ def ui_welcome_config():
 @click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
 @click.option('-a', is_flag=True, help="Search and export only archived notes")
 @click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
+@click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
+@click.option('-n', is_flag=True, help="Use text within note instead of create date for md filename")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, search_term, master_token):
+def main(r, o, a, p, s, n, search_term, master_token):
   
   try:
+
+    if o and s:
+        print ("Overwrite and Skip flags are not compatible together. Please use one or the other.")
+        exit()
 
     kapi = keep_init()
 
     ui_login(kapi, ui_welcome_config(), r, master_token)
  
-    ui_query(kapi, search_term, o, a, p)
+    ui_query(kapi, search_term, o, a, p, s, n)
       
       
   except Exception as e:
