@@ -85,13 +85,13 @@ KIM by default does not overwrite markdown files when exporting, principally bec
 ```bash
 > python kim.py -o
 ```
-all exported md files will be overwritten. However, if 2 or more Keep notes have the same name, the create date will be appended on the note to be unique.
+all exported md files will be overwritten. However, if 2 or more Keep notes have the same title, the create date will be appended on the note to be unique.
 
 If you want to skip or ignore notes that have already been exported then
 ```bash
 > python kim.py -s
 ```
-will skip exporting Keep notes to markdown that already exist in the destination directory. (Note that overwrite and skip cannot be used at the same time)
+will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and one markdown file already exists with that name, then all are skipped. (Note that overwrite and skip cannot be used at the same time)
 
 #### Password Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
