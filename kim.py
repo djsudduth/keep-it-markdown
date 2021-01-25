@@ -144,7 +144,7 @@ def keep_download_blob(blob_url, blob_name, blob_path):
         media_name = blob_name + ".jpg"
         blob_final_path = dest_path + ".jpg"
       else:
-        extension = ".m4a"
+        extension = ".aac"
         media_name = blob_name + extension
         blob_final_path = dest_path + extension
 
@@ -176,9 +176,9 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       file_exists = True
       while file_exists:
         md_file = Path(outpath, gnote.title + ".md")
-        if md_file.exists() and overwrite == False:
+        if md_file.exists() and overwrite == False:            
           if skip_existing:
-            return()
+               return()
           gnote.title = gnote.title + note_date
           md_file = Path(outpath, gnote.title + ".md")
            
@@ -190,7 +190,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
             name_list.append(gnote.title)
           file_exists = False
 
-    
+
       for idx, blob in enumerate(gnote.blobs):
         image_url = keepapi.getMediaLink(blob)
         #print (image_url)
