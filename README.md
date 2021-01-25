@@ -48,6 +48,7 @@ Run the script again
 If you entered your Google account id and password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!"
 **If this step keeps failing see 'Key Callouts' #10 below.**
 
+
 ## Usage
 Congrats! You can now run KIM. Simply start by running 
 ```bash
@@ -93,7 +94,7 @@ If you want to skip or ignore notes that have already been exported then
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and one markdown file already exists with that name, then all are skipped. (Note that overwrite and skip cannot be used at the same time)
 
-#### Password Token Storage
+#### Authentication Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
 
 If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
@@ -118,21 +119,22 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 Archive export can be combined with the -o and -b options. 
 
 #### Combinations
-Example: to export all achived notes with overwriting in batch:
+Example: to export all achived notes, with overwriting and preserving Keep label format in batch:
 ```bash
-> python kim.py -a -o -b --all
+> python kim.py -a -o -p -b --all
 ```
+Note: skip -s and overwrite -o cannot be used at the same time.
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
-2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the -p flag to preserve Keep labels as they are.
+2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the -p flag to override this and preserve Keep labels as they are.
 3. Note titles are truncated to 100 characters max.
-4. Notes without Keep titles are given titles using the date-time of when the note was created. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other. 
-5. Running KIM repeatably without the overwrite option or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
+4. Notes without Keep titles are given titles using the date-time of when the note was created. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
+5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. If you have login errors after reboot or long idle periods you may need to re-approve KIM access through Step 4's URL - (https://accounts.google.com/DisplayUnlockCaptcha)
-7. All notes' exported text are appended by their create date, update date and link back to the original Keep note.  
+7. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 8. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
-9. Keep uses AAC files for audio recordings and are downloaded as M4A files. Most notes apps do not support AAC format. If you need markdown audio support you will have to manually convert the M4A files to MP3.
+9. Keep uses AAC files for audio recordings. Most notes apps like Obsidian do not support AAC format. If you need markdown audio support you will have to manually convert the AAC files to MP3 and alter the markdown accordingly.
 10. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
 
 ## Obsidian Use
@@ -180,5 +182,10 @@ There's always room for improvement. Feel free to add issues to the issues list.
 - Added foreign language support and fixed UTF-8 output
 - Added flag to preserve Keep labels that have spaces and special characters
 - Some MVP code cleanup
+
+## 0.4.0 Changes
+- Added flag to skip exporting files that already exist with the same title
+- Added flag to use Keep note body text for notes without titles (instead of date-time)
+- Changed audio files to AAC files rather than M4A
 
 
