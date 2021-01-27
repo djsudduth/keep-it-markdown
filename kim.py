@@ -42,6 +42,7 @@ default_settings = {
 media_downloaded = False
 
 name_list = []
+keep_name_list = []
 
 
 class ConfigurationException(Exception):
@@ -161,6 +162,22 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     return("![" + MEDIADEFAULTPATH + media_name + "](" + MEDIADEFAULTPATH + media_name + ")")
 
 
+def keep_note_name(note_title, note_date):
+    if note_title in keep_name_list:
+      note_title = note_title + note_date
+      note_title = keep_note_name(keep_name_list, note_title)
+    return(note_title)
+
+
+def keep_md_exists(outpath, note_title, note_date):
+    md_file = Path(outpath, note_title + ".md")
+    keep_name_list.remove(note_title)
+    while md_file.exists():
+      note_title = keep_note_name(note_title, note_date)
+      keep_name_list.append(note_title)
+      md_file = Path(outpath, note_title + ".md")
+
+
 def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
 
     try:
@@ -172,6 +189,11 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       mediapath = outpath + "/" + MEDIADEFAULTPATH
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
+
+      #t = keep_note_name(gnote.title, note_date)
+      #keep_name_list.append(t)
+      #keep_md_exists(outpath, t, note_date)
+
 
       file_exists = True
       while file_exists:
@@ -326,6 +348,7 @@ def ui_welcome_config():
     return load_config()
 
 
+
 @click.command()
 @click.option('-r', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
 @click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
@@ -354,5 +377,9 @@ def main(r, o, a, p, s, n, search_term, master_token):
     print (e)
  
 
+
+
+
 if __name__ == '__main__':
+
     main()
