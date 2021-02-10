@@ -164,24 +164,6 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
-## 0.3.0 Changes
-- Fixed overwriting the same keep notes if multiple exports or notes with the same title
-- Fixed spaces in image link problem 
-- Fixed multiple similar URL in the same note conversion issue  
-- Fixed export of archived and trashed notes when using all command
-- Fixed overwriting duplication on Keep notes with the same title
-- Added audio file download to m4a format (not recognized in Obsidian yet)
-- Added flag to overwrite exported markdown files
-- Added flag to ignore saving Keep authentication token in the keystore
-- Added flag to search and export only archived notes
-- Added capability to run in batch with a script and search term
-- Added help prompt 'kim.py --help'
-- Added download of drawings
-
-## 0.3.1 Changes
-- Added foreign language support and fixed UTF-8 output
-- Added flag to preserve Keep labels that have spaces and special characters
-- Some MVP code cleanup
 
 ## 0.4.0 Changes
 - Added flag to skip exporting files that already exist with the same title
