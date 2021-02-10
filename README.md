@@ -81,6 +81,12 @@ All KIM options can be discovered using
 #### Labels
 Searching for notes by labels just requires the # character in front of the search term like '#MyLabel'. On some operating systems like Linux you may need to enclose the term in quotes.
 
+#### Titles
+Exported note titles use Keep titles in conversion as best it can. In many cases Keep notes do not have titles and by default KIM will use the create date-time as the title. If you wish to use the beginning body content for blank Keep titles use
+```bash
+> python kim.py -c
+```
+
 #### Overwriting or Skipping
 KIM by default does not overwrite markdown files when exporting, principally because Keep notes can have the same titles. KIM will try to rename duplicate notes. However, notes can be overwritten with
 ```bash
@@ -119,9 +125,9 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 Archive export can be combined with the -o and -b options. 
 
 #### Combinations
-Example: to export all achived notes, with overwriting and preserving Keep label format in batch:
+Example: to export all achived notes, using content for blank note titles, with overwriting and preserving Keep label format in batch:
 ```bash
-> python kim.py -a -o -p -b --all
+> python kim.py -a -c -o -p -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time.
 
@@ -129,7 +135,7 @@ Note: skip -s and overwrite -o cannot be used at the same time.
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
 2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the -p flag to override this and preserve Keep labels as they are.
 3. Note titles are truncated to 100 characters max.
-4. Notes without Keep titles are given titles using the date-time of when the note was created. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
+4. Notes without Keep titles are given titles using the date-time of when the note was created unless the -c flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. If you have login errors after reboot or long idle periods you may need to re-approve KIM access through Step 4's URL - (https://accounts.google.com/DisplayUnlockCaptcha)
 7. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
