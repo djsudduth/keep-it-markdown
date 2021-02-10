@@ -165,17 +165,18 @@ def keep_download_blob(blob_url, blob_name, blob_path):
 def keep_note_name(note_title, note_date):
     if note_title in keep_name_list:
       note_title = note_title + note_date
-      note_title = keep_note_name(keep_name_list, note_title)
+      note_title = keep_note_name(note_title, note_date)
     return(note_title)
 
 
-def keep_md_exists(outpath, note_title, note_date):
-    md_file = Path(outpath, note_title + ".md")
+def keep_md_exists(md_file, outpath, note_title, note_date):
+    #md_file = Path(outpath, note_title + ".md")
     keep_name_list.remove(note_title)
     while md_file.exists():
       note_title = keep_note_name(note_title, note_date)
       keep_name_list.append(note_title)
       md_file = Path(outpath, note_title + ".md")
+    return(note_title)
 
 
 def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
@@ -190,28 +191,17 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
-      #t = keep_note_name(gnote.title, note_date)
-      #keep_name_list.append(t)
-      #keep_md_exists(outpath, t, note_date)
+      gnote.title = keep_note_name(gnote.title, note_date)
+      keep_name_list.append(gnote.title)
 
-
-      file_exists = True
-      while file_exists:
-        md_file = Path(outpath, gnote.title + ".md")
-        if md_file.exists() and overwrite == False:            
-          if skip_existing:
-               return()
-          gnote.title = gnote.title + note_date
-          md_file = Path(outpath, gnote.title + ".md")
-           
-        else:
-          if gnote.title in name_list:
-            gnote.title = gnote.title + note_date
-            md_file = Path(outpath, gnote.title + ".md")
-          else:
-            name_list.append(gnote.title)
-          file_exists = False
-
+      md_file = Path(outpath, gnote.title + ".md")
+      if not overwrite:
+          if md_file.exists():
+            if skip_existing:
+              return(0)
+            else:
+              gnote.title = keep_md_exists(md_file, outpath, gnote.title, note_date)
+              md_file = Path(outpath, gnote.title + ".md")
 
       for idx, blob in enumerate(gnote.blobs):
         image_url = keepapi.getMediaLink(blob)
@@ -232,12 +222,15 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
       f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
       f.close
+      return(1)
     except Exception as e:
       raise Exception("Problem with markdown file creation: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
 
 
 
 def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+
+    count = 0
 
     if keepquery == "--all":
       gnotes = keepapi.all()
@@ -274,13 +267,18 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
     
       if archive_only:
         if gnote.archived and gnote.trashed == False:
-          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+          ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
       else: 
         if gnote.archived == False and gnote.trashed == False:
-          keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+          ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+
+      count = count + ccnt
 
     name_list.clear()
+    if overwrite or skip_existing:
+      keep_name_list.clear()
 
+    return (count)
 
 
 #--------------------- UI / CLI ------------------------------
@@ -332,14 +330,16 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
 def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     if search_term != None:
-        keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+        count = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+        print ("\nTotal converted notes: " + str(count))
         exit()
     else:
       kquery = "kquery"
       while kquery:
         kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
         if kquery != "--x":
-          keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+          count = keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+          print ("\nTotal converted notes: " + str(count))
         else:
           exit()
   
@@ -355,10 +355,10 @@ def ui_welcome_config():
 @click.option('-a', is_flag=True, help="Search and export only archived notes")
 @click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
-@click.option('-n', is_flag=True, help="Use starting text within note instead of create date for md filename")
+@click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, n, search_term, master_token):
+def main(r, o, a, p, s, c, search_term, master_token):
   
   try:
 
@@ -370,7 +370,7 @@ def main(r, o, a, p, s, n, search_term, master_token):
 
     ui_login(kapi, ui_welcome_config(), r, master_token)
  
-    ui_query(kapi, search_term, o, a, p, s, n)
+    ui_query(kapi, search_term, o, a, p, s, c)
       
       
   except Exception as e:
