@@ -202,22 +202,21 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
             else:
               gnote.title = keep_md_exists(md_file, outpath, gnote.title, note_date)
               md_file = Path(outpath, gnote.title + ".md")
+      
+      note_text=gnote.text
 
       for idx, blob in enumerate(gnote.blobs):
         image_url = keepapi.getMediaLink(blob)
         #print (image_url)
         image_name = gnote.title + str(idx)
         blob_file = keep_download_blob(image_url, image_name, mediapath)
-        gnote.text = blob_file + "\n" + gnote.text 
+        note_text = blob_file + "\n" + note_text
  
-
-      print (gnote.title)
-      print (note_labels)
-      print (note_date + "\r\n")
+      print("{} - {}".format(note_date,gnote.title))
   
       f=open(md_file,"w+", encoding='utf-8', errors="ignore")
       #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
-      f.write(url_to_md(gnote.text) + "\n")
+      f.write(url_to_md(note_text) + "\n")
       f.write("\n" + note_labels + "\n\n")
       f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
       f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
