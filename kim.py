@@ -212,6 +212,8 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
         blob_file = keep_download_blob(image_url, image_name, mediapath)
         note_text = blob_file + "\n" + note_text
  
+      note_text = note_text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '- [ ]').replace(u"\u2611", '- [x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
+
       print("{} - {}".format(note_date,gnote.title))
   
       f=open(md_file,"w+", encoding='utf-8', errors="ignore")
@@ -249,8 +251,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
           gnote.title = note_date
 
 
-      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
-      #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
+      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]      
  
       note_label_list = gnote.labels 
       labels = note_label_list.all()
