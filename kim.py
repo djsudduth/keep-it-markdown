@@ -12,6 +12,7 @@ import time
 import configparser
 import click
 from pathlib import Path
+from collections import namedtuple
 
 
 KEEP_CACHE = 'kdata.json'
@@ -80,7 +81,8 @@ def load_config():
 
 # Note that the use of temporary %%% is because notes can have the same URL repeated and replace would fail
 def url_to_md(text):
-    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    # pylint: disable=anomalous-backslash-in-string
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text) 
     for url in urls:
       text = text.replace(url, "[" + url[:1] + "%%%" +url[2:] + "]("+url[:1] + "%%%" +url[2:]+")", 1)
     return(text.replace("h%%%tp", "http"))
@@ -182,6 +184,8 @@ def keep_md_exists(md_file, outpath, note_title, note_date):
 def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
 
     try:
+      md_text = gnote.text
+
       outpath = load_config().get("output_path")
   
       if outpath == OUTPUTPATH:
@@ -208,7 +212,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
         #print (image_url)
         image_name = gnote.title + str(idx)
         blob_file = keep_download_blob(image_url, image_name, mediapath)
-        gnote.text = blob_file + "\n" + gnote.text 
+        md_text = blob_file + "\n" + md_text 
  
 
       print (gnote.title)
@@ -217,7 +221,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
   
       f=open(md_file,"w+", encoding='utf-8', errors="ignore")
       #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
-      f.write(url_to_md(gnote.text) + "\n")
+      f.write(url_to_md(md_text) + "\n")
       f.write("\n" + note_labels + "\n\n")
       f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
       f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
@@ -344,7 +348,7 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
           exit()
   
 def ui_welcome_config():
-    print ("\r\nWelcome to Keep it Markdown or KIM!\r\n")
+    #click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
     return load_config()
 
 
@@ -359,8 +363,15 @@ def ui_welcome_config():
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
 def main(r, o, a, p, s, c, search_term, master_token):
-  
+
+
+  #flags = namedtuple('flags', 'name age')
+  #f = flags("hilda", 23)
+  #print(f.name)
+
   try:
+
+    click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
     if o and s:
         print ("Overwrite and Skip flags are not compatible together -- please use one or the other...")
@@ -382,4 +393,4 @@ def main(r, o, a, p, s, c, search_term, master_token):
 
 if __name__ == '__main__':
 
-    main()
+    main() # pylint: disable=no-value-for-parameter

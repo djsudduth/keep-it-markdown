@@ -1,3 +1,6 @@
 settings.cfg
 skiptest.py
+fuzzy.py
 mdfiles/
+.vscode/
+**/__pycache__

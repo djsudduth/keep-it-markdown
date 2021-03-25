@@ -98,7 +98,7 @@ If you want to skip or ignore notes that have already been exported then
 ```bash
 > python kim.py -s
 ```
-will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and one markdown file already exists with that name, then all are skipped. (Note that overwrite and skip cannot be used at the same time)
+will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
 #### Authentication Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
