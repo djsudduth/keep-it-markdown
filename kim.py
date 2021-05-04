@@ -184,7 +184,8 @@ def keep_md_exists(md_file, outpath, note_title, note_date):
 def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
 
     try:
-      md_text = gnote.text
+   
+      md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
       outpath = load_config().get("output_path")
   
@@ -254,7 +255,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
           gnote.title = note_date
 
 
-      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
+      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99] 
       #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
  
       note_label_list = gnote.labels 
