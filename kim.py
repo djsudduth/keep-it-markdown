@@ -146,6 +146,12 @@ def keep_download_blob(blob_url, blob_name, blob_path):
       elif imghdr.what(data_file) == 'jpeg':
         media_name = blob_name + ".jpg"
         blob_final_path = dest_path + ".jpg"
+      elif imghdr.what(data_file) == 'gif':
+        media_name = blob_name + ".gif"
+        blob_final_path = dest_path + ".gif"
+      elif imghdr.what(data_file) == 'webp':
+        media_name = blob_name + ".webp"
+        blob_final_path = dest_path + ".webp"
       else:
         extension = ".aac"
         media_name = blob_name + extension
