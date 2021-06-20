@@ -37,7 +37,8 @@ ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{',
  
 default_settings = {
     'google_userid': USERID_EMPTY,
-    'output_path': OUTPUTPATH
+    'output_path': OUTPUTPATH,
+    'media_path': MEDIADEFAULTPATH,
     }
 
 media_downloaded = False
@@ -167,7 +168,8 @@ def keep_download_blob(blob_url, blob_name, blob_path):
       os.remove(data_file)
 
     media_name = media_name.replace(" ", "%20")
-    return("![" + MEDIADEFAULTPATH + media_name + "](" + MEDIADEFAULTPATH + media_name + ")")
+    mediapath = load_config().get("media_path")
+    return("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
 
 
 def keep_note_name(note_title, note_date):
@@ -194,11 +196,12 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
       outpath = load_config().get("output_path")
-  
-      if outpath == OUTPUTPATH:
-        if not os.path.exists(OUTPUTPATH):
-          os.mkdir(OUTPUTPATH)
-      mediapath = outpath + "/" + MEDIADEFAULTPATH
+      mediapath = load_config().get("media_path")
+
+      if not os.path.exists(outpath):
+        os.mkdir(outpath)
+
+      mediapath = outpath + "/" + mediapath
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
