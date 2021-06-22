@@ -22,7 +22,7 @@ CONFIG_FILE = "settings.cfg"
 DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
-MEDIADEFAULTPATH = "media/"
+MEDIADEFAULTPATH = "media"
 
 TECH_ERR = " Technical Error Message: "
 
@@ -132,7 +132,10 @@ def keep_save_token(keeptoken, userid):
 
 def keep_download_blob(blob_url, blob_name, blob_path):
 
-    dest_path = blob_path + "/" + blob_name
+
+  try:
+
+    dest_path = blob_path + "/" + blob_name 
     data_file = blob_name + ".dat"
 
     r = requests.get(blob_url)
@@ -170,7 +173,10 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     media_name = media_name.replace(" ", "%20")
     mediapath = load_config().get("media_path")
     return("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
-
+  except:
+    print ("Error in keep_download_blob()")
+    raise
+ 
 
 def keep_note_name(note_title, note_date):
     if note_title in keep_name_list:
@@ -201,6 +207,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       if not os.path.exists(outpath):
         os.mkdir(outpath)
 
+     
       mediapath = outpath + "/" + mediapath
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
@@ -238,61 +245,66 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       f.close
       return(1)
     except Exception as e:
-      raise Exception("Problem with markdown file creation: " + str(md_file) + "\r\n" + TECH_ERR + repr(e))
+      raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
 
 def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
-    count = 0
+  try:
+      count = 0
 
-    if keepquery == "--all":
-      gnotes = keepapi.all()
-    else:
-      if keepquery[0] == "#":
-        gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
+      if keepquery == "--all":
+        gnotes = keepapi.all()
       else:
-        gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
-
-    for gnote in gnotes:
-      note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":","").replace(".", "-"))
-      
-      if gnote.title == '':
-        if text_for_title:
-          gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', gnote.text[0:50]) #.replace(' ',''))
+        if keepquery[0] == "#":
+          gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
         else:
-          gnote.title = note_date
+          gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
+
+      for gnote in gnotes:
+        note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":","").replace(".", "-"))
+        
+        if gnote.title == '':
+          if text_for_title:
+            gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', gnote.text[0:50]) #.replace(' ',''))
+          else:
+            gnote.title = note_date
 
 
-      gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99] 
-      #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
+        gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99] 
+        #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
+  
+        note_label_list = gnote.labels 
+        labels = note_label_list.all()
+        note_labels = ""
+        if preserve_labels:
+          for label in labels:
+            note_labels = note_labels + " #" + str(label)
+        else:
+          for label in labels:
+            note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
+          note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels) #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+        
+      
+        if archive_only:
+          if gnote.archived and gnote.trashed == False:
+            ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+        else: 
+          if gnote.archived == False and gnote.trashed == False:
+            ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+
+        count = count + ccnt
+
+      name_list.clear()
+      if overwrite or skip_existing:
+        keep_name_list.clear()
+
+      return (count)
+  except:
+    print ("Error in keep_query_convert()")
+    raise
  
-      note_label_list = gnote.labels 
-      labels = note_label_list.all()
-      note_labels = ""
-      if preserve_labels:
-        for label in labels:
-          note_labels = note_labels + " #" + str(label)
-      else:
-        for label in labels:
-          note_labels = note_labels + " #" + str(label).replace(' ','-').replace('&','and')
-        note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels) #re.sub('[^A-z0-9-_# ]', '-', note_labels)
-       
-    
-      if archive_only:
-        if gnote.archived and gnote.trashed == False:
-          ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
-      else: 
-        if gnote.archived == False and gnote.trashed == False:
-          ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
-
-      count = count + ccnt
-
-    name_list.clear()
-    if overwrite or skip_existing:
-      keep_name_list.clear()
-
-    return (count)
 
 
 #--------------------- UI / CLI ------------------------------
@@ -327,8 +339,8 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
             print ("You've succesfully logged into Google Keep!")
           else:
             print ("You've succesfully logged into Google Keep! Your Keep access token has been securely stored in this computer's keyring.")
-        else:
-          print ("Invalid Google userid or pw! Please try again.")
+        #else:
+        #  print ("Invalid Google userid or pw! Please try again.")
 
       else:
         print ("You've succesfully logged into Google Keep using local keyring access token!")
@@ -336,13 +348,15 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
       keep_resume(keepapi, ktoken, userid)
       return (ktoken)
 
-    except:
-      print ("\r\nUsername or password is incorrect") 
-      exit()
+    except Exception as e:
+      print ("\r\nUsername or password is incorrect (" + repr(e) + ")") 
+      raise
+
 
 
 def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
+  try:
     if search_term != None:
         count = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
         print ("\nTotal converted notes: " + str(count))
@@ -356,10 +370,22 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
           print ("\nTotal converted notes: " + str(count))
         else:
           exit()
+  except Exception as e:
+    print ("Conversion to markdown error - " + repr(e) + " ") 
+    raise
   
+
 def ui_welcome_config():
-    #click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
-    return load_config()
+  try:
+    defaults = load_config()
+    mp = defaults.get("media_path")
+    if ( (":" in mp) or (mp[0] == '/') ):
+      raise ValueError("Media path: '" + mp + "' within your config file - " + CONFIG_FILE + " - must be relative to the output path and cannot start with / or a drive-mount")
+    return defaults
+  except Exception as e:
+    print ("\r\nConfiguration file error - " + CONFIG_FILE + " - " + repr(e) + " ") 
+    raise
+  
 
 
 
@@ -395,7 +421,7 @@ def main(r, o, a, p, s, c, search_term, master_token):
       
       
   except Exception as e:
-    print (e)
+    print ("Could not excute KIM")
  
 
 
