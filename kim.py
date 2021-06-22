@@ -401,10 +401,6 @@ def ui_welcome_config():
 def main(r, o, a, p, s, c, search_term, master_token):
 
 
-  #flags = namedtuple('flags', 'name age')
-  #f = flags("hilda", 23)
-  #print(f.name)
-
   try:
 
     click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
