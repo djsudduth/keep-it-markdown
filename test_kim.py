@@ -9,6 +9,7 @@ def test_url_to_md():
     assert j == "b[http://a/b/c/g;x?y#s](http://a/b/c/g;x?y#s) and urls start with http:// like that"
 
 
+#not complete
 def test_keep_note_name():
     ndate = "2021-06-12 180157-072000"
     k.keep_name_list = ["abc", "def", "ghi", "", "j", "mnopqr-stuvw", "xyz"]
