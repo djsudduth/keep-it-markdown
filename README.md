@@ -72,6 +72,7 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 
 **google_userid** = your-google-account-id (allows you to bypass typing in your id)  
 **output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
+**media_path** = location of the exported media files (images, audio) relative to your output_path. If the output_path is /mdexport and media_path is media/data, the media full path will be /mdexport/media/data. Media paths cannot start with /, mount or drive letter.
 
 ### Help and Options
 All KIM options can be discovered using

@@ -171,7 +171,7 @@ def keep_download_blob(blob_url, blob_name, blob_path):
       os.remove(data_file)
 
     media_name = media_name.replace(" ", "%20")
-    mediapath = load_config().get("media_path")
+    mediapath = load_config().get("media_path").rstrip("/") + "/"
     return("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
   except:
     print ("Error in keep_download_blob()")
@@ -201,14 +201,14 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
    
       md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
-      outpath = load_config().get("output_path")
-      mediapath = load_config().get("media_path")
+      outpath = load_config().get("output_path").rstrip("/")
+      mediapath = load_config().get("media_path").rstrip("/")
 
       if not os.path.exists(outpath):
         os.mkdir(outpath)
 
      
-      mediapath = outpath + "/" + mediapath
+      mediapath = outpath + "/" + mediapath + "/"
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
@@ -290,6 +290,8 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
         if archive_only:
           if gnote.archived and gnote.trashed == False:
             ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+          else:
+            ccnt = 0
         else: 
           if gnote.archived == False and gnote.trashed == False:
             ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
@@ -360,7 +362,7 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
     if search_term != None:
         count = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
         print ("\nTotal converted notes: " + str(count))
-        exit()
+        return
     else:
       kquery = "kquery"
       while kquery:
@@ -369,7 +371,7 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
           count = keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
           print ("\nTotal converted notes: " + str(count))
         else:
-          exit()
+          return
   except Exception as e:
     print ("Conversion to markdown error - " + repr(e) + " ") 
     raise
@@ -408,6 +410,7 @@ def main(r, o, a, p, s, c, search_term, master_token):
     if o and s:
         print ("Overwrite and Skip flags are not compatible together -- please use one or the other...")
         exit()
+    
 
     kapi = keep_init()
 
@@ -416,7 +419,7 @@ def main(r, o, a, p, s, c, search_term, master_token):
     ui_query(kapi, search_term, o, a, p, s, c)
       
       
-  except Exception as e:
+  except:
     print ("Could not excute KIM")
  
 
