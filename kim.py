@@ -225,7 +225,13 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
               md_file = Path(outpath, gnote.title + ".md")
 
       for idx, blob in enumerate(gnote.blobs):
-        image_url = keepapi.getMediaLink(blob)
+        try:
+            image_url = keepapi.getMediaLink(blob)
+        except AttributeError as e:
+            if "'NoneType' object has no attribute 'type'" in str(e):
+                print (f"continuing, despite note {gnote.title} raising:" , repr(e) )
+                continue
+            raise e
         #print (image_url)
         image_name = gnote.title + str(idx)
         blob_file = keep_download_blob(image_url, image_name, mediapath)
@@ -253,6 +259,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
 
   try:
       count = 0
+      ccnt = 0
 
       if keepquery == "--all":
         gnotes = keepapi.all()
