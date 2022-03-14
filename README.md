@@ -33,7 +33,7 @@ Start your command prompt, shell or terminal, find your download directory and r
 (you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4: 
- Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and manually approve access with a browswer. **Be sure you have logged into your primary Google account only in your default browser first before testing the Keep login.**  From within your command prompt or shell and run 
+ Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and manually approve access with a browser. **Be sure you have logged into your primary Google account only in your default browser first before testing the Keep login.**  From within your command prompt or shell and run 
 ```bash
 > python keep-test.py
 ```
