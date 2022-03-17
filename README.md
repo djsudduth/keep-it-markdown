@@ -172,10 +172,3 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
-
-## 0.4.0 Changes
-- Added flag to skip exporting files that already exist with the same title
-- Added flag to use Keep note body text for notes without titles (instead of date-time)
-- Changed audio files to AAC files rather than M4A
-
-
