@@ -1,5 +1,6 @@
 import sys
 import os
+from os.path import join
 import getopt
 import gkeepapi
 import keyring
@@ -11,8 +12,9 @@ import re
 import time
 import configparser
 import click
+import json
 from pathlib import Path
-from collections import namedtuple
+from datetime import datetime
 
 KEEP_CACHE = 'kdata.json'
 KEEP_KEYRING_ID = 'google-keep-token'
@@ -53,6 +55,16 @@ class ConfigurationException(Exception):
 
     def __str__(self):
         return self.msg
+
+
+class Timestamps:
+    created: datetime
+    updated: datetime
+
+
+class Gnote:
+    id = "unknown"
+    timestamps = Timestamps()
 
 
 def load_config():
@@ -190,26 +202,21 @@ def keep_md_exists(md_file, outpath, note_title, note_date):
     return (note_title)
 
 
-def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
+def keep_save_md_file(gnote, overwrite, skip_existing):
 
     try:
-
-        md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
+        note_labels = gnote.note_labels
+        note_date = gnote.note_date
+        md_text = gnote.md_text
 
         outpath = load_config().get("output_path").rstrip("/")
-        mediapath = load_config().get("media_path").rstrip("/")
-
         if not os.path.exists(outpath):
             os.mkdir(outpath)
-
-        mediapath = outpath + "/" + mediapath + "/"
-        if not os.path.exists(mediapath):
-            os.mkdir(mediapath)
 
         gnote.title = keep_note_name(gnote.title, note_date)
         keep_name_list.append(gnote.title)
 
-        md_file = Path(outpath, gnote.title + ".md")
+        md_file = Path(outpath, gnote.title.replace("/", "-") + ".md")
         if not overwrite:
             if md_file.exists():
                 if skip_existing:
@@ -218,33 +225,99 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
                     gnote.title = keep_md_exists(md_file, outpath, gnote.title, note_date)
                     md_file = Path(outpath, gnote.title + ".md")
 
-        for idx, blob in enumerate(gnote.blobs):
-            try:
-                image_url = keepapi.getMediaLink(blob)
-            except AttributeError as e:
-                if "'NoneType' object has no attribute 'type'" in str(e):
-                    print(f"continuing, despite note {gnote.title} raising:", repr(e))
-                    continue
-                raise e
-            #print (image_url)
-            image_name = gnote.title + str(idx)
-            blob_file = keep_download_blob(image_url, image_name, mediapath)
-            md_text = blob_file + "\n" + md_text
-
+        lines = md_text.split("\n")
+        found = False
+        for line in lines:
+            if len(line.strip()):
+                found = True
+                break
+        if not found:
+            return
         print(gnote.title)
         print(note_labels)
         print(note_date + "\r\n")
 
         f = open(md_file, "w+", encoding='utf-8', errors="ignore")
+        f.write(f"""---
+updated: ["{str(gnote.timestamps.updated)}"]
+created: ["{str(gnote.timestamps.created)}"]
+---    
+  
+""")
         #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
         f.write(url_to_md(md_text) + "\n")
-        f.write("\n" + note_labels + "\n\n")
-        f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
-        f.write("[" + KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
+        f.write("\n" + note_labels + "\n")
+        if gnote.id != "unknown":
+            f.write("[" + KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
         f.close
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
+
+
+def setup_folders():
+    outpath = load_config().get("output_path").rstrip("/")
+    if not os.path.exists(outpath):
+        os.mkdir(outpath)
+
+    mediapath = load_config().get("media_path").rstrip("/")
+
+    mediapath = outpath + "/" + mediapath + "/"
+    if not os.path.exists(mediapath):
+        os.mkdir(mediapath)
+
+
+def keep_takeout_load(takeout_folder, overwrite, archive_only, preserve_labels, skip_existing):
+    files = [file for file in os.listdir(takeout_folder) if file.endswith(".json")]
+    gnotes = []
+    count = 0
+
+    for file in files:
+        gnote = Gnote()
+        data = json.load(open(join(takeout_folder, file), "r"))
+        if "textContent" not in data:
+            data["textContent"] = ""
+        if "labels" not in data:
+            data["labels"] = {}
+
+        ccnt = 0
+        if archive_only:
+            if data["isArchived"] and data["isTrashed"] == False:
+                ccnt = 1
+        else:
+            if data["isArchived"] == False and data["isTrashed"] == False:
+                ccnt = 1
+        setattr(gnote, 'export', False if ccnt == 0 else True)
+
+        md_text = data["textContent"]
+
+        note_labels = "#GoogleKeep"
+        if preserve_labels:
+            for label in data["labels"]:
+                note_labels = note_labels + " #" + str(label["name"])
+        else:
+            for label in data["labels"]:
+                note_labels = note_labels + " #" + str(label["name"]).replace(' ', '-').replace('&', 'and')
+            note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+
+        created_at = datetime.fromtimestamp(data["createdTimestampUsec"] / 1000000)
+        updated_at = datetime.fromtimestamp(data["userEditedTimestampUsec"] / 1000000)
+        gnote.timestamps.created = created_at
+        gnote.timestamps.updated = updated_at
+        setattr(gnote, 'note_date', str(updated_at)[:19].replace(" ", "T"))
+        setattr(gnote, 'note_labels', note_labels)
+        setattr(gnote, 'title', data["title"])
+        keep_name_list.append(gnote.title)
+
+        setattr(gnote, 'md_text', md_text)
+        count = count + ccnt
+        gnotes.append(gnote)
+
+    name_list.clear()
+    if overwrite or skip_existing:
+        keep_name_list.clear()
+
+    return (gnotes, len(gnotes))
 
 
 def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
@@ -262,6 +335,25 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                 gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
 
         for gnote in gnotes:
+
+            md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
+            for idx, blob in enumerate(gnote.blobs):
+                try:
+                    image_url = keepapi.getMediaLink(blob)
+                except AttributeError as e:
+                    if "'NoneType' object has no attribute 'type'" in str(e):
+                        print(f"continuing, despite note {gnote.title} raising:", repr(e))
+                        continue
+                    raise e
+                #print (image_url)
+                image_name = gnote.title + str(idx)
+                blob_file = keep_download_blob(image_url, image_name, mediapath)
+                md_text = blob_file + "\n" + md_text
+                setattr(gnote, 'image_name', image_name)
+                setattr(gnote, 'blob_file', blob_file)
+
+            setattr(gnote, 'md_text', md_text)
+
             note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":", "").replace(".", "-"))
 
             if gnote.title == '':
@@ -284,16 +376,20 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                     note_labels = note_labels + " #" + str(label).replace(' ', '-').replace('&', 'and')
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
+            setattr(gnote, 'note_date', note_date)
+            setattr(gnote, 'note_labels', note_labels)
+
+            setattr(gnote, 'export', False)
             if archive_only:
                 if gnote.archived and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+                    setattr(gnote, 'export', True)
+                    ccnt = 1
                 else:
                     ccnt = 0
             else:
                 if gnote.archived == False and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
-                else:
-                    ccnt = 0
+                    setattr(gnote, 'export', True)
+                    ccnt = 1
 
             count = count + ccnt
 
@@ -301,7 +397,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
         if overwrite or skip_existing:
             keep_name_list.clear()
 
-        return (count)
+        return (gnotes, count)
     except:
         print("Error in keep_query_convert()")
         raise
@@ -354,11 +450,22 @@ def ui_login(keepapi, defaults, keyring_reset, master_token):
         raise
 
 
-def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+def ui_query(keepapi, takeout_folder, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     try:
-        if search_term != None:
-            count = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+        setup_folders()
+        if takeout_folder:
+            (gnotes, count) = keep_takeout_load(takeout_folder, overwrite, archive_only, preserve_labels, skip_existing)
+            for gnote in gnotes:
+                if gnote.export:
+                    keep_save_md_file(gnote, overwrite, skip_existing)
+            print("\nTotal converted notes: " + str(count))
+            return
+        elif search_term != None:
+            (gnotes, count) = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+            for gnote in gnotes:
+                if gnote.export:
+                    keep_save_md_file(gnote, overwrite, skip_existing)
             print("\nTotal converted notes: " + str(count))
             return
         else:
@@ -366,7 +473,10 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
             while kquery:
                 kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
-                    count = keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+                    (gnotes, count) = keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+                    for gnote in gnotes:
+                        if gnote.export:
+                            keep_save_md_file(gnote, overwrite, skip_existing)
                     print("\nTotal converted notes: " + str(count))
                 else:
                     return
@@ -396,8 +506,9 @@ def ui_welcome_config():
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
+@click.option('-f', '--takeout-folder', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, search_term, master_token):
+def main(r, o, a, p, s, c, search_term, takeout_folder, master_token):
 
     try:
 
@@ -409,9 +520,10 @@ def main(r, o, a, p, s, c, search_term, master_token):
 
         kapi = keep_init()
 
-        ui_login(kapi, ui_welcome_config(), r, master_token)
+        if not takeout_folder:
+            ui_login(kapi, ui_welcome_config(), r, master_token)
 
-        ui_query(kapi, search_term, o, a, p, s, c)
+        ui_query(kapi, takeout_folder, search_term, o, a, p, s, c)
 
     except:
         print("Could not excute KIM")
