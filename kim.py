@@ -11,7 +11,10 @@ import re
 import time
 import configparser
 import click
+import json
+from os.path import join
 from pathlib import Path
+from datetime import datetime
 from collections import namedtuple
 
 KEEP_CACHE = 'kdata.json'
@@ -53,6 +56,80 @@ class ConfigurationException(Exception):
 
     def __str__(self):
         return self.msg
+
+class Timestamps:
+    created: datetime
+    updated: datetime
+
+
+class Gnote:
+    id = "unknown"
+    timestamps = Timestamps()
+
+
+def setup_folders():
+    outpath = load_config().get("output_path").rstrip("/")
+    if not os.path.exists(outpath):
+        os.mkdir(outpath)
+
+    mediapath = load_config().get("media_path").rstrip("/")
+
+    mediapath = outpath + "/" + mediapath + "/"
+    if not os.path.exists(mediapath):
+        os.mkdir(mediapath)
+
+
+def keep_takeout_load(takeout_folder, overwrite, archive_only, preserve_labels, skip_existing):
+    files = [file for file in os.listdir(takeout_folder) if file.endswith(".json")]
+    gnotes = []
+    count = 0
+
+    for file in files:
+        gnote = Gnote()
+        data = json.load(open(join(takeout_folder, file), "r"))
+        if "textContent" not in data:
+            data["textContent"] = ""
+        if "labels" not in data:
+            data["labels"] = {}
+
+        ccnt = 0
+        if archive_only:
+            if data["isArchived"] and data["isTrashed"] == False:
+                ccnt = 1
+        else:
+            if data["isArchived"] == False and data["isTrashed"] == False:
+                ccnt = 1
+        setattr(gnote, 'export', False if ccnt == 0 else True)
+
+        md_text = data["textContent"]
+
+        note_labels = "#GoogleKeep"
+        if preserve_labels:
+            for label in data["labels"]:
+                note_labels = note_labels + " #" + str(label["name"])
+        else:
+            for label in data["labels"]:
+                note_labels = note_labels + " #" + str(label["name"]).replace(' ', '-').replace('&', 'and')
+            note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+
+        created_at = datetime.fromtimestamp(data["createdTimestampUsec"] / 1000000)
+        updated_at = datetime.fromtimestamp(data["userEditedTimestampUsec"] / 1000000)
+        gnote.timestamps.created = created_at
+        gnote.timestamps.updated = updated_at
+        setattr(gnote, 'note_date', str(updated_at)[:19].replace(" ", "T"))
+        setattr(gnote, 'note_labels', note_labels)
+        setattr(gnote, 'title', data["title"])
+        keep_name_list.append(gnote.title)
+
+        setattr(gnote, 'md_text', md_text)
+        count = count + ccnt
+        gnotes.append(gnote)
+
+    name_list.clear()
+    if overwrite or skip_existing:
+        keep_name_list.clear()
+
+    return (gnotes, len(gnotes))
 
 
 def load_config():
