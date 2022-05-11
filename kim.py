@@ -1,6 +1,5 @@
-import sys
+from dataclasses import dataclass
 import os
-import getopt
 import gkeepapi
 import keyring
 import getpass
@@ -8,10 +7,8 @@ import requests
 import imghdr
 import shutil
 import re
-import time
 import configparser
 import click
-import json
 from os.path import join
 from pathlib import Path
 from datetime import datetime
@@ -25,14 +22,25 @@ DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
 MEDIADEFAULTPATH = "media"
+MAX_FILENAME_LENGTH = 99
 
 TECH_ERR = " Technical Error Message: "
 
-CONFIG_FILE_MESSAGE = "Your " + CONFIG_FILE + " file contains to the following [" + DEFAULT_SECTION + "] values. Be sure to edit it with your information."
-MALFORMED_CONFIG_FILE = "The " + CONFIG_FILE + " default settings file exists but has a malformed header - header should be [DEFAULT]"
-UNKNOWNN_CONFIG_FILE = "There is an unknown configuration file issue - " + CONFIG_FILE + " or file system may be locked or corrupted. Try deleting the file and recreating it."
-MISSING_CONFIG_FILE = "The configuration file - " + CONFIG_FILE + " is missing. Please check the documention on recreating it"
-BADFILE_CONFIG_FILE = "Unable to create " + CONFIG_FILE + ". The file system issue such as locked or corrupted"
+CONFIG_FILE_MESSAGE = ("Your " + CONFIG_FILE + " file contains to the following [" 
+                        + DEFAULT_SECTION + "] values. Be sure to edit it with "
+                        " your information.")
+MALFORMED_CONFIG_FILE = ("The " + CONFIG_FILE + " default settings file exists "
+                        "but has a malformed header - header should be [SETTINGS]")
+UNKNOWNN_CONFIG_FILE = ("There is an unknown configuration file issue - " 
+                        + CONFIG_FILE + " or file system may be locked or "
+                        "corrupted. Try deleting the file and recreating it.")
+MISSING_CONFIG_FILE = ("The configuration file - " + CONFIG_FILE + " is missing. "
+                        "Please check the documention on recreating it")
+BADFILE_CONFIG_FILE = ("Unable to create " + CONFIG_FILE + ". "
+                        "The file system issue such as locked or corrupted")
+KEYERR_CONFIG_FILE = ("Configuration key in " + CONFIG_FILE + " not found. "
+                        "Key passed is: ")
+
 
 ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
 ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
@@ -47,6 +55,7 @@ media_downloaded = False
 
 name_list = []
 keep_name_list = []
+notes = []
 
 
 class ConfigurationException(Exception):
@@ -57,112 +66,89 @@ class ConfigurationException(Exception):
     def __str__(self):
         return self.msg
 
-class Timestamps:
-    created: datetime
-    updated: datetime
 
+class Config:
 
-class Gnote:
-    id = "unknown"
-    timestamps = Timestamps()
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Config, cls).__new__(cls)
+            cls.instance._config = configparser.ConfigParser()
+            cls.instance._configdict = {}
+            cls.instance.__read()
+            cls.instance.__load()
+        return cls.instance
 
-
-def setup_folders():
-    outpath = load_config().get("output_path").rstrip("/")
-    if not os.path.exists(outpath):
-        os.mkdir(outpath)
-
-    mediapath = load_config().get("media_path").rstrip("/")
-
-    mediapath = outpath + "/" + mediapath + "/"
-    if not os.path.exists(mediapath):
-        os.mkdir(mediapath)
-
-
-def keep_takeout_load(takeout_folder, overwrite, archive_only, preserve_labels, skip_existing):
-    files = [file for file in os.listdir(takeout_folder) if file.endswith(".json")]
-    gnotes = []
-    count = 0
-
-    for file in files:
-        gnote = Gnote()
-        data = json.load(open(join(takeout_folder, file), "r"))
-        if "textContent" not in data:
-            data["textContent"] = ""
-        if "labels" not in data:
-            data["labels"] = {}
-
-        ccnt = 0
-        if archive_only:
-            if data["isArchived"] and data["isTrashed"] == False:
-                ccnt = 1
-        else:
-            if data["isArchived"] == False and data["isTrashed"] == False:
-                ccnt = 1
-        setattr(gnote, 'export', False if ccnt == 0 else True)
-
-        md_text = data["textContent"]
-
-        note_labels = "#GoogleKeep"
-        if preserve_labels:
-            for label in data["labels"]:
-                note_labels = note_labels + " #" + str(label["name"])
-        else:
-            for label in data["labels"]:
-                note_labels = note_labels + " #" + str(label["name"]).replace(' ', '-').replace('&', 'and')
-            note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
-
-        created_at = datetime.fromtimestamp(data["createdTimestampUsec"] / 1000000)
-        updated_at = datetime.fromtimestamp(data["userEditedTimestampUsec"] / 1000000)
-        gnote.timestamps.created = created_at
-        gnote.timestamps.updated = updated_at
-        setattr(gnote, 'note_date', str(updated_at)[:19].replace(" ", "T"))
-        setattr(gnote, 'note_labels', note_labels)
-        setattr(gnote, 'title', data["title"])
-        keep_name_list.append(gnote.title)
-
-        setattr(gnote, 'md_text', md_text)
-        count = count + ccnt
-        gnotes.append(gnote)
-
-    name_list.clear()
-    if overwrite or skip_existing:
-        keep_name_list.clear()
-
-    return (gnotes, len(gnotes))
-
-
-def load_config():
-    config = configparser.ConfigParser()
-
-    try:
-        cfile = config.read(CONFIG_FILE)
-    except configparser.MissingSectionHeaderError:
-        raise ConfigurationException(MALFORMED_CONFIG_FILE)
-    except Exception:
-        raise ConfigurationException(UNKNOWNN_CONFIG_FILE)
-
-    configdict = {}
-    if not cfile:
-        config[DEFAULT_SECTION] = default_settings
+    def __read(self):
+        try:
+            self._cfile = self._config.read(CONFIG_FILE)
+            if not self._cfile:
+                self.__create()
+        except configparser.MissingSectionHeaderError:
+            raise ConfigurationException(MALFORMED_CONFIG_FILE)
+        except Exception:
+            raise ConfigurationException(UNKNOWNN_CONFIG_FILE)
+    
+    def __create(self):
+        self._config[DEFAULT_SECTION] = default_settings
         try:
             with open(CONFIG_FILE, 'w') as configfile:
-                config.write(configfile)
+                self._config.write(configfile)
         except Exception as e:
-            raise (e)
-    options = config.options(DEFAULT_SECTION)
-    for option in options:
-        configdict[option] = config.get(DEFAULT_SECTION, option)
-    return configdict
+            raise ConfigurationException(BADFILE_CONFIG_FILE)
+
+    def __load(self):
+        options = self._config.options(DEFAULT_SECTION)
+        for option in options:
+            self._configdict[option] = \
+                self._config.get(DEFAULT_SECTION, option)
+
+    def get(self, key):
+        try:
+            return(self._configdict[key])
+        except Exception as e:
+            raise ConfigurationException(KEYERR_CONFIG_FILE + key)
 
 
-# Note that the use of temporary %%% is because notes can have the same URL repeated and replace would fail
-def url_to_md(text):
-    # pylint: disable=anomalous-backslash-in-string
-    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
-    for url in urls:
-        text = text.replace(url, "[" + url[:1] + "%%%" + url[2:] + "](" + url[:1] + "%%%" + url[2:] + ")", 1)
-    return (text.replace("h%%%tp", "http"))
+
+class Markdown:
+
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Markdown, cls).__new__(cls)
+        return cls.instance
+
+    #Note that the use of temporary %%% is because notes 
+    #   can have the same URL repeated and replace would fail
+
+    def convert_urls(self, text):
+        # pylint: disable=anomalous-backslash-in-string
+        urls = re.findall(
+            "http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
+                "|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            text
+        )
+
+        for url in urls:
+            text = text.replace(url, 
+                "[" + url[:1] + "%%%" + url[2:] + 
+                "](" + url[:1] + "%%%" + url[2:] + ")", 1)
+
+        return text.replace("h%%%tp", "http")
+
+
+    def format_checkboxes(self, text):
+        md_text = text.replace(u"\u2610", '- [ ]') \
+            .replace(u"\u2611", ' - [x]')
+        return md_text
+
+    #this feels more like a file utility than a markdown utility
+    def format_title(self, title):
+        title = re.sub(
+            '[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', 
+            ' ', 
+            title[0:MAX_FILENAME_LENGTH]
+        ) 
+        return title
 
 
 def keep_init():
@@ -243,7 +229,8 @@ def keep_download_blob(blob_url, blob_name, blob_path):
             os.remove(data_file)
 
         media_name = media_name.replace(" ", "%20")
-        mediapath = load_config().get("media_path").rstrip("/") + "/"
+        mediapath = Config().get("media_path").rstrip("/") + "/"
+        #mediapath = load_config().get("media_path").rstrip("/") + "/"
         return ("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
     except:
         print("Error in keep_download_blob()")
@@ -273,8 +260,10 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
 
         md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
-        outpath = load_config().get("output_path").rstrip("/")
-        mediapath = load_config().get("media_path").rstrip("/")
+        # TBD setup_folders()
+
+        outpath = Config().get("output_path").rstrip("/")
+        mediapath = Config().get("media_path").rstrip("/")
 
         if not os.path.exists(outpath):
             os.mkdir(outpath)
@@ -313,10 +302,10 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
         print(note_date + "\r\n")
 
         f = open(md_file, "w+", encoding='utf-8', errors="ignore")
-        #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
-        f.write(url_to_md(md_text) + "\n")
+        f.write(Markdown().convert_urls(md_text) + "\n")
         f.write("\n" + note_labels + "\n\n")
-        f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
+        f.write("Created: " + str((gnote.timestamps.created).strftime("%Y-%m-%d %H:%M:%S")) + 
+            "   ---   Updated: " + str((gnote.timestamps.updated).strftime("%Y-%m-%d %H:%M:%S")) + "\n\n")
         f.write("[" + KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
         f.close
         return (1)
@@ -337,6 +326,9 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                 gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
             else:
                 gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
+                #for gnote in gnotes:
+                #    n = Note(gnote.title)
+                #    notes.append(n)
 
         for gnote in gnotes:
             note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":", "").replace(".", "-"))
@@ -387,11 +379,10 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
 #--------------------- UI / CLI ------------------------------
 
 
-def ui_login(keepapi, defaults, keyring_reset, master_token):
+def ui_login(keepapi, keyring_reset, master_token):
 
     try:
-
-        userid = defaults.get("google_userid").strip().lower()
+        userid = Config().get("google_userid").strip().lower()
 
         if userid == USERID_EMPTY:
             userid = click.prompt('Enter your Google account username', type=str)
@@ -454,12 +445,12 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
 
 def ui_welcome_config():
     try:
-        defaults = load_config()
-        mp = defaults.get("media_path")
+        mp = Config().get("media_path")
+
         if ((":" in mp) or (mp[0] == '/')):
             raise ValueError("Media path: '" + mp + "' within your config file - " + CONFIG_FILE +
                              " - must be relative to the output path and cannot start with / or a drive-mount")
-        return defaults
+        #return defaults
     except Exception as e:
         print("\r\nConfiguration file error - " + CONFIG_FILE + " - " + repr(e) + " ")
         raise
@@ -486,7 +477,9 @@ def main(r, o, a, p, s, c, search_term, master_token):
 
         kapi = keep_init()
 
-        ui_login(kapi, ui_welcome_config(), r, master_token)
+        ui_welcome_config()
+
+        ui_login(kapi, r, master_token)
 
         ui_query(kapi, search_term, o, a, p, s, c)
 
