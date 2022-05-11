@@ -1,3 +1,5 @@
+## NOTE: Kim is in full refactoring for version 0.50!!
+
 #### Pull Request Branch
 All contributions should submit pull requests to the **develop** branch of this repo
 

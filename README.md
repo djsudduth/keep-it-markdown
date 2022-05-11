@@ -46,7 +46,7 @@ Run the script again
 > python keep-test.py
 ```
 If you entered your Google account id and password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!"
-**If this step keeps failing see 'Key Callouts' #10 below.**
+**If this step keeps failing see 'Key Callouts' #10 below or Issue #37 -> https://github.com/djsudduth/keep-it-markdown/issues/37**
 
 
 ## Usage
@@ -65,7 +65,7 @@ Entering a query term and pressing Enter will execute your first export of a not
 
 For the first test, use a keyword query that returns and converts only a few notes at most (you can do the search in Keep first to see how many notes will be returned by your query/convert term).
 
-You can convert to md by using a single word, a phrase or by a label. All queries to convert ignore notes in archive and trash. KIM will stay active to do more conversions until you just press --x or Ctrl-C.
+You can convert to md by using a single word, a phrase or by a label. **All queries to convert ignore notes in archive and trash unless you use the option flags below**. KIM will stay active to do more conversions until you just press --x or Ctrl-C.
 
 ### Using Settings
 At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
@@ -151,7 +151,10 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
 ## Notion Use
-KIM markdown text exports seem to import into Notion successfully. However, Notion fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags which are searchable.
+KIM markdown note exports seem to import into Notion successfully. However, Notion fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
+
+## Joplin Use
+KIM markdown note exports also import very well into Joplin. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks and tags are not supported in Joplin's manual markdown import so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports other than AAC audio support.
@@ -172,3 +175,6 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
+## Recent Changes
+Code cleanup  
+Removed microseconds from note create and update dates  
