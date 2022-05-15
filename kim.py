@@ -14,7 +14,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import namedtuple
 
-KEEP_CACHE = 'kdata.json'
+
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
@@ -29,8 +29,8 @@ TECH_ERR = " Technical Error Message: "
 CONFIG_FILE_MESSAGE = ("Your " + CONFIG_FILE + " file contains to the following [" 
                         + DEFAULT_SECTION + "] values. Be sure to edit it with "
                         " your information.")
-MALFORMED_CONFIG_FILE = ("The " + CONFIG_FILE + " default settings file exists "
-                        "but has a malformed header - header should be [SETTINGS]")
+MALFORMED_CONFIG_FILE = ("The " + CONFIG_FILE + " default settings file exists but "
+                        "has a malformed header - header should be [" + DEFAULT_SECTION + "]")
 UNKNOWNN_CONFIG_FILE = ("There is an unknown configuration file issue - " 
                         + CONFIG_FILE + " or file system may be locked or "
                         "corrupted. Try deleting the file and recreating it.")
@@ -51,11 +51,21 @@ default_settings = {
     'media_path': MEDIADEFAULTPATH,
 }
 
-media_downloaded = False
 
 name_list = []
 keep_name_list = []
 notes = []
+
+
+@dataclass
+class Note:
+    id: str
+    title: str
+    text: str
+    timestamps: dict
+    labels: list
+    blobs: list
+
 
 
 class ConfigurationException(Exception):
@@ -119,7 +129,6 @@ class Markdown:
 
     #Note that the use of temporary %%% is because notes 
     #   can have the same URL repeated and replace would fail
-
     def convert_urls(self, text):
         # pylint: disable=anomalous-backslash-in-string
         urls = re.findall(
@@ -149,6 +158,7 @@ class Markdown:
             title[0:MAX_FILENAME_LENGTH]
         ) 
         return title
+
 
 
 def keep_init():
@@ -230,7 +240,6 @@ def keep_download_blob(blob_url, blob_name, blob_path):
 
         media_name = media_name.replace(" ", "%20")
         mediapath = Config().get("media_path").rstrip("/") + "/"
-        #mediapath = load_config().get("media_path").rstrip("/") + "/"
         return ("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
     except:
         print("Error in keep_download_blob()")
@@ -254,11 +263,11 @@ def keep_md_exists(md_file, outpath, note_title, note_date):
     return (note_title)
 
 
-def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
+def keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing):
 
     try:
 
-        md_text = gnote.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
+        md_text = note.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
         # TBD setup_folders()
 
@@ -272,41 +281,41 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
         if not os.path.exists(mediapath):
             os.mkdir(mediapath)
 
-        gnote.title = keep_note_name(gnote.title, note_date)
-        keep_name_list.append(gnote.title)
+        note.title = keep_note_name(note.title, note_date)
+        keep_name_list.append(note.title)
 
-        md_file = Path(outpath, gnote.title + ".md")
+        md_file = Path(outpath, note.title + ".md")
         if not overwrite:
             if md_file.exists():
                 if skip_existing:
                     return (0)
                 else:
-                    gnote.title = keep_md_exists(md_file, outpath, gnote.title, note_date)
-                    md_file = Path(outpath, gnote.title + ".md")
+                    note.title = keep_md_exists(md_file, outpath, note.title, note_date)
+                    md_file = Path(outpath, note.title + ".md")
 
-        for idx, blob in enumerate(gnote.blobs):
+        for idx, blob in enumerate(note.blobs):
             try:
-                image_url = keepapi.getMediaLink(blob)
+                image_url = blob  
             except AttributeError as e:
                 if "'NoneType' object has no attribute 'type'" in str(e):
-                    print(f"continuing, despite note {gnote.title} raising:", repr(e))
+                    print(f"continuing, despite note {note.title} raising:", repr(e))
                     continue
                 raise e
             #print (image_url)
-            image_name = gnote.title + str(idx)
+            image_name = note.title + str(idx)
             blob_file = keep_download_blob(image_url, image_name, mediapath)
             md_text = blob_file + "\n" + md_text
 
-        print(gnote.title)
+        print(note.title)
         print(note_labels)
         print(note_date + "\r\n")
 
         f = open(md_file, "w+", encoding='utf-8', errors="ignore")
         f.write(Markdown().convert_urls(md_text) + "\n")
         f.write("\n" + note_labels + "\n\n")
-        f.write("Created: " + str((gnote.timestamps.created).strftime("%Y-%m-%d %H:%M:%S")) + 
-            "   ---   Updated: " + str((gnote.timestamps.updated).strftime("%Y-%m-%d %H:%M:%S")) + "\n\n")
-        f.write("[" + KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
+        f.write("Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + 
+            "   ---   Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n")
+        f.write("[" + KEEP_NOTE_URL + str(note.id) + "](" + KEEP_NOTE_URL + str(note.id) + ")\n\n")
         f.close
         return (1)
     except Exception as e:
@@ -326,24 +335,35 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                 gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
             else:
                 gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
-                #for gnote in gnotes:
-                #    n = Note(gnote.title)
-                #    notes.append(n)
+               
+        notes = []
 
         for gnote in gnotes:
-            note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":", "").replace(".", "-"))
+            notes.append(
+                Note(
+                    gnote.id, 
+                    gnote.title, 
+                    gnote.text, 
+                    {"created": str(gnote.timestamps.created), 
+                        "updated": str(gnote.timestamps.updated)},
+                    [str(label) for label in gnote.labels.all()],
+                    [keepapi.getMediaLink(blob) for blob in gnote.blobs]
+                    )
+            )
+ 
+        for note in notes:
+            note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
 
-            if gnote.title == '':
+            if note.title == '':
                 if text_for_title:
-                    gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', gnote.text[0:50])  #.replace(' ',''))
+                    note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
                 else:
-                    gnote.title = note_date
+                    note.title = note_date
 
-            gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99])  #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
+            note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', note.title[0:99])  #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
             #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
 
-            note_label_list = gnote.labels
-            labels = note_label_list.all()
+            labels = note.labels
             note_labels = ""
             if preserve_labels:
                 for label in labels:
@@ -355,12 +375,12 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
 
             if archive_only:
                 if gnote.archived and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+                    ccnt = keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
             else:
                 if gnote.archived == False and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing)
+                    ccnt = keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
 
