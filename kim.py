@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+from xmlrpc.client import boolean
 import gkeepapi
 import keyring
 import getpass
@@ -23,6 +24,7 @@ USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
 MEDIADEFAULTPATH = "media"
 MAX_FILENAME_LENGTH = 99
+MISSING = 'null value'
 
 TECH_ERR = " Technical Error Message: "
 
@@ -62,14 +64,16 @@ class Note:
     id: str
     title: str
     text: str
+    archived: boolean
+    trashed: boolean
     timestamps: dict
     labels: list
     blobs: list
 
 
 
-class ConfigurationException(Exception):
 
+class ConfigurationException(Exception):
     def __init__(self, msg):
         self.msg = msg
 
@@ -78,7 +82,6 @@ class ConfigurationException(Exception):
 
 
 class Config:
-
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config, cls).__new__(cls)
@@ -121,7 +124,6 @@ class Config:
 
 
 class Markdown:
-
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Markdown, cls).__new__(cls)
@@ -161,46 +163,91 @@ class Markdown:
 
 
 
-def keep_init():
-    keepapi = gkeepapi.Keep()
-    return keepapi
+class SecureStorage:
+    def __init__(self, userid, keyring_reset, master_token):
+        self._userid = userid
+        if keyring_reset:
+            self._clear_keyring()
+        if master_token:
+            self.set_keyring(master_token)
+
+    def get_keyring(self):
+        self._keep_token = keyring.get_password(
+            KEEP_KEYRING_ID, self._userid)
+        return self._keep_token
+
+    def set_keyring(self, keeptoken):
+        keyring.set_password(
+            KEEP_KEYRING_ID, self._userid, keeptoken)
+
+    def _clear_keyring(self):
+        try:
+            keyring.delete_password(
+                KEEP_KEYRING_ID, self._userid)
+        except:
+            return None
+        else:
+            return True
 
 
-def keep_token(keepapi, userid):
-    keep_token = keyring.get_password(KEEP_KEYRING_ID, userid)
-    return keep_token
+class KeepService:
+    def __init__(self, userid):
+        self._keepapi = gkeepapi.Keep()
+        self._userid = userid
 
 
-def keep_clear_keyring(keepapi, userid):
-    try:
-        keyring.delete_password(KEEP_KEYRING_ID, userid)
-    except:
-        return None
-    else:
-        return True
+    def set_token(self, keyring_reset, master_token):
+        self._securestorage = SecureStorage(
+            self._userid, keyring_reset, master_token)
+        if master_token:
+            self._keep_token = master_token
+        else:
+            self._keep_token = self._securestorage.get_keyring()
+        return self._keep_token
+
+    def set_user(self, userid):
+        self._userid = userid
 
 
-def keep_login(keepapi, userid, pw, keyring_reset):
-    try:
-        keepapi.login(userid, pw)
-    except:
-        return None
-    else:
-        keep_token = keepapi.getMasterToken()
-        if keyring_reset == False:
-            keyring.set_password(KEEP_KEYRING_ID, userid, keep_token)
-        return keep_token
+    def login(self, pw, keyring_reset):
+
+        #self._userid = userid
+        try:
+            self._keepapi.login(self._userid, pw)
+        except:
+            return None
+        else:
+            self._keep_token = self._keepapi.getMasterToken()
+            if keyring_reset == False:
+                self._securestorage.set_keyring(self._keep_token)
+            return self._keep_token
 
 
-def keep_resume(keepapi, keeptoken, userid):
-    keepapi.resume(userid, keeptoken)
+    def resume(self):
+        self._keepapi.resume(self._userid, self._keep_token)
+
+    def getnotes(self):
+        return(self._keepapi.all())
+
+    def findnotes(self, kquery, labels, archive_only):
+        if labels:
+            return(self._keepapi.find(labels=[self._keepapi.findLabel(kquery[1:])], 
+                archived=archive_only, trashed=False))
+        else:
+            return(self._keepapi.find(query=kquery, 
+                archived=archive_only, trashed=False))
 
 
-def keep_save_token(keeptoken, userid):
-    keyring.set_password(KEEP_KEYRING_ID, userid, keeptoken)
+    def getmedia(self, blob):
+        try:
+            link = self._keepapi.getMediaLink(blob)
+            return(link)
+        except Exception as e:
+            return(None)
 
 
-def keep_download_blob(blob_url, blob_name, blob_path):
+
+def download_blob(blob_url, blob_name, blob_path):
 
     try:
 
@@ -242,7 +289,7 @@ def keep_download_blob(blob_url, blob_name, blob_path):
         mediapath = Config().get("media_path").rstrip("/") + "/"
         return ("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
     except:
-        print("Error in keep_download_blob()")
+        print("Error in download_blob()")
         raise
 
 
@@ -253,7 +300,7 @@ def keep_note_name(note_title, note_date):
     return (note_title)
 
 
-def keep_md_exists(md_file, outpath, note_title, note_date):
+def md_exists(md_file, outpath, note_title, note_date):
     #md_file = Path(outpath, note_title + ".md")
     keep_name_list.remove(note_title)
     while md_file.exists():
@@ -263,7 +310,7 @@ def keep_md_exists(md_file, outpath, note_title, note_date):
     return (note_title)
 
 
-def keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing):
+def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
 
     try:
 
@@ -290,21 +337,22 @@ def keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_exi
                 if skip_existing:
                     return (0)
                 else:
-                    note.title = keep_md_exists(md_file, outpath, note.title, note_date)
+                    note.title = md_exists(md_file, outpath, note.title, note_date)
                     md_file = Path(outpath, note.title + ".md")
 
         for idx, blob in enumerate(note.blobs):
-            try:
-                image_url = blob  
-            except AttributeError as e:
-                if "'NoneType' object has no attribute 'type'" in str(e):
-                    print(f"continuing, despite note {note.title} raising:", repr(e))
-                    continue
-                raise e
-            #print (image_url)
-            image_name = note.title + str(idx)
-            blob_file = keep_download_blob(image_url, image_name, mediapath)
-            md_text = blob_file + "\n" + md_text
+            if blob != None:
+                try:
+                    image_url = blob  
+                except AttributeError as e:
+                    if "'NoneType' object has no attribute 'type'" in str(e):
+                        print(f"continuing, despite note {note.title} raising:", repr(e))
+                        continue
+                    raise e
+                #print (image_url)
+                image_name = note.title + str(idx)
+                blob_file = download_blob(image_url, image_name, mediapath)
+                md_text = blob_file + "\n" + md_text
 
         print(note.title)
         print(note_labels)
@@ -322,19 +370,19 @@ def keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_exi
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
-def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     try:
         count = 0
         ccnt = 0
 
         if keepquery == "--all":
-            gnotes = keepapi.all()
+            gnotes = keep.getnotes()
         else:
             if keepquery[0] == "#":
-                gnotes = keepapi.find(labels=[keepapi.findLabel(keepquery[1:])], archived=archive_only, trashed=False)
+                gnotes = keep.findnotes(keepquery, True, archive_only)
             else:
-                gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
+                gnotes = keep.findnotes(keepquery, False, archive_only)
                
         notes = []
 
@@ -344,11 +392,13 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                     gnote.id, 
                     gnote.title, 
                     gnote.text, 
-                    {"created": str(gnote.timestamps.created), 
+                    gnote.archived,
+                    gnote.trashed,
+                   {"created": str(gnote.timestamps.created), 
                         "updated": str(gnote.timestamps.updated)},
                     [str(label) for label in gnote.labels.all()],
-                    [keepapi.getMediaLink(blob) for blob in gnote.blobs]
-                    )
+                    [keep.getmedia(blob) for blob in gnote.blobs]
+                   )
             )
  
         for note in notes:
@@ -374,13 +424,13 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
             if archive_only:
-                if gnote.archived and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing)
+                if note.archived and note.trashed == False:
+                    ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
             else:
-                if gnote.archived == False and gnote.trashed == False:
-                    ccnt = keep_save_md_file(keepapi, note, note_labels, note_date, overwrite, skip_existing)
+                if note.archived == False and note.trashed == False:
+                    ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
 
@@ -399,7 +449,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
 #--------------------- UI / CLI ------------------------------
 
 
-def ui_login(keepapi, keyring_reset, master_token):
+def ui_login(keyring_reset, master_token):
 
     try:
         userid = Config().get("google_userid").strip().lower()
@@ -409,20 +459,15 @@ def ui_login(keepapi, keyring_reset, master_token):
         else:
             print("Your Google account name in the " + CONFIG_FILE + " file is: " + userid + " -- Welcome!")
 
-        if keyring_reset:
-            print("Clearing keyring")
-            keep_clear_keyring(keepapi, userid)
+        #0.5.0 work
+        keep = KeepService(userid)
+        ktoken = keep.set_token(keyring_reset, master_token)
 
-        if master_token:
-            ktoken = master_token
-            keep_save_token(ktoken, userid)
-        else:
-            ktoken = keep_token(keepapi, userid)
         if ktoken == None:
             pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None)
             print("\r\n\r\nOne moment...")
 
-            ktoken = keep_login(keepapi, userid, pw, keyring_reset)
+            ktoken = keep.login(pw, keyring_reset)
             if ktoken:
                 if keyring_reset:
                     print("You've succesfully logged into Google Keep!")
@@ -434,19 +479,19 @@ def ui_login(keepapi, keyring_reset, master_token):
         else:
             print("You've succesfully logged into Google Keep using local keyring access token!")
 
-        keep_resume(keepapi, ktoken, userid)
-        return (ktoken)
+        keep.resume()
+        return keep
 
     except Exception as e:
         print("\r\nUsername or password is incorrect (" + repr(e) + ")")
         raise
 
 
-def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
 
     try:
         if search_term != None:
-            count = keep_query_convert(keepapi, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+            count = keep_query_convert(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
             print("\nTotal converted notes: " + str(count))
             return
         else:
@@ -454,7 +499,7 @@ def ui_query(keepapi, search_term, overwrite, archive_only, preserve_labels, ski
             while kquery:
                 kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
-                    count = keep_query_convert(keepapi, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+                    count = keep_query_convert(keep, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
                     print("\nTotal converted notes: " + str(count))
                 else:
                     return
@@ -495,13 +540,11 @@ def main(r, o, a, p, s, c, search_term, master_token):
             print("Overwrite and Skip flags are not compatible together -- please use one or the other...")
             exit()
 
-        kapi = keep_init()
-
         ui_welcome_config()
 
-        ui_login(kapi, r, master_token)
+        keep = ui_login(r, master_token)
 
-        ui_query(kapi, search_term, o, a, p, s, c)
+        ui_query(keep, search_term, o, a, p, s, c)
 
     except:
         print("Could not excute KIM")

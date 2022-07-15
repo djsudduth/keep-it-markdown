@@ -12,6 +12,7 @@ class KeepLoginException(Exception):
         return self.msg
 
 def keep_init():
+    gkeepapi.node.DEBUG = True
     keepapi = gkeepapi.Keep()
     return keepapi
 

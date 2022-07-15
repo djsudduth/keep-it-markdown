@@ -6,7 +6,7 @@ Keep-it-markdown or KIM converts Google Keep notes to markdown using the unoffic
 The overall goal is to utilize Google Keep as an easy way to capture raw notes on all devices or additionally using the browser plugin. Then, notes can be queried for export to markdown files directly into notetaking apps such as Obsidian and/or Notion, or used directly with Typora. 
 
 ## Installation
-Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that requires Python 3.7 or greater and utilizes the unofficial gkeepapi.
+Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.8 or greater** and utilizes the unofficial gkeepapi.
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
@@ -46,7 +46,7 @@ Run the script again
 > python keep-test.py
 ```
 If you entered your Google account id and password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!"
-**If this step keeps failing see 'Key Callouts' #10 below or Issue #37 -> https://github.com/djsudduth/keep-it-markdown/issues/37**
+**If this step keeps failing see 'Key Callouts' #10 below or Issue #42** -> https://github.com/djsudduth/keep-it-markdown/issues/42 
 
 
 ## Usage
@@ -143,7 +143,7 @@ Note: skip -s and overwrite -o cannot be used at the same time.
 7. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 8. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
 9. Keep uses AAC files for audio recordings. Most notes apps like Obsidian do not support AAC format. If you need markdown audio support you will have to manually convert the AAC files to MP3 and alter the markdown accordingly.
-10. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
+10. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac system and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
@@ -169,7 +169,7 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 - [ ] Roam imports  
 - [ ] Docker version  
 - [x] Add overwrite flag to replace notes
-- [ ] Clean-up code from MVP
+- [x] Clean-up code from MVP
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
@@ -178,3 +178,4 @@ There's always room for improvement. Feel free to add issues to the issues list.
 ## Recent Changes
 Code cleanup  
 Removed microseconds from note create and update dates  
+Fixed null image crashing
