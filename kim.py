@@ -244,10 +244,18 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
   
       f=open(md_file,"w+", encoding='utf-8', errors="ignore")
       #f.write(url_to_md(url_to_md(note_text, "http://"), "https://") + "\n")
+      f.write("---\n")
+      f.write("Created: " + str(gnote.timestamps.created.strftime("%Y-%m-%d")) + "\n")
+
+      # The Google API fills updated field with the datetime of data-fetching.
+      # So we can't fill in updated metadata at the moment.
+
+      if note_labels:
+        f.write("Tags:" + note_labels + "\n")
+        
+      f.write("---\n\n")
       f.write(url_to_md(md_text) + "\n")
-      f.write("\n" + note_labels + "\n\n")
-      f.write("Created: " + str(gnote.timestamps.created) + "      Updated: " + str(gnote.timestamps.updated) + "\n\n")
-      f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
+      #f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
       f.close
       return(1)
     except Exception as e:
