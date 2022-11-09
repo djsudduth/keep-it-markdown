@@ -212,7 +212,7 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
-      gnote.title = keep_note_name(gnote.title, note_date)
+      gnote.title = keep_note_name(gnote.title, note_date).rstrip()
       keep_name_list.append(gnote.title)
 
       md_file = Path(outpath, gnote.title + ".md")
