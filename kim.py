@@ -178,21 +178,21 @@ def keep_download_blob(blob_url, blob_name, blob_path):
     raise
  
 
-def keep_note_name(note_title, note_date):
-    if note_title in keep_name_list:
-      note_title = note_title + note_date
-      note_title = keep_note_name(note_title, note_date)
-    return(note_title)
+def keep_note_name(note_title, count):
+    count += 1
+    new_note_title = note_title + " " + str(count)
+    if new_note_title in keep_name_list:
+      new_note_title = keep_note_name(note_title, count)
+    return(new_note_title)
 
 
-def keep_md_exists(md_file, outpath, note_title, note_date):
-    #md_file = Path(outpath, note_title + ".md")
-    keep_name_list.remove(note_title)
+def keep_md_exists(md_file, outpath, filename):
+    keep_name_list.remove(filename)
     while md_file.exists():
-      note_title = keep_note_name(note_title, note_date)
-      keep_name_list.append(note_title)
-      md_file = Path(outpath, note_title + ".md")
-    return(note_title)
+      filename = keep_note_name(filename, 1)
+      keep_name_list.append(filename)
+      md_file = Path(outpath, filename + ".md")
+    return(filename)
 
 
 def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_existing):
@@ -212,17 +212,20 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
       if not os.path.exists(mediapath):
           os.mkdir(mediapath)
 
-      gnote.title = keep_note_name(gnote.title, note_date).rstrip()
-      keep_name_list.append(gnote.title)
+      gnote.title = gnote.title.rstrip()
 
-      md_file = Path(outpath, gnote.title + ".md")
-      if not overwrite:
-          if md_file.exists():
-            if skip_existing:
-              return(0)
-            else:
-              gnote.title = keep_md_exists(md_file, outpath, gnote.title, note_date)
-              md_file = Path(outpath, gnote.title + ".md")
+      filename = note_date
+      if gnote.title:
+        filename += " " + re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99])
+
+      keep_name_list.append(filename)
+      md_file = Path(outpath, filename + ".md")
+      if md_file.exists():
+        if skip_existing:
+          return(0)
+        else:
+          filename_counted = keep_md_exists(md_file, outpath, filename)
+          md_file = Path(outpath, filename_counted + ".md")
 
       for idx, blob in enumerate(gnote.blobs):
         try:
@@ -254,6 +257,10 @@ def keep_save_md_file(keepapi, gnote, note_labels, note_date, overwrite, skip_ex
         f.write("Tags:" + note_labels + "\n")
         
       f.write("---\n\n")
+
+      if gnote.title:
+        f.write("# " + gnote.title + "\n\n")
+
       f.write(url_to_md(md_text) + "\n")
       #f.write("["+ KEEP_NOTE_URL + str(gnote.id) + "](" + KEEP_NOTE_URL + str(gnote.id) + ")\n\n")
       f.close
@@ -278,18 +285,7 @@ def keep_query_convert(keepapi, keepquery, overwrite, archive_only, preserve_lab
           gnotes = keepapi.find(query=keepquery, archived=archive_only, trashed=False)
 
       for gnote in gnotes:
-        note_date = re.sub('[^A-z0-9-]', ' ', str(gnote.timestamps.created).replace(":","").replace(".", "-"))
-        
-        if gnote.title == '':
-          if text_for_title:
-            gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', gnote.text[0:50]) #.replace(' ',''))
-          else:
-            gnote.title = note_date
-
-
-        gnote.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', gnote.title[0:99]) #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99] 
-        #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
-  
+        note_date = gnote.timestamps.created.strftime("%Y-%m-%d")
         note_label_list = gnote.labels 
         labels = note_label_list.all()
         note_labels = ""
