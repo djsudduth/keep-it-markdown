@@ -81,12 +81,18 @@ class ConfigurationException(Exception):
         return self.msg
 
 
+# This is a static class instance - not really necessary but saves a tiny bit of memory 
+# Very useful for single connections and loading config files once
 class Config:
+
+    _config = configparser.ConfigParser()
+    _configdict = {}
+
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config, cls).__new__(cls)
-            cls.instance._config = configparser.ConfigParser()
-            cls.instance._configdict = {}
+            #cls.instance._config = configparser.ConfigParser()
+            #cls.instance._configdict = {}
             cls.instance.__read()
             cls.instance.__load()
         return cls.instance
@@ -124,14 +130,10 @@ class Config:
 
 
 class Markdown:
-    def __new__(cls):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(Markdown, cls).__new__(cls)
-        return cls.instance
-
     #Note that the use of temporary %%% is because notes 
     #   can have the same URL repeated and replace would fail
-    def convert_urls(self, text):
+    @staticmethod
+    def convert_urls(text):
         # pylint: disable=anomalous-backslash-in-string
         urls = re.findall(
             "http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
@@ -146,20 +148,27 @@ class Markdown:
 
         return text.replace("h%%%tp", "http")
 
-
-    def format_checkboxes(self, text):
+    @staticmethod
+    def format_checkboxes(text):
         md_text = text.replace(u"\u2610", '- [ ]') \
             .replace(u"\u2611", ' - [x]')
         return md_text
 
     #this feels more like a file utility than a markdown utility
-    def format_title(self, title):
+    @staticmethod
+    def format_title(title):
         title = re.sub(
             '[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', 
             ' ', 
             title[0:MAX_FILENAME_LENGTH]
         ) 
         return title
+
+    @staticmethod
+    def format_check_boxes(text):
+        return(text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]'))
+
+
 
 
 
@@ -188,6 +197,8 @@ class SecureStorage:
             return None
         else:
             return True
+
+
 
 
 class KeepService:
@@ -247,6 +258,81 @@ class KeepService:
 
 
 
+
+class FileService:
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(FileService, cls).__new__(cls)
+            cls.instance._namelist = []
+        return cls.instance
+
+    def create_path(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+    def clear_name_list(self):
+        self._namelist.clear()
+
+    def check_duplicate_name(self, note_title, note_date):
+        if note_title in self._namelist:
+            note_title = note_title + note_date
+            note_title = self.check_duplicate_name(note_title, note_date)
+        self._namelist.append(note_title)
+        return (note_title)
+
+    def check_file_exists(self, md_file, outpath, note_title, note_date):
+        #md_file = Path(outpath, note_title + ".md")
+        self._namelist.remove(note_title)
+        while md_file.exists():
+            note_title = self.check_duplicate_name(note_title, note_date)
+            self._namelist.append(note_title)
+            md_file = Path(outpath, note_title + ".md")
+        return (note_title)
+
+    def write_file(self, file_name, data):
+        f = open(file_name, "w+", encoding='utf-8', errors="ignore")
+        f.write(data)
+        f.close
+
+
+    def download_file(self, file_url, file_name, file_path):
+        try:
+            data_file = file_name + ".dat"  #generic dat for now
+
+            r = requests.get(file_url)
+            if r.status_code == 200:
+                with open(data_file, 'wb') as f:
+                    f.write(r.content)
+    
+            else:
+                media_name = data_file
+                blob_final_path = "Media could not be retrieved"
+
+        except:
+            print("Error in download_file()")
+            raise
+
+    def set_file_extensions(self, data_file, file_name, file_path):
+        dest_path = file_path + "/" + file_name
+        if imghdr.what(data_file) == 'png':
+            media_name = file_name + ".png"
+            blob_final_path = dest_path + ".png"
+        elif imghdr.what(data_file) == 'jpeg':
+            media_name = file_name + ".jpg"
+            blob_final_path = dest_path + ".jpg"
+        elif imghdr.what(data_file) == 'gif':
+            media_name = file_name + ".gif"
+            blob_final_path = dest_path + ".gif"
+        elif imghdr.what(data_file) == 'webp':
+            media_name = file_name + ".webp"
+            blob_final_path = dest_path + ".webp"
+        else:
+            extension = ".aac"
+            media_name = file_name + extension
+            blob_final_path = dest_path + extension
+        return
+
+
 def download_blob(blob_url, blob_name, blob_path):
 
     try:
@@ -293,43 +379,20 @@ def download_blob(blob_url, blob_name, blob_path):
         raise
 
 
-def keep_note_name(note_title, note_date):
-    if note_title in keep_name_list:
-        note_title = note_title + note_date
-        note_title = keep_note_name(note_title, note_date)
-    return (note_title)
-
-
-def md_exists(md_file, outpath, note_title, note_date):
-    #md_file = Path(outpath, note_title + ".md")
-    keep_name_list.remove(note_title)
-    while md_file.exists():
-        note_title = keep_note_name(note_title, note_date)
-        keep_name_list.append(note_title)
-        md_file = Path(outpath, note_title + ".md")
-    return (note_title)
-
 
 def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
 
     try:
 
-        md_text = note.text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
+        md_text = note.text #.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
 
         # TBD setup_folders()
-
         outpath = Config().get("output_path").rstrip("/")
-        mediapath = Config().get("media_path").rstrip("/")
+        mediapath = outpath + "/" + Config().get("media_path").rstrip("/") + "/"
 
-        if not os.path.exists(outpath):
-            os.mkdir(outpath)
-
-        mediapath = outpath + "/" + mediapath + "/"
-        if not os.path.exists(mediapath):
-            os.mkdir(mediapath)
-
-        note.title = keep_note_name(note.title, note_date)
-        keep_name_list.append(note.title)
+        FileService().create_path(outpath)
+        FileService().create_path(mediapath)
+        note.title = FileService().check_duplicate_name(note.title, note_date)
 
         md_file = Path(outpath, note.title + ".md")
         if not overwrite:
@@ -337,7 +400,7 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
                 if skip_existing:
                     return (0)
                 else:
-                    note.title = md_exists(md_file, outpath, note.title, note_date)
+                    note.title = FileService().check_file_exists(md_file, outpath, note.title, note_date)
                     md_file = Path(outpath, note.title + ".md")
 
         for idx, blob in enumerate(note.blobs):
@@ -358,13 +421,12 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         print(note_labels)
         print(note_date + "\r\n")
 
-        f = open(md_file, "w+", encoding='utf-8', errors="ignore")
-        f.write(Markdown().convert_urls(md_text) + "\n")
-        f.write("\n" + note_labels + "\n\n")
-        f.write("Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + 
-            "   ---   Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n")
-        f.write("[" + KEEP_NOTE_URL + str(note.id) + "](" + KEEP_NOTE_URL + str(note.id) + ")\n\n")
-        f.close
+        markdown_data = Markdown().convert_urls(md_text) + "\n"
+        markdown_data += "\n" + note_labels + "\n\n"
+        markdown_data += "Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + \
+            "   ---   Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n"
+        markdown_data += "[" + KEEP_NOTE_URL + str(note.id) + "](" + KEEP_NOTE_URL + str(note.id) + ")\n\n"
+        FileService().write_file(md_file, markdown_data)
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
@@ -400,9 +462,13 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                     [keep.getmedia(blob) for blob in gnote.blobs]
                    )
             )
+ #       for note in notes:
+ #           if note.text.find('galaxy') >= 0:
+ #               a = 0
  
         for note in notes:
             note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
+            note.text = Markdown().format_check_boxes(note.text)
 
             if note.title == '':
                 if text_for_title:
@@ -438,7 +504,8 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
 
         name_list.clear()
         if overwrite or skip_existing:
-            keep_name_list.clear()
+            FileService().clear_name_list()
+            #keep_name_list.clear()
 
         return (count)
     except:
@@ -507,9 +574,29 @@ def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_e
         print("Conversion to markdown error - " + repr(e) + " ")
         raise
 
+class A:
+    v = 2 #this is a static value - you can set an instance if a = A(), a.v = 9 but A.v will remain 2
+
+    def __new__(cls):
+        print("inside new A")
+        return(super(A, cls).__new__(cls))
+
+    @classmethod
+    def vcalc(cls, myval):
+        return(cls.v + myval)
+
+    @staticmethod  #knows nothing about class A instance or its value
+    def scalc(myval):
+        return(A.v + myval)  #by referring to class A here - an inherited class will always get A.v
+
+class B(A):
+    v = 3 
+
+   
 
 def ui_welcome_config():
     try:
+
         mp = Config().get("media_path")
 
         if ((":" in mp) or (mp[0] == '/')):
@@ -548,6 +635,8 @@ def main(r, o, a, p, s, c, search_term, master_token):
 
     except:
         print("Could not excute KIM")
+    #except Exception as e:
+    #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
 #Version 0.4.3
