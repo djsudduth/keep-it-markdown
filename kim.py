@@ -69,6 +69,7 @@ class Note:
     timestamps: dict
     labels: list
     blobs: list
+    blob_names: list
 
 
 
@@ -168,8 +169,15 @@ class Markdown:
     def format_check_boxes(text):
         return(text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]'))
 
+    @staticmethod
+    def format_path(path, name):
+        path = path.replace(" ", "%20")
+        if name:
+            return ("![" + name + "](" + path + ")")
+        else:
+            return ("![" + path + "](" + path + ")")
 
-
+  
 
 
 class SecureStorage:
@@ -259,16 +267,13 @@ class KeepService:
 
 
 
-class FileService:
+class NameService:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(FileService, cls).__new__(cls)
+            cls.instance = super(NameService, cls).__new__(cls)
             cls.instance._namelist = []
         return cls.instance
 
-    def create_path(self, path):
-        if not os.path.exists(path):
-            os.mkdir(path)
 
     def clear_name_list(self):
         self._namelist.clear()
@@ -289,31 +294,48 @@ class FileService:
             md_file = Path(outpath, note_title + ".md")
         return (note_title)
 
+
+
+class FileService:
+
+    def create_path(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+
     def write_file(self, file_name, data):
-        f = open(file_name, "w+", encoding='utf-8', errors="ignore")
-        f.write(data)
-        f.close
+        try:
+            f = open(file_name, "w+", encoding='utf-8', errors="ignore")
+            f.write(data)
+            f.close
+        except Exception as e:
+            raise Exception("Error in write_file: " + " -- " + TECH_ERR + repr(e))
 
 
     def download_file(self, file_url, file_name, file_path):
         try:
-            data_file = file_name + ".dat"  #generic dat for now
+            data_file = file_path + file_name 
 
             r = requests.get(file_url)
             if r.status_code == 200:
                 with open(data_file, 'wb') as f:
                     f.write(r.content)
+                    f.close
+                return (data_file)
     
             else:
-                media_name = data_file
                 blob_final_path = "Media could not be retrieved"
+                return ("")
+
 
         except:
             print("Error in download_file()")
             raise
 
     def set_file_extensions(self, data_file, file_name, file_path):
-        dest_path = file_path + "/" + file_name
+
+        dest_path = file_path + file_name
+
         if imghdr.what(data_file) == 'png':
             media_name = file_name + ".png"
             blob_final_path = dest_path + ".png"
@@ -330,69 +352,30 @@ class FileService:
             extension = ".aac"
             media_name = file_name + extension
             blob_final_path = dest_path + extension
-        return
 
-
-def download_blob(blob_url, blob_name, blob_path):
-
-    try:
-
-        dest_path = blob_path + "/" + blob_name
-        data_file = blob_name + ".dat"
-
-        r = requests.get(blob_url)
-        if r.status_code == 200:
-
-            with open(data_file, 'wb') as f:
-                f.write(r.content)
-
-            if imghdr.what(data_file) == 'png':
-                media_name = blob_name + ".png"
-                blob_final_path = dest_path + ".png"
-            elif imghdr.what(data_file) == 'jpeg':
-                media_name = blob_name + ".jpg"
-                blob_final_path = dest_path + ".jpg"
-            elif imghdr.what(data_file) == 'gif':
-                media_name = blob_name + ".gif"
-                blob_final_path = dest_path + ".gif"
-            elif imghdr.what(data_file) == 'webp':
-                media_name = blob_name + ".webp"
-                blob_final_path = dest_path + ".webp"
-            else:
-                extension = ".aac"
-                media_name = blob_name + extension
-                blob_final_path = dest_path + extension
-
-            shutil.copyfile(data_file, blob_final_path)
-        else:
-            media_name = data_file
-            blob_final_path = "Media could not be retrieved"
+        shutil.copyfile(data_file, blob_final_path)
 
         if os.path.exists(data_file):
             os.remove(data_file)
 
-        media_name = media_name.replace(" ", "%20")
-        mediapath = Config().get("media_path").rstrip("/") + "/"
-        return ("![" + mediapath + media_name + "](" + mediapath + media_name + ")")
-    except:
-        print("Error in download_blob()")
-        raise
-
+        return (blob_final_path)
 
 
 def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
 
     try:
 
-        md_text = note.text #.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]')
+        fs = FileService()
+        md_text = Markdown().format_check_boxes(note.text)
+        #note_date = note.empty_title_name
 
         # TBD setup_folders()
         outpath = Config().get("output_path").rstrip("/")
         mediapath = outpath + "/" + Config().get("media_path").rstrip("/") + "/"
 
-        FileService().create_path(outpath)
-        FileService().create_path(mediapath)
-        note.title = FileService().check_duplicate_name(note.title, note_date)
+        fs.create_path(outpath)
+        fs.create_path(mediapath)
+        note.title = NameService().check_duplicate_name(note.title, note_date)
 
         md_file = Path(outpath, note.title + ".md")
         if not overwrite:
@@ -400,33 +383,37 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
                 if skip_existing:
                     return (0)
                 else:
-                    note.title = FileService().check_file_exists(md_file, outpath, note.title, note_date)
+                    note.title = NameService().check_file_exists(
+                            md_file, outpath, note.title, note_date)
                     md_file = Path(outpath, note.title + ".md")
 
         for idx, blob in enumerate(note.blobs):
-            if blob != None:
-                try:
-                    image_url = blob  
-                except AttributeError as e:
-                    if "'NoneType' object has no attribute 'type'" in str(e):
-                        print(f"continuing, despite note {note.title} raising:", repr(e))
-                        continue
-                    raise e
-                #print (image_url)
-                image_name = note.title + str(idx)
-                blob_file = download_blob(image_url, image_name, mediapath)
-                md_text = blob_file + "\n" + md_text
+            
+            try:
+                image_url = blob  
+            except AttributeError as e:
+                if "'NoneType' object has no attribute 'type'" in str(e):
+                    print(f"continuing, despite note {note.title} raising:", repr(e))
+                    continue
+                raise e
+            if image_url:
+                blob_file = fs.download_file(image_url, note.blob_names[idx] + ".dat", mediapath)
+                if blob_file:
+                    data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], mediapath)
+                    md_text = Markdown().format_path(data_file, "") + "\n" + md_text
 
         print(note.title)
         print(note_labels)
         print(note_date + "\r\n")
 
-        markdown_data = Markdown().convert_urls(md_text) + "\n"
-        markdown_data += "\n" + note_labels + "\n\n"
-        markdown_data += "Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + \
-            "   ---   Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n"
-        markdown_data += "[" + KEEP_NOTE_URL + str(note.id) + "](" + KEEP_NOTE_URL + str(note.id) + ")\n\n"
-        FileService().write_file(md_file, markdown_data)
+        markdown_data = (
+            Markdown().convert_urls(md_text) + "\n" + 
+            "\n" + note_labels + "\n\n" + 
+            "Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + "   ---   "
+            "Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n" + 
+            Markdown().format_path(KEEP_NOTE_URL + str(note.id), "") + "\n\n")
+
+        fs.write_file(md_file, markdown_data)
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
@@ -459,16 +446,13 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                    {"created": str(gnote.timestamps.created), 
                         "updated": str(gnote.timestamps.updated)},
                     [str(label) for label in gnote.labels.all()],
-                    [keep.getmedia(blob) for blob in gnote.blobs]
+                    [keep.getmedia(blob) for blob in gnote.blobs],
+                    ['' for blob in gnote.blobs]
                    )
             )
- #       for note in notes:
- #           if note.text.find('galaxy') >= 0:
- #               a = 0
  
         for note in notes:
             note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
-            note.text = Markdown().format_check_boxes(note.text)
 
             if note.title == '':
                 if text_for_title:
@@ -489,6 +473,11 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                     note_labels = note_labels + " #" + str(label).replace(' ', '-').replace('&', 'and')
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
+            for idx, blob in enumerate(note.blobs):
+                if blob != None:
+                    note.blob_names[idx] = note.title + str(idx)
+
+
             if archive_only:
                 if note.archived and note.trashed == False:
                     ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
@@ -504,8 +493,7 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
 
         name_list.clear()
         if overwrite or skip_existing:
-            FileService().clear_name_list()
-            #keep_name_list.clear()
+            NameService().clear_name_list()
 
         return (count)
     except:
@@ -574,23 +562,7 @@ def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_e
         print("Conversion to markdown error - " + repr(e) + " ")
         raise
 
-class A:
-    v = 2 #this is a static value - you can set an instance if a = A(), a.v = 9 but A.v will remain 2
 
-    def __new__(cls):
-        print("inside new A")
-        return(super(A, cls).__new__(cls))
-
-    @classmethod
-    def vcalc(cls, myval):
-        return(cls.v + myval)
-
-    @staticmethod  #knows nothing about class A instance or its value
-    def scalc(myval):
-        return(A.v + myval)  #by referring to class A here - an inherited class will always get A.v
-
-class B(A):
-    v = 3 
 
    
 
