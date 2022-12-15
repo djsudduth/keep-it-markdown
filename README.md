@@ -133,7 +133,7 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 Archive export can be combined with the -o and -b options. 
 
 #### Combinations
-Example: to export all achived notes, using content for blank note titles, with overwriting, logseq style paragraphs and preserving Keep label format in batch:
+Example: to export all achived notes, using content for blank note titles, with overwriting, preserving Keep label format and logseq style paragraphs in batch:
 ```bash
 > python kim.py -a -c -o -p -l -b --all
 ```
