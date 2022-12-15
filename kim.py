@@ -10,7 +10,6 @@ import shutil
 import re
 import configparser
 import click
-import time
 from os.path import join
 from pathlib import Path
 from datetime import datetime
@@ -46,7 +45,8 @@ KEYERR_CONFIG_FILE = ("Configuration key in " + CONFIG_FILE + " not found. "
 
 
 ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
-ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
+ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', \
+        ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
 
 default_settings = {
     'google_userid': USERID_EMPTY,
@@ -69,6 +69,7 @@ class Note:
     labels: list
     blobs: list
     blob_names: list
+    media: list
 
 
 
@@ -380,6 +381,11 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         md_text = Markdown().format_check_boxes(note.text)
         note.title = NameService().check_duplicate_name(note.title, note_date)
 
+        for media in note.media:
+            md_text = Markdown().format_path(Config().get("media_path") + 
+                "/" + media, "", True) + "\n" + md_text
+ 
+
         md_file = Path(fs.outpath(), note.title + ".md")
         if not overwrite:
             if md_file.exists():
@@ -394,6 +400,7 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         print(note_labels)
         print(note_date + "\r\n")
 
+
         markdown_data = (
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_labels + "\n\n" + 
@@ -407,7 +414,8 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
-def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style):
+
 
     try:
         count = 0
@@ -435,11 +443,13 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                         "updated": str(gnote.timestamps.updated)},
                     [str(label) for label in gnote.labels.all()],
                     [blob for blob in gnote.blobs],
-                    ['' for blob in gnote.blobs]
+                    ['' for blob in gnote.blobs], 
+                    []
                    )
             )
  
         for note in notes:
+
             note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
 
             if note.title == '':
@@ -453,15 +463,16 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
 
             fs = FileService()
             for idx, blob in enumerate(note.blobs):
+                note.blob_names[idx] = note.title + str(idx)
                 if blob != None:
-                    note.blob_names[idx] = note.title + str(idx)
                     url = keep.getmedia(blob)
                     if url:
                         blob_file = fs.download_file(url, note.blob_names[idx] + ".dat", fs.media_path())
                         if blob_file:
                             data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], fs.media_path())
-                            note.text = Markdown().format_path(Config().get("media_path") + 
-                                "/" + data_file, "", True) + "\n" + note.text
+                            note.media.append(data_file)
+                            #note.text = Markdown().format_path(Config().get("media_path") + 
+                            #    "/" + data_file, "", True) + "\n" + note.text
                         else:
                             print ("Download of Keep media failed...")
 
@@ -476,6 +487,9 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
  
+            if logseq_style:
+                #Logseq test
+                note.text = "- " + note.text.replace("\n\n", "\n- ")
 
             if archive_only:
                 if note.archived and note.trashed == False:
@@ -540,11 +554,11 @@ def ui_login(keyring_reset, master_token):
         raise
 
 
-def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title):
+def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style):
 
     try:
         if search_term != None:
-            count = keep_query_convert(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+            count = keep_query_convert(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style)
             print("\nTotal converted notes: " + str(count))
             return
         else:
@@ -552,7 +566,7 @@ def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_e
             while kquery:
                 kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
-                    count = keep_query_convert(keep, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title)
+                    count = keep_query_convert(keep, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style)
                     print("\nTotal converted notes: " + str(count))
                 else:
                     return
@@ -592,9 +606,10 @@ def ui_welcome_config():
 @click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
+@click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, search_term, master_token):
+def main(r, o, a, p, s, c, l, search_term, master_token):
 
     try:
 
@@ -608,7 +623,7 @@ def main(r, o, a, p, s, c, search_term, master_token):
 
         keep = ui_login(r, master_token)
 
-        ui_query(keep, search_term, o, a, p, s, c)
+        ui_query(keep, search_term, o, a, p, s, c, l)
 
     except:
         print("Could not excute KIM")
