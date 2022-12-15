@@ -102,6 +102,12 @@ If you want to skip or ignore notes that have already been exported then
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
+#### Logseq Style (Experimental!)
+Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
+```bash
+> python kim.py -l
+```
+
 #### Authentication Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
 
@@ -127,9 +133,9 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 Archive export can be combined with the -o and -b options. 
 
 #### Combinations
-Example: to export all achived notes, using content for blank note titles, with overwriting and preserving Keep label format in batch:
+Example: to export all achived notes, using content for blank note titles, with overwriting, logseq style paragraphs and preserving Keep label format in batch:
 ```bash
-> python kim.py -a -c -o -p -b --all
+> python kim.py -a -c -o -p -l -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time.
 
@@ -150,8 +156,11 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
+## Logseq Use
+Notes will import into Logseq - but to format them correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
+
 ## Notion Use
-KIM markdown note exports seem to import into Notion successfully. However, Notion fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
+KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
 KIM markdown note exports also import very well into Joplin. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks and tags are not supported in Joplin's manual markdown import so Keep labels will just be text hashtags within the note which are searchable.
