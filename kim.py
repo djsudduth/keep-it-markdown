@@ -129,6 +129,7 @@ class Config:
             raise ConfigurationException(KEYERR_CONFIG_FILE + key)
 
 
+#All conversions to markdown are static methods 
 class Markdown:
     #Note that the use of temporary %%% is because notes 
     #   can have the same URL repeated and replace would fail
@@ -414,6 +415,25 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
+def keep_get_blobs(keep, note):
+
+    fs = FileService()
+    for idx, blob in enumerate(note.blobs):
+        note.blob_names[idx] = note.title + str(idx)
+        if blob != None:
+            url = keep.getmedia(blob)
+            blob_file = None
+            if url:
+                blob_file = fs.download_file(url, note.blob_names[idx] + ".dat", fs.media_path()) 
+                if blob_file:
+                    data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], fs.media_path())
+                    note.media.append(data_file)
+                else:
+                    print ("Download of Keep media failed...")
+
+
+
+
 def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style):
 
 
@@ -461,21 +481,6 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
             note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', note.title[0:99])  #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
             #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
 
-            fs = FileService()
-            for idx, blob in enumerate(note.blobs):
-                note.blob_names[idx] = note.title + str(idx)
-                if blob != None:
-                    url = keep.getmedia(blob)
-                    if url:
-                        blob_file = fs.download_file(url, note.blob_names[idx] + ".dat", fs.media_path())
-                        if blob_file:
-                            data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], fs.media_path())
-                            note.media.append(data_file)
-                            #note.text = Markdown().format_path(Config().get("media_path") + 
-                            #    "/" + data_file, "", True) + "\n" + note.text
-                        else:
-                            print ("Download of Keep media failed...")
-
             labels = note.labels
             note_labels = ""
             if preserve_labels:
@@ -493,11 +498,13 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
 
             if archive_only:
                 if note.archived and note.trashed == False:
+                    keep_get_blobs(keep, note)
                     ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
             else:
                 if note.archived == False and note.trashed == False:
+                    keep_get_blobs(keep, note)
                     ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
                 else:
                     ccnt = 0
@@ -622,7 +629,7 @@ def main(r, o, a, p, s, c, l, search_term, master_token):
         ui_welcome_config()
 
         keep = ui_login(r, master_token)
-
+  
         ui_query(keep, search_term, o, a, p, s, c, l)
 
     except:

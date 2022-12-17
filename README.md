@@ -59,7 +59,7 @@ After logging in you should see:
 > Enter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit:
 ```
 
-Entering a query term and pressing Enter will execute your first export of a note or set of notes as individual markdown files.
+Entering a query term and pressing Enter will execute your first export of a note or set of notes as individual markdown files from your active note list.
 
 **NOTE: first time you execute, exported md files will be created in a default KIM sub-directory called 'mdfiles' within your install directory. Images are exported into 'media' within the default directory. This can be changed later**. 
 
