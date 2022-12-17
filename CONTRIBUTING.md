@@ -1,4 +1,4 @@
-## NOTE: Kim is in full refactoring for version 0.50!!
+## NOTE: Kim is in full refactoring for version 0.5.0!!
 What's happening? The kim structure is being modified for more generic output of notes.  
 You will be able to define Keep input and output classes for markdown, joplin, json, etc.  
 Please be aware the changes are fairly significant.

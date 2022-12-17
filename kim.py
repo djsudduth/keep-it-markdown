@@ -1,6 +1,4 @@
-from dataclasses import dataclass
 import os
-from xmlrpc.client import boolean
 import gkeepapi
 import keyring
 import getpass
@@ -12,8 +10,8 @@ import configparser
 import click
 from os.path import join
 from pathlib import Path
-from datetime import datetime
-from collections import namedtuple
+from dataclasses import dataclass
+from xmlrpc.client import boolean
 
 
 KEEP_KEYRING_ID = 'google-keep-token'
@@ -57,6 +55,14 @@ default_settings = {
 
 notes = []
 
+@dataclass
+class Options:
+    overwrite: boolean
+    archive_only: boolean
+    preserve_labels: boolean
+    skip_existing: boolean 
+    text_for_title: boolean
+    logseq_style: boolean
 
 @dataclass
 class Note:
@@ -373,7 +379,7 @@ class FileService:
 
 
 
-def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
+def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
 
     try:
 
@@ -398,13 +404,13 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
                     md_file = Path(fs.outpath(), note.title + ".md")
 
         print(note.title)
-        print(note_labels)
+        print(note_tags)
         print(note_date + "\r\n")
 
 
         markdown_data = (
             Markdown().convert_urls(md_text) + "\n" + 
-            "\n" + note_labels + "\n\n" + 
+            "\n" + note_tags + "\n\n" + 
             "Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + "   ---   "
             "Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n" + 
             Markdown().format_path(KEEP_NOTE_URL + str(note.id), "", False) + "\n\n")
@@ -413,6 +419,8 @@ def save_md_file(note, note_labels, note_date, overwrite, skip_existing):
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
+
+
 
 
 def keep_get_blobs(keep, note):
@@ -434,7 +442,7 @@ def keep_get_blobs(keep, note):
 
 
 
-def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style):
+def keep_query_convert(keep, keepquery, opts):
 
 
     try:
@@ -445,9 +453,9 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
             gnotes = keep.getnotes()
         else:
             if keepquery[0] == "#":
-                gnotes = keep.findnotes(keepquery, True, archive_only)
+                gnotes = keep.findnotes(keepquery, True, opts.archive_only)
             else:
-                gnotes = keep.findnotes(keepquery, False, archive_only)
+                gnotes = keep.findnotes(keepquery, False, opts.archive_only)
                
         notes = []
 
@@ -473,7 +481,7 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
             note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
 
             if note.title == '':
-                if text_for_title:
+                if opts.text_for_title:
                     note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
                 else:
                     note.title = note_date
@@ -483,7 +491,7 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
 
             labels = note.labels
             note_labels = ""
-            if preserve_labels:
+            if opts.preserve_labels:
                 for label in labels:
                     note_labels = note_labels + " #" + str(label)
             else:
@@ -492,26 +500,26 @@ def keep_query_convert(keep, keepquery, overwrite, archive_only, preserve_labels
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
  
-            if logseq_style:
+            if opts.logseq_style:
                 #Logseq test
                 note.text = "- " + note.text.replace("\n\n", "\n- ")
 
-            if archive_only:
+            if opts.archive_only:
                 if note.archived and note.trashed == False:
                     keep_get_blobs(keep, note)
-                    ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
+                    ccnt = save_md_file(note, note_labels, note_date, opts.overwrite, opts.skip_existing)
                 else:
                     ccnt = 0
             else:
                 if note.archived == False and note.trashed == False:
                     keep_get_blobs(keep, note)
-                    ccnt = save_md_file(note, note_labels, note_date, overwrite, skip_existing)
+                    ccnt = save_md_file(note, note_labels, note_date, opts.overwrite, opts.skip_existing)
                 else:
                     ccnt = 0
 
             count = count + ccnt
 
-        if overwrite or skip_existing:
+        if opts.overwrite or opts.skip_existing:
             NameService().clear_name_list()
 
         return (count)
@@ -561,11 +569,11 @@ def ui_login(keyring_reset, master_token):
         raise
 
 
-def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style):
+def ui_query(keep, search_term, opts):
 
     try:
         if search_term != None:
-            count = keep_query_convert(keep, search_term, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style)
+            count = keep_query_convert(keep, search_term, opts)
             print("\nTotal converted notes: " + str(count))
             return
         else:
@@ -573,7 +581,7 @@ def ui_query(keep, search_term, overwrite, archive_only, preserve_labels, skip_e
             while kquery:
                 kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
-                    count = keep_query_convert(keep, kquery, overwrite, archive_only, preserve_labels, skip_existing, text_for_title, logseq_style)
+                    count = keep_query_convert(keep, kquery, opts)
                     print("\nTotal converted notes: " + str(count))
                 else:
                     return
@@ -620,6 +628,8 @@ def main(r, o, a, p, s, c, l, search_term, master_token):
 
     try:
 
+        opts = Options(o, a, p, s, c, l)
+
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
         if o and s:
@@ -630,7 +640,7 @@ def main(r, o, a, p, s, c, l, search_term, master_token):
 
         keep = ui_login(r, master_token)
   
-        ui_query(keep, search_term, o, a, p, s, c, l)
+        ui_query(keep, search_term, opts)
 
     except:
         print("Could not excute KIM")
