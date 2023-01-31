@@ -63,6 +63,7 @@ class Options:
     skip_existing: boolean 
     text_for_title: boolean
     logseq_style: boolean
+    import_files: boolean
 
 @dataclass
 class Note:
@@ -224,6 +225,11 @@ class KeepService:
         self._keepapi = gkeepapi.Keep()
         self._userid = userid
 
+    def get_ref(self):
+        return(self._keepapi)
+
+    def keep_sync(self):
+        self._keepapi.sync()
 
     def set_token(self, keyring_reset, master_token):
         self._securestorage = SecureStorage(
@@ -266,6 +272,20 @@ class KeepService:
             return(self._keepapi.find(query=kquery, 
                 archived=archive_only, trashed=False))
 
+    def createnote(self, title, notetext):
+        self._note = self._keepapi.createNote(title, notetext)
+        return(None)
+
+
+    def setnotelabel(self, label):
+        try:
+            self._labelid = self._keepapi.findLabel(label)
+            self._note.labels.add(self._labelid)
+        except Exception as e:
+            print('Label doesn\'t exist! - label: ' +  label + "  Use pre-defined labels when importing")
+            raise
+
+
 
     def getmedia(self, blob):
         try:
@@ -273,6 +293,7 @@ class KeepService:
             return(link)
         except Exception as e:
             return(None)
+
 
 
 
@@ -315,6 +336,11 @@ class FileService:
     def outpath (self):
         outpath = Config().get("output_path").rstrip("/")
         return(outpath)
+
+    def inpath (self):
+        inpath = Config().get("input_path").rstrip("/") + "/"
+        return(inpath)
+
   
     def create_path(self, path):
         if not os.path.exists(path):
@@ -440,6 +466,23 @@ def keep_get_blobs(keep, note):
                     print ("Download of Keep media failed...")
 
 
+def keep_import_notes(keep):
+
+    try:
+        dir_path = FileService().inpath()
+        in_labels = Config().get("input_label").split(",")
+        for file in os.listdir(dir_path):
+            if os.path.isfile(dir_path + file) and file.endswith('.md'):
+                with open(dir_path + file, 'r') as md_file:
+                    data=md_file.read()
+                    print('Importing Keep note:', file.replace('.md', '') + " from " + file)
+                    keep.createnote(file.replace('.md', ''), data)
+                    for in_label in in_labels:
+                        keep.setnotelabel(in_label.strip())
+                    keep.keep_sync()
+    except Exception as e:
+        print('Error on note import:', str(e))
+
 
 
 def keep_query_convert(keep, keepquery, opts):
@@ -526,6 +569,7 @@ def keep_query_convert(keep, keepquery, opts):
     except:
         print("Error in keep_query_convert()")
         raise
+
 
 
 #--------------------- UI / CLI ------------------------------
@@ -622,13 +666,14 @@ def ui_welcome_config():
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
 @click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
+@click.option('-i', is_flag=True, help="Import notes from markdown files EXPERIMENTAL!!")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, l, search_term, master_token):
+def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
     try:
 
-        opts = Options(o, a, p, s, c, l)
+        opts = Options(o, a, p, s, c, l, i)
 
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
@@ -639,8 +684,12 @@ def main(r, o, a, p, s, c, l, search_term, master_token):
         ui_welcome_config()
 
         keep = ui_login(r, master_token)
-  
-        ui_query(keep, search_term, opts)
+
+        #i = True
+        if i:
+            keep_import_notes(keep)
+        else:
+            ui_query(keep, search_term, opts)
 
     except:
         print("Could not excute KIM")
