@@ -134,17 +134,15 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 ```
 Archive export can be combined with the -o and -b options. 
 
-#### Import Notes
-**EXPERIMENTAL!** KIM now supports importing markdown note files back into Keep using 
+#### Import Notes - EXPERIMENTAL
+KIM now supports importing markdown note files back into Keep using 
 ```bash
 > python kim.py -i
 ```
 There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. Only existing labels can be used and those must be setup in the **settings.cfg** file.
 
-To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:
-
+To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:  
 **input_path** = path to where the input md files are located. Windows users use forward slashes, e.g. -> c:/md-files/import  
-
 **input_labels** = a list of one or more comma delimited labels without the # leading character - e.g. -> computers, programming (this will tag all of the imported notes with both labels 'computers' and 'programming' within that import directory as long as you have those labels predefined within Keep already)
 
 NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!!
@@ -202,8 +200,8 @@ Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
 ## 0.5.0 Recent Changes
-Refactored code to be more extensible for different import and export options
-Added LogSeq switch to add bullets in exports to be more compatible
-Added simple note import to Keep option
-Removed microseconds from note create and update dates  
-Fixed null image crashing
+Refactored code to be more extensible for different import and export options  
+Added LogSeq switch to add bullets in exports to be more compatible  
+Added simple note import to Keep option  
+Removed microseconds from note create and update dates    
+Fixed null image crashing  
