@@ -1,6 +1,8 @@
 ## NOTE: Kim is in full refactoring for version 0.5.0!!
 What's happening? The kim structure is being modified for more generic output of notes.  
-You will be able to define Keep input and output classes for markdown, joplin, json, etc.  
+You will be able to define Keep input and output classes for markdown, joplin, json, etc. 
+For example, the routine save_md_file() is generic for any markdown output for any input type
+as long as the Note data object is populated.
 Please be aware the changes are fairly significant.
 
 #### Pull Request Branch
