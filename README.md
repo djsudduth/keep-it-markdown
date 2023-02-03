@@ -75,6 +75,8 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 
 **media_path** = location of the exported media files (images, audio) relative to your output_path. If the output_path is /mdexport and media_path is media/data, the media full path will be /mdexport/media/data. Media paths cannot start with /, mount or drive letter.
 
+(For import settings, see the -i switch below)
+
 ### Help and Options
 All KIM options can be discovered using
 ```bash
@@ -132,12 +134,25 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 ```
 Archive export can be combined with the -o and -b options. 
 
+#### Import Notes
+**EXPERIMENTAL!** KIM now supports importing markdown note files back into Keep using 
+```bash
+> python kim.py -i
+```
+There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. Only existing labels can be used and those must be setup in the **settings.cfg** file.
+
+To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:
+**input_path** = path to where the input md files are located. Windows users use forward slashes, e.g. -> c:/md-files/import  
+**input_labels** = a list of one or more comma delimited labels without the # leading character - e.g. -> computers, programming (this will tag all of the imported notes with both labels 'computers' and 'programming' within that import directory as long as you have those labels predefined within Keep already)
+
+NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!!
+
 #### Combinations
 Example: to export all achived notes, using content for blank note titles, with overwriting, preserving Keep label format and logseq style paragraphs in batch:
 ```bash
 > python kim.py -a -c -o -p -l -b --all
 ```
-Note: skip -s and overwrite -o cannot be used at the same time.
+Note: skip -s and overwrite -o cannot be used at the same time
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
@@ -184,7 +199,9 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
-## Recent Changes
-Code cleanup  
+## 0.5.0 Recent Changes
+Refactored code to be more extensible for different import and export options
+Added LogSeq switch to add bullets in exports to be more compatible
+Added simple note import to Keep option
 Removed microseconds from note create and update dates  
 Fixed null image crashing

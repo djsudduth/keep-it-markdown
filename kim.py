@@ -21,6 +21,8 @@ DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
 MEDIADEFAULTPATH = "media"
+INPUTDEFAULTPATH = "import/markdown_files"
+DEFAULTLABELS = "my_label"
 MAX_FILENAME_LENGTH = 99
 MISSING = 'null value'
 
@@ -50,6 +52,8 @@ default_settings = {
     'google_userid': USERID_EMPTY,
     'output_path': OUTPUTPATH,
     'media_path': MEDIADEFAULTPATH,
+    'import_path': INPUTDEFAULTPATH,
+    'import_labels': DEFAULTLABELS
 }
 
 
@@ -286,7 +290,6 @@ class KeepService:
             raise
 
 
-
     def getmedia(self, blob):
         try:
             link = self._keepapi.getMediaLink(blob)
@@ -370,7 +373,6 @@ class FileService:
                 blob_final_path = "Media could not be retrieved"
                 return ("")
 
-
         except:
             print("Error in download_file()")
             raise
@@ -447,6 +449,23 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
+def keep_import_notes(keep):
+
+    try:
+        dir_path = FileService().inpath()
+        in_labels = Config().get("input_labels").split(",")
+        for file in os.listdir(dir_path):
+            if os.path.isfile(dir_path + file) and file.endswith('.md'):
+                with open(dir_path + file, 'r') as md_file:
+                    data=md_file.read()
+                    print('Importing note:', file.replace('.md', '') + " from " + file)
+                    keep.createnote(file.replace('.md', ''), data)
+                    for in_label in in_labels:
+                        keep.setnotelabel(in_label.strip())
+                    keep.keep_sync()
+    except Exception as e:
+        print('Error on note import:', str(e))
+
 
 
 def keep_get_blobs(keep, note):
@@ -464,24 +483,6 @@ def keep_get_blobs(keep, note):
                     note.media.append(data_file)
                 else:
                     print ("Download of Keep media failed...")
-
-
-def keep_import_notes(keep):
-
-    try:
-        dir_path = FileService().inpath()
-        in_labels = Config().get("input_label").split(",")
-        for file in os.listdir(dir_path):
-            if os.path.isfile(dir_path + file) and file.endswith('.md'):
-                with open(dir_path + file, 'r') as md_file:
-                    data=md_file.read()
-                    print('Importing Keep note:', file.replace('.md', '') + " from " + file)
-                    keep.createnote(file.replace('.md', ''), data)
-                    for in_label in in_labels:
-                        keep.setnotelabel(in_label.strip())
-                    keep.keep_sync()
-    except Exception as e:
-        print('Error on note import:', str(e))
 
 
 
@@ -598,7 +599,8 @@ def ui_login(keyring_reset, master_token):
                 if keyring_reset:
                     print("You've succesfully logged into Google Keep!")
                 else:
-                    print("You've succesfully logged into Google Keep! Your Keep access token has been securely stored in this computer's keyring.")
+                    print("You've succesfully logged into Google Keep! " + 
+                        "Your Keep access token has been securely stored in this computer's keyring.")
             #else:
             #  print ("Invalid Google userid or pw! Please try again.")
 
@@ -623,7 +625,8 @@ def ui_query(keep, search_term, opts):
         else:
             kquery = "kquery"
             while kquery:
-                kquery = click.prompt("\r\nEnter a keyword search, label search or '--all' to convert Keep notes to md or '--x' to exit", type=str)
+                kquery = click.prompt("\r\nEnter a keyword search, label search or " + 
+                    "'--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
                     count = keep_query_convert(keep, kquery, opts)
                     print("\nTotal converted notes: " + str(count))
@@ -677,6 +680,10 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
+        if i and (r or o or a or s or p or c):
+            print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
+            exit()
+
         if o and s:
             print("Overwrite and Skip flags are not compatible together -- please use one or the other...")
             exit()
@@ -697,7 +704,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
-#Version 0.4.4
+#Version 0.5.0
 
 if __name__ == '__main__':
 
