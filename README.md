@@ -185,15 +185,16 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 
 ## Feature Todos
 - [x] Add Keep audio and drawing files  
-- [ ] Use OAuth login to launch browser window and authenticate automatically  
+- [x] Add overwrite flag to replace notes
+- [x] Clean-up code from MVP
+- [ ] Export from Google Takeout Keep backups
 - [ ] Build a simple installer  
 - [ ] Create setup scripts for Windows, macOS and Linux  
 - [ ] Tie Keep notes to Notion links for cross-linking of md imports  
 - [ ] Email notes to Keep   
 - [ ] Roam imports  
 - [ ] Docker version  
-- [x] Add overwrite flag to replace notes
-- [x] Clean-up code from MVP
+
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
