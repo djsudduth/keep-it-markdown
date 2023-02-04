@@ -52,8 +52,8 @@ default_settings = {
     'google_userid': USERID_EMPTY,
     'output_path': OUTPUTPATH,
     'media_path': MEDIADEFAULTPATH,
-    'import_path': INPUTDEFAULTPATH,
-    'import_labels': DEFAULTLABELS
+    'input_path': INPUTDEFAULTPATH,
+    'input_labels': DEFAULTLABELS
 }
 
 
