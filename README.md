@@ -33,19 +33,19 @@ Start your command prompt, shell or terminal, find your download directory and r
 (you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4: 
- Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and manually approve access with a browswer. **Be sure you have logged into your primary Google account only in your default browser first before testing the Keep login.**  From within your command prompt or shell and run 
+ Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and either manually approve access with a browswer or create an app login temporary password for accounts using 2-factor authentication. **Be sure you have logged into your primary Google account only in your default browser first before testing the Keep login.**  From within your command prompt or shell and run 
 ```bash
-> python keep-test.py
+> python kim.py
 ```
-This will attempt a simple login using your Google ID and password. **NOTE: first time attempting to login may fail**. 
+This will attempt a login using your Google ID and either your password or the temporary 2-factor password from your Google account security page (located in myaccount.google.com -> 'Signing in with Google' section). **NOTE: first time attempting to login may fail**. 
 
 If you believe you typed in your Google account name and password correctly and it failed, copy and paste or click on this URL (https://accounts.google.com/DisplayUnlockCaptcha) into your browswer address bar and approve the request by pressing the 'Continue' button.
 
 Run the script again
 ```bash
-> python keep-test.py
+> python kim.py
 ```
-If you entered your Google account id and password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep! Please try running Keep-it-Markdown or KIM!"
+If you entered your Google account id and password (or 2FA temp password) correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 **If this step keeps failing see 'Key Callouts' #10 below or Issue #42** -> https://github.com/djsudduth/keep-it-markdown/issues/42 
 
 
