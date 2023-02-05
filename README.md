@@ -33,7 +33,8 @@ Start your command prompt, shell or terminal, find your download directory and r
 (you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4: 
-This script was written before the official Google Keep API was available. So, you must manually create an application password for authentication purposes. 
+This script was written before the official Google Keep API was available. The Google Keep API is currently only available to workspace users and not individuals. So, you must manually create an application password for authentication purposes. 
+
 1) Navigate to your [Google Account Page](https://myaccount.google.com)
 2) Click on the Security option on the left
 3) Under the **Signing in to Google** header select **App passwords**
