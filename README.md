@@ -17,7 +17,7 @@ Install Python (there are plenty of tutorials online for installation instructio
 ```bash
 > python --version
 ```
-If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.7+.
+If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.8+.
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
