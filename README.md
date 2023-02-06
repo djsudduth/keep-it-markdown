@@ -17,7 +17,7 @@ Install Python (there are plenty of tutorials online for installation instructio
 ```bash
 > python --version
 ```
-If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.7+.
+If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.8+.
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
@@ -33,21 +33,20 @@ Start your command prompt, shell or terminal, find your download directory and r
 (you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4: 
- Keep does not yet have an official API from Google. So, you must first test your Google account login with the Keep library and either manually approve access with a browswer or create an app login temporary password for accounts using 2-factor authentication. **Be sure you have logged into your primary Google account only in your default browser first before testing the Keep login.**  From within your command prompt or shell and run 
+This script was written before the official Google Keep API was available. The Google Keep API is currently only available to workspace users and not individuals. So, you must manually create an application password for authentication purposes. 
+
+1) Navigate to your [Google Account Page](https://myaccount.google.com)
+2) Click on the Security option on the left
+3) Under the **Signing in to Google** header select **App passwords**
+4) Choose **Select App** and select **Other**, the name can be anything you want but I suggest something identifiable such as "**KeepItMarkdown**"
+5) Click on Generate and Copy the password that's generated
+6) Run the following command and logon with your Google email and the newly generated application password. 
 ```bash
 > python kim.py
 ```
-This will attempt a login using your Google ID and either your password or the temporary 2-factor password from your Google account security page (located in myaccount.google.com -> 'Signing in with Google' section). **NOTE: first time attempting to login may fail**. 
+If you entered your Google email and application password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 
-If you believe you typed in your Google account name and password correctly and it failed, copy and paste or click on this URL (https://accounts.google.com/DisplayUnlockCaptcha) into your browswer address bar and approve the request by pressing the 'Continue' button.
-
-Run the script again
-```bash
-> python kim.py
-```
-If you entered your Google account id and password (or 2FA temp password) correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 **If this step keeps failing see 'Key Callouts' #10 below or Issue #42** -> https://github.com/djsudduth/keep-it-markdown/issues/42 
-
 
 ## Usage
 Congrats! You can now run KIM. Simply start by running 
@@ -160,11 +159,10 @@ Note: skip -s and overwrite -o cannot be used at the same time
 3. Note titles are truncated to 100 characters max.
 4. Notes without Keep titles are given titles using the date-time of when the note was created unless the -c flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
-6. If you have login errors after reboot or long idle periods you may need to re-approve KIM access through Step 4's URL - (https://accounts.google.com/DisplayUnlockCaptcha)
-7. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
-8. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
-9. Keep uses AAC files for audio recordings. Most notes apps like Obsidian do not support AAC format. If you need markdown audio support you will have to manually convert the AAC files to MP3 and alter the markdown accordingly.
-10. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac system and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
+6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
+7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
+8. Keep uses AAC files for audio recordings. Most notes apps like Obsidian do not support AAC format. If you need markdown audio support you will have to manually convert the AAC files to MP3 and alter the markdown accordingly.
+9. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac system and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
@@ -172,7 +170,7 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
 ## Logseq Use
-Notes will import into Logseq - but to format them correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
+Notes will import into Logseq similar to the Obsidian Use description - but to format them correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
