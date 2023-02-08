@@ -63,7 +63,7 @@ def main(argv):
 
     except Exception as e:
         print (e)
-        print ("Please start your browswer and copy-paste this URL in the address bar: https://accounts.google.com/DisplayUnlockCaptcha - then, try logging in again.")
+        print ("Please start your browser and copy-paste this URL in the address bar: https://accounts.google.com/DisplayUnlockCaptcha - then, try logging in again.")
 
    
 
