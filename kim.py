@@ -457,6 +457,8 @@ def keep_import_notes(keep):
         for file in os.listdir(dir_path):
             if os.path.isfile(dir_path + file) and file.endswith('.md'):
                 with open(dir_path + file, 'r') as md_file:
+                    #mod_time = os.path.getmtime(dir_path + file)
+                    #crt_time = os.path.getctime(dir_path + file)
                     data=md_file.read()
                     print('Importing note:', file.replace('.md', '') + " from " + file)
                     keep.createnote(file.replace('.md', ''), data)
@@ -526,7 +528,10 @@ def keep_query_convert(keep, keepquery, opts):
 
             if note.title == '':
                 if opts.text_for_title:
-                    note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
+                    if note.text == '':
+                        note.title = note_date
+                    else:
+                        note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
                 else:
                     note.title = note_date
 
@@ -676,8 +681,8 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
     try:
 
+        #c = True
         opts = Options(o, a, p, s, c, l, i)
-
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
         if i and (r or o or a or s or p or c):
@@ -692,7 +697,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
         keep = ui_login(r, master_token)
 
-        #i = True
+
         if i:
             keep_import_notes(keep)
         else:
@@ -704,7 +709,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
-#Version 0.5.0
+#Version 0.5.1
 
 if __name__ == '__main__':
 

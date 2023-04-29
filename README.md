@@ -89,6 +89,7 @@ Exported note titles use Keep titles in conversion as best it can. In many cases
 ```bash
 > python kim.py -c
 ```
+if the note has no title or text in the body then the date will be used as default.
 
 #### Overwriting or Skipping
 KIM by default does not overwrite markdown files when exporting, principally because Keep notes can have the same titles. KIM will try to rename duplicate notes. However, notes can be overwritten with
@@ -203,4 +204,7 @@ Refactored code to be more extensible for different import and export options
 Added LogSeq switch to add bullets in exports to be more compatible  
 Added simple note import to Keep option  
 Removed microseconds from note create and update dates    
-Fixed null image crashing  
+Fixed null image crashing 
+
+## 0.5.1 Recent Changes
+Fixed image overwrite if note has no title or text and using -c switch
