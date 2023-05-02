@@ -8,6 +8,7 @@ import shutil
 import re
 import configparser
 import click
+import datetime
 from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
@@ -456,10 +457,13 @@ def keep_import_notes(keep):
         in_labels = Config().get("input_labels").split(",")
         for file in os.listdir(dir_path):
             if os.path.isfile(dir_path + file) and file.endswith('.md'):
-                with open(dir_path + file, 'r') as md_file:
-                    #mod_time = os.path.getmtime(dir_path + file)
-                    #crt_time = os.path.getctime(dir_path + file)
+                with open(dir_path + file, 'r', encoding="utf8") as md_file:
+                    mod_time = datetime.datetime.fromtimestamp(
+                        os.path.getmtime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
+                    crt_time = datetime.datetime.fromtimestamp(
+                        os.path.getctime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
                     data=md_file.read()
+                    data += "\n\nCreated: " + crt_time + "   -   Updated: " + mod_time
                     print('Importing note:', file.replace('.md', '') + " from " + file)
                     keep.createnote(file.replace('.md', ''), data)
                     for in_label in in_labels:
@@ -681,7 +685,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
     try:
 
-        #c = True
+        i = True
         opts = Options(o, a, p, s, c, l, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 

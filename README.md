@@ -139,13 +139,13 @@ KIM now supports importing markdown note files back into Keep using
 ```bash
 > python kim.py -i
 ```
-There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. Only existing labels can be used and those must be setup in the **settings.cfg** file.
+There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use Robocopy). Only existing labels can be used and those must be setup in the **settings.cfg** file.
 
 To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:  
 **input_path** = path to where the input md files are located. Windows users use forward slashes, e.g. -> c:/md-files/import  
 **input_labels** = a list of one or more comma delimited labels without the # leading character - e.g. -> computers, programming (this will tag all of the imported notes with both labels 'computers' and 'programming' within that import directory as long as you have those labels predefined within Keep already)
 
-NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!!
+NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
 #### Combinations
 Example: to export all achived notes, using content for blank note titles, with overwriting, preserving Keep label format and logseq style paragraphs in batch:
@@ -208,3 +208,5 @@ Fixed null image crashing
 
 ## 0.5.1 Recent Changes
 Fixed image overwrite if note has no title or text and using -c switch
+Fixed error of markdown note imports if there are special characters within
+Added create and update dates of markdown files to imported notes
