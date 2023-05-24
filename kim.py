@@ -280,6 +280,13 @@ class KeepService:
     def createnote(self, title, notetext):
         self._note = self._keepapi.createNote(title, notetext)
         return(None)
+    
+    def appendnotes(self, kquery, append_text):
+        gnotes = self.findnotes(kquery, False, False)
+        for gnote in gnotes:
+            gnote.text += "\n\n" + append_text
+        self.keep_sync()
+        return(None)
 
 
     def setnotelabel(self, label):
@@ -448,6 +455,9 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
+
+def keep_append_createdate(keep):
+    keep.appendnotes("zyzzyx", "Create Date: 05-24-2023")
 
 
 def keep_import_notes(keep):
@@ -685,7 +695,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
     try:
 
-        i = True
+        #i = True
         opts = Options(o, a, p, s, c, l, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
