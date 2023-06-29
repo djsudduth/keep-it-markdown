@@ -427,12 +427,16 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         print(note_tags)
         print(note_date + "\r\n")
 
+        if not (note.timestamps):
+            timestamps = ""
+        else:
+            timestamps = ("Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + "   ---   " + 
+                        "Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n")
 
         markdown_data = (
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_tags + "\n\n" + 
-            "Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + "   ---   "
-            "Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n" + 
+            timestamps + 
             Markdown().format_path(KEEP_NOTE_URL + str(note.id), "", False) + "\n\n")
 
         fs.write_file(md_file, markdown_data)
@@ -545,7 +549,17 @@ def keep_query_convert(keep, keepquery, opts):
                 note.text = "- " + note.text.replace("\n\n", "\n- ")
 
             if opts.joplin_frontmatter:
-                note.text = "---\ntitle: " + note.title + "\ntags:\n  -JTAGS\n" + "---\n\n" + note.text
+                joplin_labels = ""
+                for label in note.labels:
+                    joplin_labels += "  - " + label + "\n"
+                note.text = ("---\ntitle: " + note.title + 
+                            "\nupdated: " + note.timestamps["updated"] + 
+                            "Z\ncreated: " + note.timestamps["created"] + 
+                            "Z\ntags:\n" + joplin_labels + 
+                            "---\n\n" + note.text)
+                note_labels = ""
+                note.timestamps = {}
+
 
             if opts.archive_only:
                 if note.archived and note.trashed == False:
@@ -673,7 +687,7 @@ def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
 
     try:
 
-        #i = True
+        #j = True
         opts = Options(o, a, p, s, c, l, j, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
