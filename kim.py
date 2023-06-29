@@ -68,6 +68,7 @@ class Options:
     skip_existing: boolean 
     text_for_title: boolean
     logseq_style: boolean
+    joplin_frontmatter: boolean
     import_files: boolean
 
 @dataclass
@@ -543,6 +544,9 @@ def keep_query_convert(keep, keepquery, opts):
                 #Logseq test
                 note.text = "- " + note.text.replace("\n\n", "\n- ")
 
+            if opts.joplin_frontmatter:
+                note.text = "---\ntitle: " + note.title + "\ntags:\n  -JTAGS\n" + "---\n\n" + note.text
+
             if opts.archive_only:
                 if note.archived and note.trashed == False:
                     keep_get_blobs(keep, note)
@@ -661,15 +665,16 @@ def ui_welcome_config():
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
 @click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
+@click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-i', is_flag=True, help="Import notes from markdown files EXPERIMENTAL!!")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, l, i, search_term, master_token):
+def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
 
     try:
 
         #i = True
-        opts = Options(o, a, p, s, c, l, i)
+        opts = Options(o, a, p, s, c, l, j, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
         if i and (r or o or a or s or p or c):

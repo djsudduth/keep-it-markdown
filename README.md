@@ -110,6 +110,12 @@ Some markdown systems prefer to have bullets prepended on each paragraph within 
 > python kim.py -l
 ```
 
+#### Joplin Front Matter 
+Joplin tags do not use the hashtag format. They are provide as front matter comments within the notes. With this switch KIM will prepend notes with the Joplin front matter comments to preserve tags and dates. You can enable this feature with
+```bash
+> python kim.py -j
+```
+
 #### Authentication Token Storage
 When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
 
