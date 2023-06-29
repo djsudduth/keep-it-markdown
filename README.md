@@ -49,7 +49,7 @@ If you entered your Google email and application password correctly, you should 
 **If this step keeps failing see 'Key Callouts' #10 below or Issue #42** -> https://github.com/djsudduth/keep-it-markdown/issues/42 
 
 ## Usage
-Congrats! You can now run KIM. Simply start by running 
+Congrats! You can now run KIM. Simply start by running:  
 ```bash
 > python kim.py
 ```
