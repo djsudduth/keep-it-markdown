@@ -210,3 +210,4 @@ Fixed null image crashing
 Fixed image overwrite if note has no title or text and using -c switch  
 Fixed error of markdown note imports if there are special characters within  
 Added create and update dates of markdown files to imported notes  
+Added option to update Keep notes to archive after conversion
