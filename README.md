@@ -111,7 +111,7 @@ Some markdown systems prefer to have bullets prepended on each paragraph within 
 ```
 
 #### Joplin Front Matter 
-Joplin tags do not use the hashtag format. They are provide as front matter comments within the notes. With this switch KIM will prepend notes with the Joplin front matter comments to preserve tags and dates. You can enable this feature with
+Joplin tags do not use the hashtag format. They are provided as front matter comments within the notes. With this switch KIM will prepend notes with the Joplin front matter comments to preserve tags and dates. You can enable this feature with
 ```bash
 > python kim.py -j
 ```
@@ -210,7 +210,7 @@ There's always room for improvement. Feel free to add issues to the issues list.
 Fixed image overwrite if note has no title or text and using -c switch  
 Fixed error of markdown note imports if there are special characters within  
 Added create and update dates of markdown files to imported notes  
-Added option to update Keep notes to archive after conversion
 
 ## 0.5.2 Recent Changes
 Switched audio file extensions to m4a from acc 
+Added Joplin exports flag to use front matter header
