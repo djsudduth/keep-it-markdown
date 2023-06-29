@@ -387,7 +387,7 @@ class FileService:
             media_name = file_name + ".webp"
             blob_final_path = dest_path + ".webp"
         else:
-            extension = ".aac"
+            extension = ".m4a"
             media_name = file_name + extension
             blob_final_path = dest_path + extension
 
@@ -696,7 +696,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
-#Version 0.5.1
+#Version 0.5.2
 
 if __name__ == '__main__':
 
