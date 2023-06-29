@@ -8,6 +8,7 @@ import shutil
 import re
 import configparser
 import click
+import datetime
 from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
@@ -93,18 +94,15 @@ class ConfigurationException(Exception):
         return self.msg
 
 
-# This is a static class instance - not really necessary but saves a tiny bit of memory 
+# This is a singleton class instance - not really necessary but saves a tiny bit of memory 
 # Very useful for single connections and loading config files once
 class Config:
-
     _config = configparser.ConfigParser()
     _configdict = {}
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config, cls).__new__(cls)
-            #cls.instance._config = configparser.ConfigParser()
-            #cls.instance._configdict = {}
             cls.instance.__read()
             cls.instance.__load()
         return cls.instance
@@ -142,8 +140,6 @@ class Config:
 
 #All conversions to markdown are static methods 
 class Markdown:
-    #Note that the use of temporary %%% is because notes 
-    #   can have the same URL repeated and replace would fail
     @staticmethod
     def convert_urls(text):
         # pylint: disable=anomalous-backslash-in-string
@@ -152,7 +148,8 @@ class Markdown:
                 "|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
             text
         )
-
+        #Note that the use of temporary %%% is because notes 
+        #   can have the same URL repeated and replace would fail
         for url in urls:
             text = text.replace(url, 
                 "[" + url[:1] + "%%%" + url[2:] + 
@@ -247,10 +244,7 @@ class KeepService:
     def set_user(self, userid):
         self._userid = userid
 
-
     def login(self, pw, keyring_reset):
-
-        #self._userid = userid
         try:
             self._keepapi.login(self._userid, pw)
         except:
@@ -260,7 +254,6 @@ class KeepService:
             if keyring_reset == False:
                 self._securestorage.set_keyring(self._keep_token)
             return self._keep_token
-
 
     def resume(self):
         self._keepapi.resume(self._userid, self._keep_token)
@@ -279,7 +272,13 @@ class KeepService:
     def createnote(self, title, notetext):
         self._note = self._keepapi.createNote(title, notetext)
         return(None)
-
+    
+    def appendnotes(self, kquery, append_text):
+        gnotes = self.findnotes(kquery, False, False)
+        for gnote in gnotes:
+            gnote.text += "\n\n" + append_text
+        self.keep_sync()
+        return(None)
 
     def setnotelabel(self, label):
         try:
@@ -288,7 +287,6 @@ class KeepService:
         except Exception as e:
             print('Label doesn\'t exist! - label: ' +  label + "  Use pre-defined labels when importing")
             raise
-
 
     def getmedia(self, blob):
         try:
@@ -330,7 +328,6 @@ class NameService:
 
 
 class FileService:
-
     def media_path (self):
         outpath = Config().get("output_path").rstrip("/")
         mediapath = outpath + "/" + Config().get("media_path").rstrip("/") + "/"
@@ -344,11 +341,9 @@ class FileService:
         inpath = Config().get("input_path").rstrip("/") + "/"
         return(inpath)
 
-  
     def create_path(self, path):
         if not os.path.exists(path):
             os.mkdir(path)
-
 
     def write_file(self, file_name, data):
         try:
@@ -357,7 +352,6 @@ class FileService:
             f.close
         except Exception as e:
             raise Exception("Error in write_file: " + " -- " + TECH_ERR + repr(e))
-
 
     def download_file(self, file_url, file_name, file_path):
         try:
@@ -378,7 +372,6 @@ class FileService:
             raise
 
     def set_file_extensions(self, data_file, file_name, file_path):
-
         dest_path = file_path + file_name
 
         if imghdr.what(data_file) == 'png':
@@ -408,9 +401,7 @@ class FileService:
 
 
 def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
-
     try:
-
         fs = FileService()
 
         md_text = Markdown().format_check_boxes(note.text)
@@ -449,15 +440,20 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
-def keep_import_notes(keep):
 
+def keep_import_notes(keep):
     try:
         dir_path = FileService().inpath()
         in_labels = Config().get("input_labels").split(",")
         for file in os.listdir(dir_path):
             if os.path.isfile(dir_path + file) and file.endswith('.md'):
-                with open(dir_path + file, 'r') as md_file:
+                with open(dir_path + file, 'r', encoding="utf8") as md_file:
+                    mod_time = datetime.datetime.fromtimestamp(
+                        os.path.getmtime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
+                    crt_time = datetime.datetime.fromtimestamp(
+                        os.path.getctime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
                     data=md_file.read()
+                    data += "\n\nCreated: " + crt_time + "   -   Updated: " + mod_time
                     print('Importing note:', file.replace('.md', '') + " from " + file)
                     keep.createnote(file.replace('.md', ''), data)
                     for in_label in in_labels:
@@ -469,7 +465,6 @@ def keep_import_notes(keep):
 
 
 def keep_get_blobs(keep, note):
-
     fs = FileService()
     for idx, blob in enumerate(note.blobs):
         note.blob_names[idx] = note.title + str(idx)
@@ -487,8 +482,6 @@ def keep_get_blobs(keep, note):
 
 
 def keep_query_convert(keep, keepquery, opts):
-
-
     try:
         count = 0
         ccnt = 0
@@ -526,7 +519,10 @@ def keep_query_convert(keep, keepquery, opts):
 
             if note.title == '':
                 if opts.text_for_title:
-                    note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
+                    if note.text == '':
+                        note.title = note_date
+                    else:
+                        note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', '', note.text[0:50])  #.replace(' ',''))
                 else:
                     note.title = note_date
 
@@ -543,7 +539,6 @@ def keep_query_convert(keep, keepquery, opts):
                     note_labels = note_labels + " #" + str(label).replace(' ', '-').replace('&', 'and')
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
- 
             if opts.logseq_style:
                 #Logseq test
                 note.text = "- " + note.text.replace("\n\n", "\n- ")
@@ -577,7 +572,6 @@ def keep_query_convert(keep, keepquery, opts):
 
 
 def ui_login(keyring_reset, master_token):
-
     try:
         userid = Config().get("google_userid").strip().lower()
 
@@ -616,7 +610,6 @@ def ui_login(keyring_reset, master_token):
 
 
 def ui_query(keep, search_term, opts):
-
     try:
         if search_term != None:
             count = keep_query_convert(keep, search_term, opts)
@@ -642,7 +635,6 @@ def ui_query(keep, search_term, opts):
 
 def ui_welcome_config():
     try:
-
         mp = Config().get("media_path")
 
         if ((":" in mp) or (mp[0] == '/')):
@@ -676,8 +668,8 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
     try:
 
+        #i = True
         opts = Options(o, a, p, s, c, l, i)
-
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
         if i and (r or o or a or s or p or c):
@@ -692,7 +684,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
 
         keep = ui_login(r, master_token)
 
-        #i = True
+
         if i:
             keep_import_notes(keep)
         else:
@@ -704,7 +696,7 @@ def main(r, o, a, p, s, c, l, i, search_term, master_token):
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
-#Version 0.5.0
+#Version 0.5.1
 
 if __name__ == '__main__':
 
