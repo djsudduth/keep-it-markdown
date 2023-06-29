@@ -162,7 +162,7 @@ Note: skip -s and overwrite -o cannot be used at the same time
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
-8. Keep uses AAC files for audio recordings. Most notes apps like Obsidian do not support AAC format. If you need markdown audio support you will have to manually convert the AAC files to MP3 and alter the markdown accordingly.
+8. Keep uses AAC format for audio recordings. When notes are downloaded the audio is saved as M4A files. It is not known if this format will work on all markdown applications.
 9. There seems to be login issues especially for Windows users due to older python libraries. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). If that doesn't work, find a Linux or Mac system and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
 
 ## Obsidian Use
@@ -180,7 +180,7 @@ KIM markdown note exports seem to import into Notion successfully. However, Noti
 KIM markdown note exports also import very well into Joplin. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks and tags are not supported in Joplin's manual markdown import so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Typora Use
-KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports other than AAC audio support.
+KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
 
 ## Feature Todos
 - [x] Add Keep audio and drawing files  
@@ -199,15 +199,12 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
-## 0.5.0 Recent Changes
-Refactored code to be more extensible for different import and export options  
-Added LogSeq switch to add bullets in exports to be more compatible  
-Added simple note import to Keep option  
-Removed microseconds from note create and update dates    
-Fixed null image crashing 
 
 ## 0.5.1 Recent Changes
 Fixed image overwrite if note has no title or text and using -c switch  
 Fixed error of markdown note imports if there are special characters within  
 Added create and update dates of markdown files to imported notes  
 Added option to update Keep notes to archive after conversion
+
+## 0.5.2 Recent Changes
+Switched audio file extensions to m4a from acc 
