@@ -212,5 +212,5 @@ Fixed error of markdown note imports if there are special characters within
 Added create and update dates of markdown files to imported notes  
 
 ## 0.5.2 Recent Changes
-Switched audio file extensions to m4a from acc 
-Added Joplin exports flag to use front matter header
+Switched audio file extensions to m4a from acc  
+Added Joplin exports flag to use front matter header  
