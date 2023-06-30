@@ -430,8 +430,10 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         if not (note.timestamps):
             timestamps = ""
         else:
-            timestamps = ("Created: " + note.timestamps["created"][ : note.timestamps["created"].rfind('.') ] + "   ---   " + 
-                        "Updated: " + note.timestamps["updated"][ : note.timestamps["updated"].rfind('.') ] + "\n\n")
+            timestamps = ("Created: " + note.timestamps["created"]
+                        [ : note.timestamps["created"].rfind('.') ] + "   ---   " + 
+                        "Updated: " + note.timestamps["updated"]
+                        [ : note.timestamps["updated"].rfind('.') ] + "\n\n")
 
         markdown_data = (
             Markdown().convert_urls(md_text) + "\n" + 
@@ -542,11 +544,15 @@ def keep_query_convert(keep, keepquery, opts):
             else:
                 for label in labels:
                     note_labels = note_labels + " #" + str(label).replace(' ', '-').replace('&', 'and')
-                note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+                note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + 
+                                     ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
 
             if opts.logseq_style:
-                #Logseq test
-                note.text = "- " + note.text.replace("\n\n", "\n- ")
+                c = note.text[:1]
+                if c == u"\u2610" or c == u"\u2611":
+                    note.text.replace("\n\n", "\n- ")
+                else:
+                    note.text = "- " + note.text.replace("\n\n", "\n- ")
 
             if opts.joplin_frontmatter:
                 joplin_labels = ""
@@ -564,13 +570,21 @@ def keep_query_convert(keep, keepquery, opts):
             if opts.archive_only:
                 if note.archived and note.trashed == False:
                     keep_get_blobs(keep, note)
-                    ccnt = save_md_file(note, note_labels, note_date, opts.overwrite, opts.skip_existing)
+                    ccnt = save_md_file(note, 
+                                        note_labels, 
+                                        note_date, 
+                                        opts.overwrite, 
+                                        opts.skip_existing)
                 else:
                     ccnt = 0
             else:
                 if note.archived == False and note.trashed == False:
                     keep_get_blobs(keep, note)
-                    ccnt = save_md_file(note, note_labels, note_date, opts.overwrite, opts.skip_existing)
+                    ccnt = save_md_file(note, 
+                                        note_labels, 
+                                        note_date, 
+                                        opts.overwrite, 
+                                        opts.skip_existing)
                 else:
                     ccnt = 0
 
@@ -687,7 +701,7 @@ def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
 
     try:
 
-        #j = True
+        l = True
         opts = Options(o, a, p, s, c, l, j, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 

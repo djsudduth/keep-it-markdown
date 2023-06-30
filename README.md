@@ -177,7 +177,7 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
 ## Logseq Use
-Notes will import into Logseq similar to the Obsidian Use description - but to format them correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
+Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
@@ -212,5 +212,6 @@ Fixed error of markdown note imports if there are special characters within
 Added create and update dates of markdown files to imported notes  
 
 ## 0.5.2 Recent Changes
-Switched audio file extensions to m4a from acc  
-Added Joplin exports flag to use front matter header  
+Switched audio file extensions from AAC back to M4A  
+Added Joplin exports -j flag to use front matter header  
+Removed first dash on list notes exported to Logseq with -l switch  
