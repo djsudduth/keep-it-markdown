@@ -1,4 +1,4 @@
-settings.cfg
+settings*.cfg
 skiptest.py
 fuzzy.py
 zz*.py

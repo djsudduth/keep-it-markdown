@@ -23,7 +23,8 @@ USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
 MEDIADEFAULTPATH = "media"
 INPUTDEFAULTPATH = "import/markdown_files"
-DEFAULTLABELS = "my_label"
+DEFAULT_LABELS = "my_label"
+DEFAULT_SEPARATOR = "/"
 MAX_FILENAME_LENGTH = 99
 MISSING = 'null value'
 
@@ -54,7 +55,8 @@ default_settings = {
     'output_path': OUTPUTPATH,
     'media_path': MEDIADEFAULTPATH,
     'input_path': INPUTDEFAULTPATH,
-    'input_labels': DEFAULTLABELS
+    'input_labels': DEFAULT_LABELS,
+    'folder_separator': DEFAULT_SEPARATOR
 }
 
 
@@ -83,6 +85,7 @@ class Note:
     blobs: list
     blob_names: list
     media: list
+    header: str
 
 
 
@@ -179,12 +182,12 @@ class Markdown:
         return(text.replace(u"\u2610", '- [ ]').replace(u"\u2611", ' - [x]'))
 
     @staticmethod
-    def format_path(path, name, media):
+    def format_path(path, name, media, replacement):
         if media:
             header = "!["
         else:
             header = "["
-        path = path.replace(" ", "%20")
+        path = path.replace(" ", replacement)
         if name:
             return (header + name + "](" + path + ")")
         else:
@@ -410,7 +413,7 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
 
         for media in note.media:
             md_text = Markdown().format_path(Config().get("media_path") + 
-                "/" + media, "", True) + "\n" + md_text
+                "/" + media, "", True, "_") + "\n" + md_text
  
 
         md_file = Path(fs.outpath(), note.title + ".md")
@@ -436,10 +439,11 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
                         [ : note.timestamps["updated"].rfind('.') ] + "\n\n")
 
         markdown_data = (
+            note.header + 
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_tags + "\n\n" + 
             timestamps + 
-            Markdown().format_path(KEEP_NOTE_URL + str(note.id), "", False) + "\n\n")
+            Markdown().format_path(KEEP_NOTE_URL + str(note.id), "", False, "%20") + "\n\n")
 
         fs.write_file(md_file, markdown_data)
         return (1)
@@ -474,7 +478,7 @@ def keep_import_notes(keep):
 def keep_get_blobs(keep, note):
     fs = FileService()
     for idx, blob in enumerate(note.blobs):
-        note.blob_names[idx] = note.title + str(idx)
+        note.blob_names[idx] = note.title.replace(" ", "_") + str(idx)
         if blob != None:
             url = keep.getmedia(blob)
             blob_file = None
@@ -511,12 +515,13 @@ def keep_query_convert(keep, keepquery, opts):
                     gnote.text, 
                     gnote.archived,
                     gnote.trashed,
-                   {"created": str(gnote.timestamps.created), 
+                    {"created": str(gnote.timestamps.created), 
                         "updated": str(gnote.timestamps.updated)},
                     [str(label) for label in gnote.labels.all()],
                     [blob for blob in gnote.blobs],
                     ['' for blob in gnote.blobs], 
-                    []
+                    [],
+                    ""
                    )
             )
  
@@ -533,8 +538,7 @@ def keep_query_convert(keep, keepquery, opts):
                 else:
                     note.title = note_date
 
-            note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', note.title[0:99])  #re.sub('[^A-z0-9-]', ' ', gnote.title)[0:99]
-            #note_text = gnote.text #gnote.text.replace('”','"').replace('“','"').replace("‘","'").replace("’","'").replace('•', "-").replace(u"\u2610", '[ ]').replace(u"\u2611", '[x]').replace(u'\xa0', u' ').replace(u'\u2013', '--').replace(u'\u2014', '--').replace(u'\u2026', '...').replace(u'\u00b1', '+/-')
+            note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', note.title[0:99]) 
 
             labels = note.labels
             note_labels = ""
@@ -545,7 +549,7 @@ def keep_query_convert(keep, keepquery, opts):
                 for label in labels:
                     note_labels = note_labels + " #" + str(label).replace(' ', '-').replace('&', 'and')
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + 
-                                     ']', '-', note_labels)  #re.sub('[^A-z0-9-_# ]', '-', note_labels)
+                                     ']', '-', note_labels)  
 
             if opts.logseq_style:
                 c = note.text[:1]
@@ -556,13 +560,13 @@ def keep_query_convert(keep, keepquery, opts):
 
             if opts.joplin_frontmatter:
                 joplin_labels = ""
-                for label in note.labels:
+                for label in note_labels.replace("#", "").split():
                     joplin_labels += "  - " + label + "\n"
-                note.text = ("---\ntitle: " + note.title + 
+                note.header = ("---\ntitle: " + note.title + 
                             "\nupdated: " + note.timestamps["updated"] + 
                             "Z\ncreated: " + note.timestamps["created"] + 
                             "Z\ntags:\n" + joplin_labels + 
-                            "---\n\n" + note.text)
+                            "---\n\n")
                 note_labels = ""
                 note.timestamps = {}
 
@@ -701,7 +705,7 @@ def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
 
     try:
 
-        l = True
+        #j = True
         opts = Options(o, a, p, s, c, l, j, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
