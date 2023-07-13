@@ -183,7 +183,7 @@ Notes will import into Logseq similar to the Obsidian Use description, however, 
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
-KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as Joplin front matter to add them as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks are not supported in Joplin's manual markdown import.
+KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as Joplin front matter to add them as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks are not supported in Joplin's manual markdown import and front matter tags are not supported on import.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
