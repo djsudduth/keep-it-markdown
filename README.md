@@ -6,7 +6,7 @@ Keep-it-markdown or KIM converts Google Keep notes to markdown using the unoffic
 The overall goal is to utilize Google Keep as an easy way to capture raw notes on all devices or additionally using the browser plugin. Then, notes can be queried for export to markdown files directly into notetaking apps such as Obsidian, Logseq and/or Notion, or used directly with Typora. 
 
 ## Installation
-Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.8 or greater** and utilizes the unofficial gkeepapi.
+Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.8 or greater** and utilizes the unofficial gkeepapi. **If you are using Python 3.10 or greater and have issues with the installation - see this note: https://github.com/djsudduth/keep-it-markdown/issues/72**
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
