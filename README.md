@@ -6,7 +6,7 @@ Keep-it-markdown or KIM converts Google Keep notes to markdown using the unoffic
 The overall goal is to utilize Google Keep as an easy way to capture raw notes on all devices or additionally using the browser plugin. Then, notes can be queried for export to markdown files directly into notetaking apps such as Obsidian, Logseq and/or Notion, or used directly with Typora. 
 
 ## Installation
-Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.8 or greater** and utilizes the unofficial gkeepapi. (If you have Python versions 3.10+ and have login issues you may need to review Advanced setup below)
+Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.8 or greater** and utilizes the unofficial gkeepapi. (**If you have Python versions 3.10+ and have login issues you may need to review Advanced Docker Setup below**)
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
@@ -46,7 +46,7 @@ This script was written before the official Google Keep API was available. The G
 ```
 If you entered your Google email and application password correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 
-**If this step keeps failing see 'Key Callouts' #9 below, or, if you are using Python 3.10 or greater and have issues with the login - see this note: https://github.com/djsudduth/keep-it-markdown/issues/72**
+**If this step keeps failing see 'Key Callouts' #9 below, or, if you are using Python 3.10 or greater and have issues with the login - see Advanced Docker Setup below or read this note: https://github.com/djsudduth/keep-it-markdown/issues/72**
 
 ## Usage
 Congrats! You can now run KIM. Simply start by running:  
@@ -169,10 +169,10 @@ Note: skip -s and overwrite -o cannot be used at the same time
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
 8. Keep uses AAC format for audio recordings. When notes are downloaded the audio is saved as M4A files. It is not known if this format will work on all markdown applications.
-9. There seems to be login issues due to some of the authentication and security library changes with Google and Python. Be sure to upgrade the gkeepapi to the latest version (**'pip install gkeepapi'**). Also, take a look at this note -> https://github.com/djsudduth/keep-it-markdown/issues/72. If those steps don't work, find a Linux or Mac system and run **'python keep-test.py -t'** which will display the token with the -t flag. Copy and save this master token in a safe and secure place!!. You can then use that token in KIM with **'python kim.py -t <your-token>'** which will save it in your keystore.
+9. There seems to be login issues due to some of the authentication and security library changes with Google and Python. Take a look at this note -> https://github.com/djsudduth/keep-it-markdown/issues/72 or use the Advanced Docker Setup in the next section
 
 ## Advanced Docker Setup
-If you are having difficulty logging in to Google you can use Docker with the preconfigured OS and Python version to access KIM and save your exported notes.
+If you are having difficulty logging in to Google you can use Docker with the preconfigured OS and Python version to access KIM and save your exported notes (see alternative step 7 if you want to save the Keep token on your PC).
 
 **Steps:**
 1) Install Docker on any PC (find the online instructions for your particular operating system)
@@ -181,14 +181,15 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.5.3/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
 5) Change the directory to Kim ``cd keep-it-markdown-0.5.3``
 6) Create a temporary app password on Google
-7) Run KIM per the instructions above - your exported notes will be exported to your PC. NOTE, however, that Docker will not save any passwords and you may need to recreate Google app passwords to use KIM with Docker this way
 ---
-8) Alternatively, run ``python keep-test.py -t`` in the Docker image to log in and display the Keep token (keep token will **appear be very long** - almost 2 lines)
-9) Copy the token by highlighting the entire string and hitting enter
-10) Paste and save the token somewhere safe
-11) Exit the Docker image with ``exit``
-12) Now run KIM in your current OS with the -t switch once to save it in the keystore (``python kim.py -t <long token here>`` (you may need a new Google app password to do this)
-13) You can now run KIM on any PC (once you save the token) with Python v-3.8 or higher
+7) For one time or sporatic use, run KIM per the instructions above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes and you may need to recreate Google app passwords each time you use KIM with Docker this way
+---
+7) Alternatively, run ``python keep-test.py -t`` in the Docker image to log in and display the Keep token (keep token will **appear be very long** - almost 2 lines)
+8) Copy the token by highlighting the entire string and hitting enter
+9) Paste and save the token somewhere safe
+10) Exit the Docker image with ``exit``
+11) Now run KIM in your current OS with the -t switch once to save it in the keystore (``python kim.py -t <long token here>`` - you may need a new Google app password to do this)
+12) You can now run KIM on any PC (once you save the token) with Python v-3.8 or higher
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
