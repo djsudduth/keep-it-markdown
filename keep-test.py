@@ -50,8 +50,8 @@ def ui_login(keepapi, show_token):
 
 def main(argv):
 
-    try:
 
+    try:
         show_token = False
         if len(argv) > 1:
            if argv[1] == "-t":
@@ -63,7 +63,15 @@ def main(argv):
 
     except Exception as e:
         print (e)
-        print ("Please start your browser and copy-paste this URL in the address bar: https://accounts.google.com/DisplayUnlockCaptcha - then, try logging in again.")
+        print (
+            "If you still have issues logging in then you may need " \
+            + "to try 1 of 5 possible solutions:\n \
+            1) recreate the Google app password to make sure it is valid and try again\n \
+            2) find an PC with an older version of an OS (Windows 10 or Debian 11) with Python v3.8 or 3.9\n \
+            3) install pyenv to allow for multiple versions of Python - try with Python 3.9.x\n \
+            4) create a virtual machine with VirtualBox or other virtualization software and install an older OS\n \
+            5) install Docker and run the Docker image in Advanced setup"
+            )
 
    
 
