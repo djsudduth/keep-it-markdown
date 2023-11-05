@@ -70,7 +70,7 @@ def main(argv):
             2) find an PC with an older version of an OS (Windows 10 or Debian 11) with Python v3.8 or 3.9\n \
             3) install pyenv to allow for multiple versions of Python - try with Python 3.9.x\n \
             4) create a virtual machine with VirtualBox or other virtualization software and install an older OS\n \
-            5) install Docker and run the Docker image in Advanced setup"
+            5) install Docker and run the Docker image in Advanced Docker Setup in README"
             )
 
    
