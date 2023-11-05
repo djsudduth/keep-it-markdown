@@ -182,7 +182,7 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 5) Change the directory to Kim ``cd keep-it-markdown-0.5.3``
 6) Create a temporary app password on Google
 ---
-7) For one time or sporatic use, run KIM per the instructions above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes and you may need to recreate Google app passwords each time you use KIM with Docker this way
+7) For one time or sporatic use, run KIM per the instructions above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you may need to recreate Google app passwords each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
 ---
 7) Alternatively, run ``python keep-test.py -t`` in the Docker image to log in and display the Keep token (keep token will **appear be very long** - almost 2 lines)
 8) Copy the token by highlighting the entire string and hitting enter
@@ -238,4 +238,4 @@ Removed first dash on list notes exported to Logseq with -l switch
 
 ## 0.5.3 Recent Changes
 Docker image creation and use  
-Removed capcha note in keep-test.py  
+Removed captcha note in keep-test.py  
