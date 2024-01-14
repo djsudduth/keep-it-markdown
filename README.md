@@ -248,5 +248,5 @@ Removed captcha note in keep-test.py
 
 ## 0.5.4 Recent Changes
 Docker image altered to use Ubuntu:22.04 to fix Google auth issues with gkeepapi  
-Added new flag -m to move exported images to Archive folder 
-Removed python deprecated imghdr library with pillow module
+Added new flag -m to move exported images to Archive folder  
+Removed python deprecated imghdr library with pillow module  
