@@ -3,7 +3,6 @@ import gkeepapi
 import keyring
 import getpass
 import requests
-import imghdr
 import shutil
 import re
 import configparser
@@ -13,6 +12,7 @@ from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
 from xmlrpc.client import boolean
+from PIL import Image
 
 
 KEEP_KEYRING_ID = 'google-keep-token'
@@ -71,6 +71,7 @@ class Options:
     text_for_title: boolean
     logseq_style: boolean
     joplin_frontmatter: boolean
+    move_to_archive: boolean
     import_files: boolean
 
 @dataclass
@@ -378,16 +379,24 @@ class FileService:
     def set_file_extensions(self, data_file, file_name, file_path):
         dest_path = file_path + file_name
 
-        if imghdr.what(data_file) == 'png':
+        try:
+            image = Image.open(data_file)
+            what = image.format.lower()
+            image.close()
+        except:
+            what = ".m4a"
+
+
+        if what == 'png':
             media_name = file_name + ".png"
             blob_final_path = dest_path + ".png"
-        elif imghdr.what(data_file) == 'jpeg':
+        elif what == 'jpeg':
             media_name = file_name + ".jpg"
             blob_final_path = dest_path + ".jpg"
-        elif imghdr.what(data_file) == 'gif':
+        elif what == 'gif':
             media_name = file_name + ".gif"
             blob_final_path = dest_path + ".gif"
-        elif imghdr.what(data_file) == 'webp':
+        elif what == 'webp':
             media_name = file_name + ".webp"
             blob_final_path = dest_path + ".webp"
         else:
@@ -524,6 +533,9 @@ def keep_query_convert(keep, keepquery, opts):
                     ""
                    )
             )
+            if opts.move_to_archive:
+                gnote.archived = True
+
  
         for note in notes:
 
@@ -596,6 +608,9 @@ def keep_query_convert(keep, keepquery, opts):
 
         if opts.overwrite or opts.skip_existing:
             NameService().clear_name_list()
+
+        if opts.move_to_archive:
+            keep.keep_sync()
 
         return (count)
     except:
@@ -698,18 +713,19 @@ def ui_welcome_config():
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
 @click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
 @click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
+@click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
 @click.option('-i', is_flag=True, help="Import notes from markdown files EXPERIMENTAL!!")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
+def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
 
     try:
 
-        #j = True
-        opts = Options(o, a, p, s, c, l, j, i)
+        #m = True
+        opts = Options(o, a, p, s, c, l, j, m, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
 
-        if i and (r or o or a or s or p or c):
+        if i and (r or o or a or s or p or c or m):
             print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
             exit()
 
@@ -733,7 +749,7 @@ def main(r, o, a, p, s, c, l, j, i, search_term, master_token):
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
 
-#Version 0.5.2
+#Version 0.5.4
 
 if __name__ == '__main__':
 

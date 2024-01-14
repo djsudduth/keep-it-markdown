@@ -2,6 +2,7 @@
 gkeepapi
 keyring
 click
+pillow
 
 ###### Requirements with Version Specifiers worked with Python 3.7.3 ######`
 #gkeepapi == 0.13.1

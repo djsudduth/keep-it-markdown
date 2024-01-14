@@ -71,7 +71,6 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 
 **google_userid** = your-google-account-id (allows you to bypass typing in your id)  
 **output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
-
 **media_path** = location of the exported media files (images, audio) relative to your output_path. If the output_path is /mdexport and media_path is media/data, the media full path will be /mdexport/media/data. Media paths cannot start with /, mount or drive letter.
 
 (For import settings, see the -i switch below)
@@ -114,6 +113,13 @@ Some markdown systems prefer to have bullets prepended on each paragraph within 
 Joplin tags do not use the hashtag format. They are provided as front matter comments within the notes. With this switch KIM will prepend notes with the Joplin front matter comments to preserve tags and dates. You can enable this feature with
 ```bash
 > python kim.py -j
+```
+
+#### Move Notes to Archive After Export  
+**CAUTION! This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
+If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
+```bash
+> python kim.py -m
 ```
 
 #### Authentication Token Storage
@@ -239,3 +245,8 @@ Removed first dash on list notes exported to Logseq with -l switch
 ## 0.5.3 Recent Changes
 Docker image creation and use  
 Removed captcha note in keep-test.py  
+
+## 0.5.4 Recent Changes
+Docker image altered to use Ubuntu:22.04 to fix Google auth issues with gkeepapi  
+Added new flag -m to move exported images to Archive folder 
+Removed python deprecated imghdr library with pillow module
