@@ -1,8 +1,8 @@
 ## Installation Steps for Advanced Users (only needs to run once)
 - Python 3.10+ required
-- Create a fresh virtual environment (or use pyenv for a specific new version)
 - Install git 
 - Download latest version of `keep-it-markdown` and unzip it to your working directory
+- Create a fresh virtual environment within the working directory (or use pyenv for a specific new version)
 - Activate the virtual environment (or switch to the clean Python install)
 - Install lastest `gpsoauth` package - `pip install git+https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1`
 - Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
