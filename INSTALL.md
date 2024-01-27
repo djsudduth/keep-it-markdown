@@ -8,8 +8,8 @@
 - Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 - Run the script in the KIM directory - `python get_token.py`
 - Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
-- Copy the Keep Token value output from get_token.py
+- Copy the Keep Token value output from `get_token.py`
 - Install KIM dependencies in the venv - `pip install -r requirements.txt`
 - Run KIM to save the Token in your local Keyring - `python kim.py -t <your long token value here>`
 
-Congratulations! You're done! Your Token is valid for all versions now (unless Google changes it)  
+Congratulations! You're done! Your Token is valid for all KIM versions now (unless Google changes it). You can now run KIM locally (see `kim.py --help` for switch options) 
