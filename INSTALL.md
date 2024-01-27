@@ -10,6 +10,7 @@
 - Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
 - Copy the Keep Token value output from `get_token.py`
 - Install KIM dependencies in the venv - `pip install -r requirements.txt`
+- Linux users - you may need to install a Keyring - `pip install keyrings.alt`
 - Run KIM to save the Token in your local Keyring - `python kim.py -t <your long token value here>`
 
 Congratulations! You're done! Your Token is valid for all KIM versions now (unless Google changes it). You can now run KIM locally (see `kim.py --help` for switch options) 

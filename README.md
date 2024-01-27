@@ -12,7 +12,7 @@ Install assumes you have some familiarity with running scripts through a termina
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
-You only need to run installation steps 1 through 5 one time.
+You only need to run installation steps 1 through 6 one time.
 
 #### Step 1: 
 Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. If you have an older version of Python (3.8 or 3.9) installed and you want to leave it, you can install pyenv to run multiple versions. Start your command prompt, shell or terminal and verify your python version by running:
@@ -55,7 +55,7 @@ So, when you get the prompt when running the script:
 **OAuth Token:** oauth2_4/......rest of token  
 **Android ID:** abcdef123  
 
-A lot of data will print out -> the Keep token is at the top - it should look like:  
+The Keep token should be displayed - it should look like:  
 "aas_et/FKcp.............lots of characters.....................BjQ="  
 
 Copy that token and save it in a safe place! If it didn't work your OAuth token may have expired (takes about 5 min to expire). Run this step again until you get the token.  
