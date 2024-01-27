@@ -39,12 +39,12 @@ You will be prompted for your Google email account name, OAuth token, and Androi
 
 The AndroidID can just be a random value like: `abcdef123`  
 
-So, when you get the prompt when running the script:
-Email: your google ID
-OAuth Token: oauth2_4/......rest of token
-Android ID: abcdef123
+So, when you get the prompt when running the script:  
+Email: your google ID  
+OAuth Token: oauth2_4/......rest of token  
+Android ID: abcdef123  
 
-A lot of data will print out -> the Keep token is at the top - it should look like:
+A lot of data will print out -> the Keep token is at the top - it should look like:  
 "aas_et/FKcp.............lots of characters.....................BjQ="  
 
 Copy that token and save it in a safe place!
