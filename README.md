@@ -10,7 +10,7 @@ Install assumes you have some familiarity with running scripts through a termina
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
-You only need to run installation steps 1 through 4 one time.
+You only need to run installation steps 1 through 5 one time.
 
 #### Step 1: 
 Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. If you have an older version of Python (3.8 or 3.9) installed and you want to leave it, you can install pyenv to run multiple versions. Start your command prompt, shell or terminal and verify your python version by running:
@@ -23,12 +23,19 @@ If you had Python 2 installed already you may need to type 'python3' instead of 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
 https://github.com/djsudduth/keep-it-markdown/releases
 
-Unzip the files within your chosen directory.  DO NOT RUN REQUIREMENTS.TXT YET!  
+Unzip the files within your chosen directory.  **DO NOT RUN REQUIREMENTS.TXT YET!**  
+
 
 #### Step 3:
-KIM requires a Google Keep authentication token in order to run. The token can only be retrieved from a web page cookie. To do this it is important that you have a fresh Python install or a new virtual environment (venv) setup.
+KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a web page OAuth cookie. To do this it is important that you have a fresh Python install or a new virtual environment (venv) setup.
 
-Once you've setup a fresh environment, install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM. Here's the tricky part - you need to get your OAuth token from a Google cookie. To get the OAuth token - follow the **"Second way"** instructions here:
+Once you've setup a fresh environment, install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM. One Python module is needed to get the token. Run this command on your PC:  
+```bash
+> pip install +https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1
+```
+
+#### Step 4:
+Here's the tricky part - you need to get your OAuth token from a Google cookie. To get the OAuth token - follow the **"Second way"** instructions here (but get the cookie value using the Chrome extension once you've pressed "I agree" on the Google page):
 https://github.com/rukins/gpsoauth-java?tab=readme-ov-file  
 
 Copy the cookie called `oauth_token` using the Chrome Cookie Tab Viewer from the cookies in your local browser. Then, run the script
@@ -40,23 +47,23 @@ You will be prompted for your Google email account name, OAuth token, and Androi
 The AndroidID can just be a random value like: `abcdef123`  
 
 So, when you get the prompt when running the script:  
-Email: your google ID  
-OAuth Token: oauth2_4/......rest of token  
-Android ID: abcdef123  
+**Email:** your google ID  
+**OAuth Token:** oauth2_4/......rest of token  
+**Android ID:** abcdef123  
 
 A lot of data will print out -> the Keep token is at the top - it should look like:  
 "aas_et/FKcp.............lots of characters.....................BjQ="  
 
-Copy that token and save it in a safe place!
+Copy that token and save it in a safe place! If it didn't work your OAuth token may have expired (takes about 5 min to expire). Run this step again until you get the token.  
 
-#### Step 4:
-Now run in your KIM directory to install all needed dependencies
+#### Step 5:
+Make sure you are in the KIM directory to install all needed dependencies with:  
 ```bash
 > pip install -r requirements.txt
 ```
 (you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
-#### Step 5: 
+#### Step 6: 
 You now need to save your Keep token within the KIM secure keyring
 ```bash
 > python kim.py -t <your long token value here>
@@ -264,6 +271,6 @@ Added new flag -m to move exported images to Archive folder
 Removed python deprecated imghdr library with pillow module  
 
 ## 0.6.0 Recent Changes
-Now requires Python v-3.10+ to run KIM
-New Docker image to get the Keep token
-Old keep-test.py module removed for new Google authentication
+Now requires Python v-3.10+ to run KIM  
+New Docker image to get the Keep token  
+Old keep-test.py module removed for new Google authentication  
