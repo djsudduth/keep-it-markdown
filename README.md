@@ -29,9 +29,11 @@ Unzip the files within your chosen directory.  **DO NOT RUN REQUIREMENTS.TXT YET
 #### Step 3:
 KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a web page OAuth cookie. To do this it is important that you have a fresh Python install or a new virtual environment (venv) setup.
 
-Once you've setup a fresh environment, install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM. One Python module is needed to get the token. Run this command on your PC:  
+Once you've setup a fresh environment, install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM. You must also install `git` on your PC. Installation is simple here -> https://git-scm.com/downloads  
+
+One Python module is needed to get the token. Run this command on your PC:  
 ```bash
-> pip install +https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1
+> pip install git+https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1
 ```
 
 #### Step 4:
