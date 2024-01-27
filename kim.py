@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from xmlrpc.client import boolean
 from PIL import Image
 
-
+KIM_VERSION = "0.6.0"
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
@@ -723,7 +723,7 @@ def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
 
         #m = True
         opts = Options(o, a, p, s, c, l, j, m, i)
-        click.echo("\r\nWelcome to Keep it Markdown or KIM!\r\n")
+        click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
         if i and (r or o or a or s or p or c or m):
             print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
@@ -748,8 +748,6 @@ def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
     #except Exception as e:
     #    raise Exception("Problem with markdown file creation: " + repr(e))
 
-
-#Version 0.5.4
 
 if __name__ == '__main__':
 

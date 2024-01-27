@@ -2,6 +2,7 @@ settings*.cfg
 skiptest.py
 fuzzy.py
 zz*.py
+configs.txt
 mdfiles/
 backup/
 .vscode/
