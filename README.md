@@ -206,7 +206,7 @@ Note: skip -s and overwrite -o cannot be used at the same time
 9. There seems to be login issues due to some of the authentication and security library changes with Google and Python. Take a look at this note -> https://github.com/djsudduth/keep-it-markdown/issues/72 or use the Advanced Docker Setup in the next section
 
 ## Advanced Docker Setup
-If you are having difficulty logging in to Google you can use Docker with the preconfigured OS and Python version to access KIM and save your exported notes (see alternative step 7 if you want to save the Keep token on your PC).
+If you are having difficulty logging in to Google you can use Docker with the preconfigured OS and Python version to access KIM and save your exported notes (see alternative step 12 if you want to save the Keep token on your PC).
 
 **Steps:**
 1) Install Docker on any PC (find the online instructions for your particular operating system)
