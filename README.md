@@ -220,7 +220,7 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 9) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
 10) Copy and save the Keep Token value output from `get_token.py` on your PC
 ---
-11) For one time or sporatic use, run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
+11) For one time or sporatic use, install the KIM dependencies with `pip install -r requirements.txt` and then run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
 ---
 12) Alternatively, exit the Docker image with ``exit``
 13) Download and install KIM in your current OS
