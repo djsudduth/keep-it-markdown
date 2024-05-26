@@ -205,19 +205,18 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
 4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.1/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
 5) Change the directory to Kim ``cd keep-it-markdown-0.6.1``  
-6) Install the KIM dependencies with `pip install -r requirements.txt`  
-7) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
-8) Run the script in the KIM directory - `python get_token.py`
-9) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
-10) Copy and save the Keep Token value output from `get_token.py` on your PC
+6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
+7) Run the script in the KIM directory - `python get_token.py`
+8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
+9) Copy and save the Keep Token value output from `get_token.py` on your PC
 ---
-11) For one time or sporatic use, run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
+10) For one time or sporatic use, run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
 ---
-12) Alternatively, exit the Docker image with ``exit``
-13) Download and install KIM in your current OS
-14) Install KIM dependencies your PC using `pip install -r requirements.txt`
-15) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
-16) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
+11) Alternatively, exit the Docker image with ``exit``
+12) Download and install KIM in your current OS
+13) Install KIM dependencies your PC using `pip install -r requirements.txt`
+14) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
+15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
