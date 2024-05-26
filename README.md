@@ -224,13 +224,13 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
 ## Logseq Use
-Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
+Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. 
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
-KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as Joplin front matter to add them as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks are not supported in Joplin's manual markdown import and front matter tags are not supported on import.
+KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
@@ -274,4 +274,5 @@ Old keep-test.py module removed for new Google authentication (get_token.py adde
 New simple INSTALL.md steps
 
 ## 0.6.1 Recent Changes
-New instructions for versions of gkeepapi and gpsoauth to get keep token  
+New instructions and Dockerfile for updated versions of gkeepapi and gpsoauth to get keep token  
+Wikilinking now supported for Joplin notes  

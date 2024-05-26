@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from xmlrpc.client import boolean
 from PIL import Image
 
-KIM_VERSION = "0.6.0"
+KIM_VERSION = "0.6.1"
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
@@ -412,6 +412,21 @@ class FileService:
         return (media_name)
 
 
+def replace_wikilinks(text):
+    pattern = r"\[\[([^\]]*)\]\]"
+    def replace(match):
+        link_text = match.group(1)
+        # Split the link text by pipe symbol, if present
+        parts = link_text.split("|")
+        print (link_text)
+        file_link = parts[0].replace(' ', '%20')
+        if len(parts) == 1:
+        # No pipe symbol, use the same text for link and display text
+            return f"[{parts[0]}]({file_link}.md)"
+        else:
+            return f"[{parts[1]}]({file_link}.md)"
+    return re.sub(pattern, replace, text, count=0, flags=re.MULTILINE)
+    
 
 def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
     try:
@@ -581,6 +596,7 @@ def keep_query_convert(keep, keepquery, opts):
                             "---\n\n")
                 note_labels = ""
                 note.timestamps = {}
+                note.text = replace_wikilinks(note.text)
 
 
             if opts.archive_only:
