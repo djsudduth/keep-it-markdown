@@ -25,21 +25,19 @@ If you had Python 2 installed already you may need to type 'python3' instead of 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
 https://github.com/djsudduth/keep-it-markdown/releases
 
-Unzip the files within your chosen directory.  **DO NOT RUN REQUIREMENTS.TXT YET!**  
-
+Unzip the files within your chosen directory. 
 
 #### Step 3:
-KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a web page OAuth cookie. To do this it is important that you have a fresh Python install or a new virtual environment (venv) setup.
-
-Once you've setup a fresh environment, install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM. You must also install `git` on your PC. Installation is simple here -> https://git-scm.com/downloads  
-
-One Python module is needed to get the token. Run this command on your PC:  
+Make sure you are in your KIM directory and install all needed dependencies with:  
 ```bash
-> pip install git+https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1
+> pip install -r requirements.txt
 ```
+(you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4:
-Here's the tricky part - you need to get your OAuth token from a Google cookie. To get the OAuth token - follow the **"Second way"** instructions here (but get the cookie value using the Chrome extension once you've pressed "I agree" on the Google page):
+KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a Google page OAuth cookie. Install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM.  
+
+Here's the tricky part - you need to get your OAuth token from a Google cookie. To get the OAuth token - follow the **"Second way"** instructions here (but get the cookie value using the Chrome extension once you've pressed "I agree" on the Google page in the Second way method):
 https://github.com/rukins/gpsoauth-java?tab=readme-ov-file  
 
 Copy the cookie called `oauth_token` using the Chrome Cookie Tab Viewer from the cookies in your local browser. Then, run the script
@@ -60,14 +58,7 @@ The Keep token should be displayed - it should look like:
 
 Copy that token and save it in a safe place! If it didn't work your OAuth token may have expired (takes about 5 min to expire). Run this step again until you get the token.  
 
-#### Step 5:
-Make sure you are in the KIM directory to install all needed dependencies with:  
-```bash
-> pip install -r requirements.txt
-```
-(you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
-
-#### Step 6: 
+#### Step 5: 
 You now need to save your Keep token within the KIM secure keyring
 ```bash
 > python kim.py -t <your long token value here>
@@ -212,21 +203,20 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.0/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.6.0``
-6) Install lastest `gpsoauth` package - `pip install git+https://github.com/simon-weber/gpsoauth.git@8a5212481f80312e06ba6e0a29fbcfca1f210fd1`
-7) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
-8) Run the script in the KIM directory - `python get_token.py`
-9) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
-10) Copy and save the Keep Token value output from `get_token.py` on your PC
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.1/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.6.1``  
+6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
+7) Run the script in the KIM directory - `python get_token.py`
+8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
+9) Copy and save the Keep Token value output from `get_token.py` on your PC
 ---
-11) For one time or sporatic use, install the KIM dependencies with `pip install -r requirements.txt` and then run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
+10) For one time or sporatic use, run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
 ---
-12) Alternatively, exit the Docker image with ``exit``
-13) Download and install KIM in your current OS
-14) Install KIM dependencies your PC using `pip install -r requirements.txt`
-15) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
-16) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
+11) Alternatively, exit the Docker image with ``exit``
+12) Download and install KIM in your current OS
+13) Install KIM dependencies your PC using `pip install -r requirements.txt`
+14) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
+15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
@@ -234,13 +224,13 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
 
 ## Logseq Use
-Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. Deep testing was not done on this option.
+Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. 
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
-KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as Joplin front matter to add them as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. However, wikilinks are not supported in Joplin's manual markdown import and front matter tags are not supported on import.
+KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
@@ -282,3 +272,7 @@ Now requires Python v-3.10+ to run KIM
 New Docker image to get the Keep token  
 Old keep-test.py module removed for new Google authentication (get_token.py added)
 New simple INSTALL.md steps
+
+## 0.6.1 Recent Changes
+New instructions and Dockerfile for updated versions of gkeepapi and gpsoauth to get keep token  
+Wikilinking now supported for Joplin notes  
