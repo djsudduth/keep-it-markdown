@@ -270,7 +270,7 @@ Removed python deprecated imghdr library with pillow module
 ## 0.6.0 Recent Changes
 Now requires Python v-3.10+ to run KIM  
 New Docker image to get the Keep token  
-Old keep-test.py module removed for new Google authentication (get_token.py added)
+Old keep-test.py module removed for new Google authentication (get_token.py added)  
 New simple INSTALL.md steps
 
 ## 0.6.1 Recent Changes
