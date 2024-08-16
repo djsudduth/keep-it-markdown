@@ -279,5 +279,5 @@ Wikilinking now supported for Joplin notes
 
 ## 0.6.2 Recent Changes
 Fixed the keep.resume warning message for newer gkeepapi version >= 0.16.0  
-Fixed the Python 3.12+ regular expression error
-Added more detail error message if KIM fails to execute
+Fixed the Python 3.12+ regular expression error  
+Added more detail error message if KIM fails to execute  
