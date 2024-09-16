@@ -203,8 +203,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.1/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.6.1``  
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.3/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.6.3``  
 6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 7) Run the script in the KIM directory - `python get_token.py`
 8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
@@ -281,3 +281,6 @@ Wikilinking now supported for Joplin notes
 Fixed the keep.resume warning message for newer gkeepapi version >= 0.16.0  
 Fixed the Python 3.12+ regular expression error  
 Added more detail error message if KIM fails to execute  
+
+## 0.6.3 Recent Changes
+Fixed the Dockerfile versions    
