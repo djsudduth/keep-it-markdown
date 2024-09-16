@@ -270,9 +270,14 @@ Removed python deprecated imghdr library with pillow module
 ## 0.6.0 Recent Changes
 Now requires Python v-3.10+ to run KIM  
 New Docker image to get the Keep token  
-Old keep-test.py module removed for new Google authentication (get_token.py added)
+Old keep-test.py module removed for new Google authentication (get_token.py added)  
 New simple INSTALL.md steps
 
 ## 0.6.1 Recent Changes
 New instructions and Dockerfile for updated versions of gkeepapi and gpsoauth to get keep token  
 Wikilinking now supported for Joplin notes  
+
+## 0.6.2 Recent Changes
+Fixed the keep.resume warning message for newer gkeepapi version >= 0.16.0  
+Fixed the Python 3.12+ regular expression error  
+Added more detail error message if KIM fails to execute  

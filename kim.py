@@ -12,9 +12,10 @@ from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
 from xmlrpc.client import boolean
+from importlib.metadata import version
 from PIL import Image
 
-KIM_VERSION = "0.6.1"
+KIM_VERSION = "0.6.2"
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
@@ -150,7 +151,7 @@ class Markdown:
         # pylint: disable=anomalous-backslash-in-string
         urls = re.findall(
             "http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
-                "|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
             text
         )
         #Note that the use of temporary %%% is because notes 
@@ -261,7 +262,11 @@ class KeepService:
             return self._keep_token
 
     def resume(self):
-        self._keepapi.resume(self._userid, self._keep_token)
+        kv = version('gkeepapi')
+        if kv < "0.16.0":
+            self._keepapi.resume(self._userid, self._keep_token)
+        else:
+            self._keepapi.authenticate(self._userid, self._keep_token)
 
     def getnotes(self):
         return(self._keepapi.all())
@@ -418,7 +423,7 @@ def replace_wikilinks(text):
         link_text = match.group(1)
         # Split the link text by pipe symbol, if present
         parts = link_text.split("|")
-        print (link_text)
+        # print (link_text)
         file_link = parts[0].replace(' ', '%20')
         if len(parts) == 1:
         # No pipe symbol, use the same text for link and display text
@@ -736,8 +741,6 @@ def ui_welcome_config():
 def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
 
     try:
-
-        #m = True
         opts = Options(o, a, p, s, c, l, j, m, i)
         click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
@@ -753,16 +756,14 @@ def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
 
         keep = ui_login(r, master_token)
 
-
         if i:
             keep_import_notes(keep)
         else:
             ui_query(keep, search_term, opts)
 
-    except:
-        print("Could not excute KIM")
-    #except Exception as e:
-    #    raise Exception("Problem with markdown file creation: " + repr(e))
+    except Exception as e:
+        print("Could not excute KIM - \nError: " + repr(e) + " ")
+
 
 
 if __name__ == '__main__':
