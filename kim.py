@@ -15,7 +15,7 @@ from xmlrpc.client import boolean
 from importlib.metadata import version
 from PIL import Image
 
-KIM_VERSION = "0.6.3"
+KIM_VERSION = "0.6.4"
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
 CONFIG_FILE = "settings.cfg"
