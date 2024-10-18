@@ -150,16 +150,27 @@ class Markdown:
     def convert_urls(text):
         # pylint: disable=anomalous-backslash-in-string
         urls = re.findall(
-            "http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
                 "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
             text
         )
+        mdurls = re.findall(
+            r"]\(http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
+                "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            text
+        )
+
         #Note that the use of temporary %%% is because notes 
         #   can have the same URL repeated and replace would fail
         for url in urls:
-            text = text.replace(url, 
-                "[" + url[:1] + "%%%" + url[2:] + 
-                "](" + url[:1] + "%%%" + url[2:] + ")", 1)
+            convert = True
+            for murl in mdurls:
+                if url in murl:
+                    convert = False #ignore urls with markdown syntax
+            if convert:
+                text = text.replace(url, 
+                    "[" + url[:1] + "%%%" + url[2:] + 
+                    "](" + url[:1] + "%%%" + url[2:] + ")", 1)
 
         return text.replace("h%%%tp", "http")
 

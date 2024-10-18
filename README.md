@@ -203,8 +203,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.4/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.6.4``  
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.5/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.6.5``  
 6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 7) Run the script in the KIM directory - `python get_token.py`
 8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
@@ -253,34 +253,3 @@ Thanks for trying this markdown converter! I hope you find it useful!
 There's always room for improvement. Feel free to add issues to the issues list.
 
 
-## 0.5.2 Recent Changes
-Switched audio file extensions from AAC back to M4A  
-Added Joplin exports -j flag to use front matter header  
-Removed first dash on list notes exported to Logseq with -l switch  
-
-## 0.5.3 Recent Changes
-Docker image creation and use  
-Removed captcha note in keep-test.py  
-
-## 0.5.4 Recent Changes
-Docker image altered to use Ubuntu:22.04 to fix Google auth issues with gkeepapi  
-Added new flag -m to move exported images to Archive folder  
-Removed python deprecated imghdr library with pillow module  
-
-## 0.6.0 Recent Changes
-Now requires Python v-3.10+ to run KIM  
-New Docker image to get the Keep token  
-Old keep-test.py module removed for new Google authentication (get_token.py added)  
-New simple INSTALL.md steps
-
-## 0.6.1 Recent Changes
-New instructions and Dockerfile for updated versions of gkeepapi and gpsoauth to get keep token  
-Wikilinking now supported for Joplin notes  
-
-## 0.6.2 Recent Changes
-Fixed the keep.resume warning message for newer gkeepapi version >= 0.16.0  
-Fixed the Python 3.12+ regular expression error  
-Added more detail error message if KIM fails to execute  
-
-## 0.6.3/0.6.4 Recent Changes
-Fixed the Dockerfile versions    
