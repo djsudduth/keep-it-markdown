@@ -1,10 +1,11 @@
 # Changelog
 
 ## 0.6.5 Release (11/??/2024)
-Added ignore of any pre-existing markdown web links in notes  
+Added ignore of any pre-existing markdown web links in notes (compatible now with Markdown for Google Keep plugin)  
 Filter exported notes by create or edit date ( < or > date only)  
-Fixed expored notes update date to be the edited date vs. internal Google update date  
+Fixed exported notes update date to be the edited date vs. internal Google update date  
 Added warning on importing too many markdown notes may lock user out of Keep  
+Added EXAMPLES.md for command line examples using option switches  
 
 ## 0.6.3|0.6.4 Release (9/16/2024)
 Fixed the Dockerfile versions    

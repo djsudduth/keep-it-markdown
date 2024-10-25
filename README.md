@@ -89,7 +89,7 @@ You can convert to md by using a single word, a phrase or by a label. **All quer
 At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
 
 **google_userid** = your-google-account-id (allows you to bypass typing in your id)  
-**output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
+**output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.  
 **media_path** = location of the exported media files (images, audio) relative to your output_path. If the output_path is /mdexport and media_path is media/data, the media full path will be /mdexport/media/data. Media paths cannot start with /, mount or drive letter.
 
 (For import settings, see the -i switch below)
@@ -99,6 +99,8 @@ All KIM options can be discovered using
 ```bash
 > python kim.py --help
 ```
+Also see **EXAMPLES.md** for many option combinations  
+
 #### Labels
 Searching for notes by labels just requires the # character in front of the search term like '#MyLabel'. On some operating systems like Linux you may need to enclose the term in quotes.
 
