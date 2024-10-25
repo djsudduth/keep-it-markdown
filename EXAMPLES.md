@@ -10,11 +10,9 @@
 
 #### User query and export active notes that were edited after Jun 15, 2023
 `python kim.py -ed "> 2023-06-15"`
----
 
 #### User queries have the prompt:
 `Enter a keyword search, label search or --all' to convert Keep notes to md or '--x' to exit:`
----
 
 #### Export all active notes in batch without user prompts
 `python kim.py -b --all`
@@ -38,27 +36,19 @@
 
 ### List of options
 Options:
-  -r                       Will reset and not use the local keep access token
-                           in your system's keyring
-  -o                       Overwrite any existing markdown files with the same
-                           name
-  -a                       Search and export only archived notes
-  -p                       Preserve keep labels with spaces and special
-                           characters
-  -s                       Skip over any existing notes with the same title
-  -c                       Use starting content within note body instead of
-                           create date for md filename
-  -l                       Prepend paragraphs with Logseq style bullets
-  -j                       Prepend notes with Joplin front matter tags and
-                           dates
-  -m                       Move any exported Keep notes to Archive
-  -i                       Import notes from markdown files WARNING -
-                           EXPERIMENTAL!!
-  -cd, --cd TEXT           Export notes before or after the create date - < or
-                           >|YYYY-MM-DD
-  -ed, --ed TEXT           Export notes before or after the edit date - < or
-                           >|YYYY-MM-DD
-  -b, --search-term TEXT   Run in batch mode with a specific Keep search term
+  -r  Will reset and not use the local keep access token in your system's keyring  
+  -o  Overwrite any existing markdown files with the same name  
+  -a  Search and export only archived notes  
+  -p  Preserve keep labels with spaces and special characters  
+  -s  Skip over any existing notes with the same title  
+  -c  Use starting content within note body instead of create date for md filename  
+  -l  Prepend paragraphs with Logseq style bullets  
+  -j  Prepend notes with Joplin front matter tags and dates  
+  -m  Move any exported Keep notes to Archive  
+  -i  Import notes from markdown files WARNING - EXPERIMENTAL!!  
+  -cd, --cd TEXT  Export notes before or after the create date - < or >|YYYY-MM-DD  
+  -ed, --ed TEXT  Export notes before or after the edit date - < or >|YYYY-MM-DD  
+  -b, --search-term TEXT  Run in batch mode with a specific Keep search term  
   -t, --master-token TEXT  Log in using master keep token
-  --help                   Show this message and exit.
+  --help Show this message and exit.
 

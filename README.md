@@ -264,6 +264,6 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
-There's always room for improvement. Feel free to add issues to the issues list.
+There's always room for improvement. Feel free to add questions or issues to the issues list.
 
 
