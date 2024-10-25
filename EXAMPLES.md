@@ -18,6 +18,9 @@
 #### Export all active notes in batch without user prompts
 `python kim.py -b --all`
 
+#### Export only notes with the label #science in batch without user prompts
+`python kim.py -b "#science"`
+
 #### Export all active notes in batch with create dates after Jan 1, 2023
 `python kim.py -cd "> 2023-01-01" -b --all`
 
