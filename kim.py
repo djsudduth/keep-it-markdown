@@ -8,6 +8,7 @@ import re
 import configparser
 import click
 import datetime
+import operator
 from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
@@ -75,6 +76,8 @@ class Options:
     joplin_frontmatter: boolean
     move_to_archive: boolean
     import_files: boolean
+    create_date: str
+    edit_date: str
 
 @dataclass
 class Note:
@@ -84,6 +87,8 @@ class Note:
     archived: boolean
     trashed: boolean
     timestamps: dict
+    created: datetime.datetime
+    edited: datetime.datetime
     labels: list
     blobs: list
     blob_names: list
@@ -476,8 +481,8 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
         else:
             timestamps = ("Created: " + note.timestamps["created"]
                         [ : note.timestamps["created"].rfind('.') ] + "   ---   " + 
-                        "Updated: " + note.timestamps["updated"]
-                        [ : note.timestamps["updated"].rfind('.') ] + "\n\n")
+                        "Updated: " + note.timestamps["edited"]
+                        [ : note.timestamps["edited"].rfind('.') ] + "\n\n")
 
         markdown_data = (
             note.header + 
@@ -534,9 +539,16 @@ def keep_get_blobs(keep, note):
 
 
 def keep_query_convert(keep, keepquery, opts):
+
+    comparison_operators = {
+    "<": operator.lt,
+    ">": operator.gt
+    }
+
     try:
         count = 0
         ccnt = 0
+
 
         if keepquery == "--all":
             gnotes = keep.getnotes()
@@ -557,7 +569,9 @@ def keep_query_convert(keep, keepquery, opts):
                     gnote.archived,
                     gnote.trashed,
                     {"created": str(gnote.timestamps.created), 
-                        "updated": str(gnote.timestamps.updated)},
+                        "edited": str(gnote.timestamps.edited)},
+                    gnote.timestamps.created,
+                    gnote.timestamps.edited,
                     [str(label) for label in gnote.labels.all()],
                     [blob for blob in gnote.blobs],
                     ['' for blob in gnote.blobs], 
@@ -568,8 +582,25 @@ def keep_query_convert(keep, keepquery, opts):
             if opts.move_to_archive:
                 gnote.archived = True
 
- 
+        filter_date = opts.create_date or opts.edit_date or None
+        coperator = ""
+        compare_date = None
+        if (filter_date):
+            coperator = filter_date[:1]
+            compare_date = datetime.datetime.strptime(
+                re.split('<|>', filter_date)[1].strip() 
+                    + "T00:00:00+0000", "%Y-%m-%dT%H:%M:%S%z")
+
+
         for note in notes:
+
+            if compare_date:
+                op = comparison_operators.get(coperator, None)
+                if opts.create_date and not op(note.created, compare_date):
+                    continue
+                if opts.edit_date and not op(note.edited, compare_date):
+                    continue
+
 
             note_date = re.sub('[^A-z0-9-]', ' ', note.timestamps["created"].replace(":", "").replace(".", "-"))
 
@@ -607,7 +638,7 @@ def keep_query_convert(keep, keepquery, opts):
                 for label in note_labels.replace("#", "").split():
                     joplin_labels += "  - " + label + "\n"
                 note.header = ("---\ntitle: " + note.title + 
-                            "\nupdated: " + note.timestamps["updated"] + 
+                            "\nupdated: " + note.timestamps["edited"] + 
                             "Z\ncreated: " + note.timestamps["created"] + 
                             "Z\ntags:\n" + joplin_labels + 
                             "---\n\n")
@@ -747,13 +778,18 @@ def ui_welcome_config():
 @click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
 @click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
-@click.option('-i', is_flag=True, help="Import notes from markdown files EXPERIMENTAL!!")
+@click.option('-i', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
+@click.option('-cd', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
+@click.option('-ed', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
+
+
+def main(r, o, a, p, s, c, l, j, m, i, cd, ed, search_term, master_token):
+
 
     try:
-        opts = Options(o, a, p, s, c, l, j, m, i)
+        opts = Options(o, a, p, s, c, l, j, m, i, cd, ed)
         click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
         if i and (r or o or a or s or p or c or m):
@@ -763,6 +799,23 @@ def main(r, o, a, p, s, c, l, j, m, i, search_term, master_token):
         if o and s:
             print("Overwrite and Skip flags are not compatible together -- please use one or the other...")
             exit()
+
+        if cd and ed:
+            print("Filtering by both create and edit date is not compatible -- please use one or the other...")
+            exit()
+      
+        #ed = "< 2022-12-31"
+        #opts.edit_date = ">2024-09-01"
+        if (cd and not cd.startswith("<") and not cd.startswith(">")):
+            print("Invalid create date filter - date filter must be in the form '> 2024-12-02' or '< 2024-12-02'")
+            exit()
+
+        if (ed and not ed.startswith("<") and not ed.startswith(">")):
+            print("Invalid edit date filter - date filter must be in the form '> 2024-12-02' or '< 2024-12-02'")                
+            exit()
+        
+        if i:
+            print("WARNING!!! Attempting to import more than 100 notes at a time may lock you out of your Google Keep account! Use caution!\n")
 
         ui_welcome_config()
 

@@ -134,6 +134,17 @@ Joplin tags do not use the hashtag format. They are provided as front matter com
 > python kim.py -j
 ```
 
+#### Filter by Create or Edit Date 
+KIM now supports filtering your export by either the created date (`-cd`) or edited date (`-ed`). This can be combined with the other options to export notes only after or before specific dates. Only the greater-than `>` or less-than `<` filters are available. You must provide the `<`|`>` preceeding the date. The date must be in the form `YYYY-MM-DD`. For example, you can filter on any notes created before Dec 9, 2022 with:
+```bash
+> python kim.py -cd "< 2022-12-09"
+```
+Or, you can filter on any notes edited after Oct 31, 2023 with:
+```bash
+> python kim.py -ed "> 2023-10-31"
+```
+(Note that Linux users my have to use single quotes)
+
 #### Move Notes to Archive After Export  
 **CAUTION! This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
 If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
@@ -165,7 +176,7 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 ```
 Archive export can be combined with the -o and -b options. 
 
-#### Import Notes - EXPERIMENTAL
+#### Import Notes - EXPERIMENTAL (WARNING - GOOGLE RATE LIMITS)
 KIM now supports importing markdown note files back into Keep using 
 ```bash
 > python kim.py -i
@@ -179,9 +190,9 @@ To add the path and desired labels for import in **settings.cfg**, add or update
 NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
 #### Combinations
-Example: to export all achived notes, using content for blank note titles, with overwriting, preserving Keep label format and logseq style paragraphs in batch:
+Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, with create dates > Oct 3, 2023 in batch:
 ```bash
-> python kim.py -a -c -o -p -l -b --all
+> python kim.py -c -o -p -l -cd "> 2023-10-03" -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time
 
