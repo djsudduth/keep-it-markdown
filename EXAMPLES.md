@@ -1,4 +1,8 @@
 ## Simple Export
+
+### All user queries have the prompt:
+`Enter a keyword search, label search or --all' to convert Keep notes to md or '--x' to exit:`
+
 #### User query and export active notes
 `python kim.py`
 
@@ -10,9 +14,6 @@
 
 #### User query and export active notes that were edited after Jun 15, 2023
 `python kim.py -ed "> 2023-06-15"`
-
-#### User queries have the prompt:
-`Enter a keyword search, label search or --all' to convert Keep notes to md or '--x' to exit:`
 
 #### Export all active notes in batch without user prompts
 `python kim.py -b --all`
