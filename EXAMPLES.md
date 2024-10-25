@@ -35,6 +35,7 @@
 `python kim.py -p -s -m -b --all`
 
 ### List of options
+```
 Options:
   -r  Will reset and not use the local keep access token in your system's keyring  
   -o  Overwrite any existing markdown files with the same name  
@@ -51,4 +52,4 @@ Options:
   -b, --search-term TEXT  Run in batch mode with a specific Keep search term  
   -t, --master-token TEXT  Log in using master keep token
   --help Show this message and exit.
-
+```
