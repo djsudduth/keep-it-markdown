@@ -89,7 +89,7 @@ You can convert to md by using a single word, a phrase or by a label. **All quer
 At first launch KIM will create a **settings.cfg** file in the directory where you chose to install KIM. You can modify these settings with a text editor:
 
 **google_userid** = your-google-account-id (allows you to bypass typing in your id)  
-**output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.
+**output_path** = path to where the output md files are created (if empty it is your install directory). Windows users use forward slashes, e.g. -> c:/md-files/export.  
 **media_path** = location of the exported media files (images, audio) relative to your output_path. If the output_path is /mdexport and media_path is media/data, the media full path will be /mdexport/media/data. Media paths cannot start with /, mount or drive letter.
 
 (For import settings, see the -i switch below)
@@ -99,6 +99,8 @@ All KIM options can be discovered using
 ```bash
 > python kim.py --help
 ```
+Also see **EXAMPLES.md** for many option combinations  
+
 #### Labels
 Searching for notes by labels just requires the # character in front of the search term like '#MyLabel'. On some operating systems like Linux you may need to enclose the term in quotes.
 
@@ -122,7 +124,7 @@ If you want to skip or ignore notes that have already been exported then
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
-#### Logseq Style (Experimental!)
+#### Logseq Style 
 Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
 ```bash
 > python kim.py -l
@@ -133,6 +135,17 @@ Joplin tags do not use the hashtag format. They are provided as front matter com
 ```bash
 > python kim.py -j
 ```
+
+#### Filter by Create or Edit Date 
+KIM now supports filtering your export by either the created date (`-cd`) or edited date (`-ed`). This can be combined with the other options to export notes only after or before specific dates. Only the greater-than `>` or less-than `<` filters are available. You must provide the `<`|`>` preceeding the date. The date must be in the form `YYYY-MM-DD`. For example, you can filter on any notes created before Dec 9, 2022 with:
+```bash
+> python kim.py -cd "< 2022-12-09"
+```
+Or, you can filter on any notes edited after Oct 31, 2023 with:
+```bash
+> python kim.py -ed "> 2023-10-31"
+```
+(Note that Linux users my have to use single quotes)
 
 #### Move Notes to Archive After Export  
 **CAUTION! This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
@@ -165,11 +178,20 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 ```
 Archive export can be combined with the -o and -b options. 
 
-#### Import Notes - EXPERIMENTAL
+#### Convert to Wikilinks
+KIM has an option to modify pre-existing Keep note-to-note links that are in markdown format such as `[Other Keep Note](https://keep.google.com/#NOTE/dks7r23ksdf...UI9kshweriuhv)` to just `[[Other Keep Note]]`
+```bash
+> python kim.py -w
+```
+This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
+
+#### Import Notes - EXPERIMENTAL (WARNING - GOOGLE RATE LIMITS)
 KIM now supports importing markdown note files back into Keep using 
 ```bash
 > python kim.py -i
 ```
+**WARNING! Google may lock you out of your account if you attempt to import more than a couple hundred files - use caution!**
+
 There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use Robocopy). Only existing labels can be used and those must be setup in the **settings.cfg** file.
 
 To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:  
@@ -178,18 +200,19 @@ To add the path and desired labels for import in **settings.cfg**, add or update
 
 NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
+
 #### Combinations
-Example: to export all achived notes, using content for blank note titles, with overwriting, preserving Keep label format and logseq style paragraphs in batch:
+Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, with create dates > Oct 3, 2023 in batch:
 ```bash
-> python kim.py -a -c -o -p -l -b --all
+> python kim.py -c -o -p -l -cd "> 2023-10-03" -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
-2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the -p flag to override this and preserve Keep labels as they are.
+2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the `-p` flag to override this and preserve Keep labels as they are.
 3. Note titles are truncated to 100 characters max.
-4. Notes without Keep titles are given titles using the date-time of when the note was created unless the -c flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
+4. Notes without Keep titles are given titles using the date-time of when the note was created unless the `-c` flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
@@ -203,8 +226,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.4/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.6.4``  
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.5/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.6.5``  
 6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 7) Run the script in the KIM directory - `python get_token.py`
 8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
@@ -215,22 +238,20 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 11) Alternatively, exit the Docker image with ``exit``
 12) Download and install KIM in your current OS
 13) Install KIM dependencies your PC using `pip install -r requirements.txt`
-14) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
+14) Run KIM with the `-t` switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
 15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
-Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
-
-KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
+Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. You can also cross-link notes in Keep like `[Other Note](https://keep.google.com/#NOTE/....)` and use the `-w` option to convert note-to-note links like this to wikilinks. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. KIM will try to map link any of Keep's URLs to markdown format for you or ignore markdown hyperlinks if they are already in the note.
 
 ## Logseq Use
-Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. 
+Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, a switch has been configured (`-l`) to add paragraph bullets within each exported note so Logseq will render them better. Also, namespaces are supported by using the `/` character in Keep titles (example a Keep note title of "Journal/2024-May" will export to "Journal___2024-May.md" - when opened in Logseq the namespace will be "Journal/2024-May").
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
-KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
+KIM markdown note exports also import very well into Joplin. Using the `-j` flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. If you have full markdown note-to-note links in Keep like `[Other Note](https://keep.google.com/#NOTE/....)`, add the `-w` flag to convert those to Wikilinks. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
@@ -250,37 +271,6 @@ KIM tries to adhere to strict markdown to be as compatible as possible.   No iss
 
 ## Thank You
 Thanks for trying this markdown converter! I hope you find it useful!
-There's always room for improvement. Feel free to add issues to the issues list.
+There's always room for improvement. Feel free to add questions or issues to the issues list.
 
 
-## 0.5.2 Recent Changes
-Switched audio file extensions from AAC back to M4A  
-Added Joplin exports -j flag to use front matter header  
-Removed first dash on list notes exported to Logseq with -l switch  
-
-## 0.5.3 Recent Changes
-Docker image creation and use  
-Removed captcha note in keep-test.py  
-
-## 0.5.4 Recent Changes
-Docker image altered to use Ubuntu:22.04 to fix Google auth issues with gkeepapi  
-Added new flag -m to move exported images to Archive folder  
-Removed python deprecated imghdr library with pillow module  
-
-## 0.6.0 Recent Changes
-Now requires Python v-3.10+ to run KIM  
-New Docker image to get the Keep token  
-Old keep-test.py module removed for new Google authentication (get_token.py added)  
-New simple INSTALL.md steps
-
-## 0.6.1 Recent Changes
-New instructions and Dockerfile for updated versions of gkeepapi and gpsoauth to get keep token  
-Wikilinking now supported for Joplin notes  
-
-## 0.6.2 Recent Changes
-Fixed the keep.resume warning message for newer gkeepapi version >= 0.16.0  
-Fixed the Python 3.12+ regular expression error  
-Added more detail error message if KIM fails to execute  
-
-## 0.6.3/0.6.4 Recent Changes
-Fixed the Dockerfile versions    
