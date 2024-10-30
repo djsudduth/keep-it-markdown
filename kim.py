@@ -838,9 +838,7 @@ def main(r, o, a, p, s, c, l, j, m, w, i, cd, ed, search_term, master_token):
         if cd and ed:
             print("Filtering by both create and edit date is not compatible -- please use one or the other...")
             exit()
-      
-        #ed = "< 2022-12-31"
-        #opts.edit_date = ">2024-09-01"
+    
         if (cd and not cd.startswith("<") and not cd.startswith(">")):
             print("Invalid create date filter - date filter must be in the form '> 2024-12-02' or '< 2024-12-02'")
             exit()
