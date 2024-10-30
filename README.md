@@ -124,7 +124,7 @@ If you want to skip or ignore notes that have already been exported then
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
-#### Logseq Style (Experimental!)
+#### Logseq Style 
 Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
 ```bash
 > python kim.py -l

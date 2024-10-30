@@ -823,12 +823,16 @@ def main(r, o, a, p, s, c, l, j, m, w, i, cd, ed, search_term, master_token):
         opts = Options(o, a, p, s, c, l, j, m, w, i, cd, ed)
         click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
-        if i and (r or o or a or s or p or c or m):
+        if i and (r or o or a or s or p or c or m or l or j):
             print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
             exit()
 
         if o and s:
             print("Overwrite and Skip flags are not compatible together -- please use one or the other...")
+            exit()
+
+        if a and m:
+            print("Attempting to move archive notes to archive -- please use one or the other...")
             exit()
 
         if cd and ed:
