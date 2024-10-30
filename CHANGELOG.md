@@ -1,11 +1,14 @@
 # Changelog
 
 ## 0.6.5 Release (11/??/2024)
-Added ignore of any pre-existing markdown web links in notes (compatible now with Markdown for Google Keep plugin)  
+Added support for the *Markdown for Google Keep* plugin - ignore of any pre-existing markdown web links in notes and Keep note-to-note linking relative urls  
+Added `-w` option to convert pre-existing Keep note-to-note markdown links to wikilinks during export  
 Filter exported notes by create or edit date ( < or > date only)  
-Fixed exported notes update date to be the edited date vs. internal Google update date  
+Fixed exported notes update date bug to be the actual edited date vs. internal Google update date  
 Added warning on importing too many markdown notes may lock user out of Keep  
 Added EXAMPLES.md for command line examples using option switches  
+Added ability to export namespaces with '/' character in filenames for Logseq and Joplin  
+Removed old python formatting yapf settings  
 
 ## 0.6.3|0.6.4 Release (9/16/2024)
 Fixed the Dockerfile versions    

@@ -30,6 +30,8 @@ DEFAULT_LABELS = "my_label"
 DEFAULT_SEPARATOR = "/"
 MAX_FILENAME_LENGTH = 99
 MISSING = 'null value'
+NOTE_PREFIX = "#NOTE/"
+KEEP_URL = "https://keep.google.com/u/0/#NOTE/"
 
 TECH_ERR = " Technical Error Message: "
 
@@ -49,7 +51,7 @@ KEYERR_CONFIG_FILE = ("Configuration key in " + CONFIG_FILE + " not found. "
                         "Key passed is: ")
 
 
-ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
+ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
 ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', \
         ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
 
@@ -75,6 +77,7 @@ class Options:
     logseq_style: boolean
     joplin_frontmatter: boolean
     move_to_archive: boolean
+    wikilinks: boolean
     import_files: boolean
     create_date: str
     edit_date: str
@@ -160,18 +163,20 @@ class Markdown:
                 "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
             text
         )
-        mdurls = re.findall(
-            r"]\(http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
-                "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-            text
-        )
+        #mdurls = re.findall(
+        #    r"]\(http[s]?://(?:[a-zA-Z]|[0-9]|[~#$-_@.&+]"
+        #        "|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+        #    text
+
+        mdurls = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", text)
+
 
         #Note that the use of temporary %%% is because notes 
         #   can have the same URL repeated and replace would fail
         for url in urls:
             convert = True
             for murl in mdurls:
-                if url in murl:
+                if url[:-1] in murl[1]:
                     convert = False #ignore urls with markdown syntax
             if convert:
                 text = text.replace(url, 
@@ -448,6 +453,21 @@ def replace_wikilinks(text):
         else:
             return f"[{parts[1]}]({file_link}.md)"
     return re.sub(pattern, replace, text, count=0, flags=re.MULTILINE)
+
+
+def replace_func(match):
+    link_text, url = match.groups()
+    if "keep.google.com" in url:
+      return f"[[{link_text}]]"
+    else:
+      return match.group(0)
+    
+
+def add_wikilinks(text):
+    pattern = r"\[([^\]]+)\]\(([^)]+)\)"
+    return re.sub(pattern, replace_func, text)
+
+
     
 
 def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
@@ -581,7 +601,7 @@ def keep_query_convert(keep, keepquery, opts):
             )
             if opts.move_to_archive:
                 gnote.archived = True
-
+ 
         filter_date = opts.create_date or opts.edit_date or None
         coperator = ""
         compare_date = None
@@ -593,7 +613,9 @@ def keep_query_convert(keep, keepquery, opts):
 
 
         for note in notes:
-
+            #if not note.labels:
+                #print ("!!!!!!!!!Missing Labels:  " + note.title + note.text)
+    
             if compare_date:
                 op = comparison_operators.get(coperator, None)
                 if opts.create_date and not op(note.created, compare_date):
@@ -615,6 +637,18 @@ def keep_query_convert(keep, keepquery, opts):
 
             note.title = re.sub('[' + re.escape(''.join(ILLEGAL_FILE_CHARS)) + ']', ' ', note.title[0:99]) 
 
+            if opts.wikilinks:
+                note.text = add_wikilinks(note.text)
+
+            if opts.logseq_style:
+                note.title = note.title.replace("/", "___")
+                c = note.text[:1]
+                if c == u"\u2610" or c == u"\u2611":
+                    note.text.replace("\n\n", "\n- ")
+                else:
+                    note.text = "- " + note.text.replace("\n\n", "\n- ")
+
+
             labels = note.labels
             note_labels = ""
             if opts.preserve_labels:
@@ -626,13 +660,6 @@ def keep_query_convert(keep, keepquery, opts):
                 note_labels = re.sub('[' + re.escape(''.join(ILLEGAL_TAG_CHARS)) + 
                                      ']', '-', note_labels)  
 
-            if opts.logseq_style:
-                c = note.text[:1]
-                if c == u"\u2610" or c == u"\u2611":
-                    note.text.replace("\n\n", "\n- ")
-                else:
-                    note.text = "- " + note.text.replace("\n\n", "\n- ")
-
             if opts.joplin_frontmatter:
                 joplin_labels = ""
                 for label in note_labels.replace("#", "").split():
@@ -642,10 +669,13 @@ def keep_query_convert(keep, keepquery, opts):
                             "Z\ncreated: " + note.timestamps["created"] + 
                             "Z\ntags:\n" + joplin_labels + 
                             "---\n\n")
+                note.title = note.title.replace("/", "_")
                 note_labels = ""
                 note.timestamps = {}
                 note.text = replace_wikilinks(note.text)
-
+                
+            note.title = note.title.replace("/", "")
+            note.text = note.text.replace("(" + NOTE_PREFIX,"(" + KEEP_URL)
 
             if opts.archive_only:
                 if note.archived and note.trashed == False:
@@ -775,9 +805,10 @@ def ui_welcome_config():
 @click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
 @click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
 @click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
-@click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets")
+@click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets and preserve namespaces")
 @click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
+@click.option('-w', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
 @click.option('-i', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-cd', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
@@ -785,11 +816,11 @@ def ui_welcome_config():
 @click.option('-t', '--master-token', help="Log in using master keep token")
 
 
-def main(r, o, a, p, s, c, l, j, m, i, cd, ed, search_term, master_token):
+def main(r, o, a, p, s, c, l, j, m, w, i, cd, ed, search_term, master_token):
 
 
     try:
-        opts = Options(o, a, p, s, c, l, j, m, i, cd, ed)
+        opts = Options(o, a, p, s, c, l, j, m, w, i, cd, ed)
         click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
         if i and (r or o or a or s or p or c or m):

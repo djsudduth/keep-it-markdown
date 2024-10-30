@@ -178,6 +178,13 @@ KIM has an option to export only Keep archive notes. All other note types are ig
 ```
 Archive export can be combined with the -o and -b options. 
 
+#### Convert to Wikilinks
+KIM has an option to modify pre-existing Keep note-to-note links that are in markdown format such as `[Other Keep Note](https://keep.google.com/#NOTE/dks7r23ksdf...UI9kshweriuhv)` to just `[[Other Keep Note]]`
+```bash
+> python kim.py -w
+```
+This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
+
 #### Import Notes - EXPERIMENTAL (WARNING - GOOGLE RATE LIMITS)
 KIM now supports importing markdown note files back into Keep using 
 ```bash
@@ -203,9 +210,9 @@ Note: skip -s and overwrite -o cannot be used at the same time
 
 ### Key callouts
 1. KIM does its best to convert unusual unicode characters where it can to keep the markdown clean but may have some issues with certain captured notes. If KIM crashes during conversion, try to isolate the problem note in Keep to see why it is causing issues.
-2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the -p flag to override this and preserve Keep labels as they are.
+2. All label spaces and special characters are hyphenated in conversion for proper tags. For example, if your Keep label is '#key topics', KIM will convert this to '#key-topics' or if it is '#mind*learning' KIM will convert to '#mind-learning' in the markdown file. Underscores are kept intact. Use the `-p` flag to override this and preserve Keep labels as they are.
 3. Note titles are truncated to 100 characters max.
-4. Notes without Keep titles are given titles using the date-time of when the note was created unless the -c flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
+4. Notes without Keep titles are given titles using the date-time of when the note was created unless the `-c` flag is used. Notes with the same title will have the date-time appended on the original title when converted to not allow overwriting of each other unless the overwrite flag is set. 
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
@@ -231,22 +238,20 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 11) Alternatively, exit the Docker image with ``exit``
 12) Download and install KIM in your current OS
 13) Install KIM dependencies your PC using `pip install -r requirements.txt`
-14) Run KIM with the -t switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
+14) Run KIM with the `-t` switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
 15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
-Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. **Do not try to add markdown for links/URLs in Keep**. KIM will try to map link any of Keep's URLs to markdown format for you.
-
-KIM's goal is to be markdown compliant. Obsidian uses Wikilinks by default. Obsidian can use strict markdown by setting the Options / Files & Links / Use [[Wikilinks]] to off. Currently, only strict markdown is enforced in KIM conversion to be as compatible as possible.
+Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. You can also cross-link notes in Keep like `[Other Note](https://keep.google.com/#NOTE/....)` and use the `-w` option to convert note-to-note links like this to wikilinks. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. KIM will try to map link any of Keep's URLs to markdown format for you or ignore markdown hyperlinks if they are already in the note.
 
 ## Logseq Use
-Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, an experimental feature has been added. A new switch has been configured (-l) to add paragraph bullets within each exported note so Logseq will render them better. 
+Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, a switch has been configured (`-l`) to add paragraph bullets within each exported note so Logseq will render them better. Also, namespaces are supported by using the `/` character in Keep titles (example a Keep note title of "Journal/2024-May" will export to "Journal___2024-May.md" - when opened in Logseq the namespace will be "Journal/2024-May").
 
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 
 ## Joplin Use
-KIM markdown note exports also import very well into Joplin. Using the -j flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this [[Title of another Keep note]]. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
+KIM markdown note exports also import very well into Joplin. Using the `-j` flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. If you have full markdown note-to-note links in Keep like `[Other Note](https://keep.google.com/#NOTE/....)`, add the `-w` flag to convert those to Wikilinks. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
