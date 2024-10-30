@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.5 Release (11/??/2024)
+## 0.6.5 Release (10/30/2024)
 - Added support for the *Markdown for Google Keep* plugin - ignore of any pre-existing markdown web links in notes and Keep note-to-note linking relative urls  
 - Added `-w` option to convert pre-existing Keep note-to-note markdown links to wikilinks during export  
 - Filter exported notes by create (`-cd`) or edit date (`-ed`) ( < or > date only)  
