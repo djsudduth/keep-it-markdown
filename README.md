@@ -1,4 +1,4 @@
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/donsudduth)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/donsuddutha)  
 [![GitHub license](https://img.shields.io/github/license/djsudduth/keep-it-markdown)](https://github.com/djsudduth/keep-it-markdown/blob/main/LICENSE)   
 # keep-it-markdown
 Keep-it-markdown or KIM converts Google Keep notes to markdown using the unofficial Python Keep API without having to use Google Takeout to export notes first. KIM can now also **import** markdown notes back to Keep. The script will execute on Windows, MacOS or Linux.
@@ -25,7 +25,7 @@ If you had Python 2 installed already you may need to type 'python3' instead of 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
 https://github.com/djsudduth/keep-it-markdown/releases
 
-Unzip the files within your chosen directory. 
+Unzip the files within your chosen directory.
 
 #### Step 3:
 Make sure you are in your KIM directory and install all needed dependencies with:  
