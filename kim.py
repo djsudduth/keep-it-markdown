@@ -16,7 +16,7 @@ from xmlrpc.client import boolean
 from importlib.metadata import version
 from PIL import Image
 
-KIM_VERSION = "0.6.5"
+KIM_VERSION = "0.6.7"
 
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
@@ -78,6 +78,7 @@ class Options:
     joplin_frontmatter: boolean
     move_to_archive: boolean
     wikilinks: boolean
+    quiet_mode: boolean
     import_files: boolean
     create_date: str
     edit_date: str
@@ -811,6 +812,7 @@ def ui_welcome_config():
 @click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
 @click.option('-w', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
+@click.option('-q', is_flag=True, help="Execute in quiet mode - output in kim.log")
 @click.option('-i', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-cd', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
@@ -818,11 +820,11 @@ def ui_welcome_config():
 @click.option('-t', '--master-token', help="Log in using master keep token")
 
 
-def main(r, o, a, p, s, c, l, j, m, w, i, cd, ed, search_term, master_token):
+def main(r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, search_term, master_token):
 
 
     try:
-        opts = Options(o, a, p, s, c, l, j, m, w, i, cd, ed)
+        opts = Options(o, a, p, s, c, l, j, m, w, q, i, cd, ed)
         click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
         if i and (r or o or a or s or p or c or m or l or j):
