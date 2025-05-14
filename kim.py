@@ -676,6 +676,8 @@ def keep_query_convert(keep, keepquery, opts):
                 
             note.title = note.title.replace("/", "")
             note.text = note.text.replace("(" + NOTE_PREFIX,"(" + KEEP_URL)
+            # 0.6.6 for label in note_labels.split():
+            #    note.text = note.text.replace(label, "")
 
             if opts.archive_only:
                 if note.archived and note.trashed == False:
