@@ -32,6 +32,7 @@ MAX_FILENAME_LENGTH = 99
 MISSING = 'null value'
 NOTE_PREFIX = "#NOTE/"
 KEEP_URL = "https://keep.google.com/u/0/#NOTE/"
+LOG_FILE = "kim.log"
 
 TECH_ERR = " Technical Error Message: "
 
@@ -78,7 +79,7 @@ class Options:
     joplin_frontmatter: boolean
     move_to_archive: boolean
     wikilinks: boolean
-    quiet_mode: boolean
+    silent_mode: boolean
     import_files: boolean
     create_date: str
     edit_date: str
@@ -471,7 +472,7 @@ def add_wikilinks(text):
 
     
 
-def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
+def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
     try:
         fs = FileService()
 
@@ -493,9 +494,10 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing):
                             md_file, fs.outpath(), note.title, note_date)
                     md_file = Path(fs.outpath(), note.title + ".md")
 
-        print(note.title)
-        print(note_tags)
-        print(note_date + "\r\n")
+        if not (silent):
+            print(note.title)
+            print(note_tags)
+            print(note_date + "\r\n")
 
         if not (note.timestamps):
             timestamps = ""
@@ -687,7 +689,8 @@ def keep_query_convert(keep, keepquery, opts):
                                         note_labels, 
                                         note_date, 
                                         opts.overwrite, 
-                                        opts.skip_existing)
+                                        opts.skip_existing,
+                                        opts.silent_mode)
                 else:
                     ccnt = 0
             else:
@@ -697,7 +700,8 @@ def keep_query_convert(keep, keepquery, opts):
                                         note_labels, 
                                         note_date, 
                                         opts.overwrite, 
-                                        opts.skip_existing)
+                                        opts.skip_existing,
+                                        opts.silent_mode)
                 else:
                     ccnt = 0
 
@@ -812,7 +816,7 @@ def ui_welcome_config():
 @click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
 @click.option('-w', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
-@click.option('-q', is_flag=True, help="Execute in quiet mode - output in kim.log")
+@click.option('-q', is_flag=True, help="Execute in silent mode - output in kim.log")
 @click.option('-i', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-cd', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
@@ -822,10 +826,12 @@ def ui_welcome_config():
 
 def main(r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, search_term, master_token):
 
+    q = True
 
     try:
         opts = Options(o, a, p, s, c, l, j, m, w, q, i, cd, ed)
-        click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
+        if not q:
+            click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
 
         if i and (r or o or a or s or p or c or m or l or j):
             print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
