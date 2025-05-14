@@ -9,6 +9,7 @@ import configparser
 import click
 import datetime
 import operator
+import logging
 from os.path import join
 from pathlib import Path
 from dataclasses import dataclass
@@ -67,6 +68,10 @@ default_settings = {
 
 
 notes = []
+
+logging.basicConfig(filename=LOG_FILE,
+                    format='%(message)s',
+                    filemode='a')
 
 @dataclass
 class Options:
@@ -362,6 +367,16 @@ class NameService:
 
 
 class FileService:
+    @staticmethod
+    def log(text, silent_mode):
+
+        if silent_mode:
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            logger.info(text)
+        else:
+            click.echo(text)
+
     def media_path (self):
         outpath = Config().get("output_path").rstrip("/")
         mediapath = outpath + "/" + Config().get("media_path").rstrip("/") + "/"
@@ -494,10 +509,10 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
                             md_file, fs.outpath(), note.title, note_date)
                     md_file = Path(fs.outpath(), note.title + ".md")
 
-        if not (silent):
-            print(note.title)
-            print(note_tags)
-            print(note_date + "\r\n")
+        #if not (silent):
+        FileService.log(note.title, silent)
+        FileService.log(note_tags, silent)
+        FileService.log(note_date + "\r\n", silent)
 
         if not (note.timestamps):
             timestamps = ""
@@ -723,14 +738,15 @@ def keep_query_convert(keep, keepquery, opts):
 #--------------------- UI / CLI ------------------------------
 
 
-def ui_login(keyring_reset, master_token):
+def ui_login(keyring_reset, master_token, silent):
     try:
         userid = Config().get("google_userid").strip().lower()
 
         if userid == USERID_EMPTY:
             userid = click.prompt('Enter your Google account username', type=str)
         else:
-            print("Your Google account name in the " + CONFIG_FILE + " file is: " + userid + " -- Welcome!")
+            FileService.log("Your Google account name in the " 
+                            + CONFIG_FILE + " file is: " + userid + " -- Welcome!", silent)
 
         #0.5.0 work
         keep = KeepService(userid)
@@ -743,15 +759,16 @@ def ui_login(keyring_reset, master_token):
             ktoken = keep.login(pw, keyring_reset)
             if ktoken:
                 if keyring_reset:
-                    print("You've succesfully logged into Google Keep!")
+                    FileService.log("You've succesfully logged into Google Keep!", silent)
                 else:
-                    print("You've succesfully logged into Google Keep! " + 
-                        "Your Keep access token has been securely stored in this computer's keyring.")
+                    FileService.log("You've succesfully logged into Google Keep! " + 
+                        "Your Keep access token has been securely stored in this computer's keyring.", silent)
             #else:
             #  print ("Invalid Google userid or pw! Please try again.")
 
         else:
-            print("You've succesfully logged into Google Keep using local keyring access token!")
+            FileService.log("You've succesfully logged into Google Keep using " + 
+                            "local keyring access token!", silent)
 
         keep.resume()
         return keep
@@ -765,7 +782,7 @@ def ui_query(keep, search_term, opts):
     try:
         if search_term != None:
             count = keep_query_convert(keep, search_term, opts)
-            print("\nTotal converted notes: " + str(count))
+            FileService.log("\nTotal converted notes: " + str(count), opts.silent_mode)
             return
         else:
             kquery = "kquery"
@@ -774,7 +791,7 @@ def ui_query(keep, search_term, opts):
                     "'--all' to convert Keep notes to md or '--x' to exit", type=str)
                 if kquery != "--x":
                     count = keep_query_convert(keep, kquery, opts)
-                    print("\nTotal converted notes: " + str(count))
+                    FileService.log("\nTotal converted notes: " + str(count), opts.silent_mode)
                 else:
                     return
     except Exception as e:
@@ -826,12 +843,16 @@ def ui_welcome_config():
 
 def main(r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, search_term, master_token):
 
-    q = True
+    #q = True
 
     try:
         opts = Options(o, a, p, s, c, l, j, m, w, q, i, cd, ed)
-        if not q:
-            click.echo("\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n")
+
+        intro = "\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n"
+        if q:
+            now = datetime.datetime.now()
+            intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro
+        FileService.log(intro, q)
 
         if i and (r or o or a or s or p or c or m or l or j):
             print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
@@ -862,7 +883,7 @@ def main(r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, search_term, master_token):
 
         ui_welcome_config()
 
-        keep = ui_login(r, master_token)
+        keep = ui_login(r, master_token, q)
 
         if i:
             keep_import_notes(keep)
