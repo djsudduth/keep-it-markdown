@@ -26,7 +26,8 @@ DEFAULT_SECTION = "SETTINGS"
 USERID_EMPTY = 'add your google account name here'
 OUTPUTPATH = 'mdfiles'
 MEDIADEFAULTPATH = "media"
-INPUTDEFAULTPATH = "import/markdown_files"
+INPUTDEFAULTPATH = "import"
+INPUTDEFAULTCOMPLETE = "completed"
 DEFAULT_LABELS = "my_label"
 DEFAULT_SEPARATOR = "/"
 MAX_FILENAME_LENGTH = 99
@@ -89,6 +90,7 @@ class Options:
     import_files: boolean
     create_date: str
     edit_date: str
+    import_label: str
 
 @dataclass
 class Note:
@@ -537,7 +539,7 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
 
 
 
-def keep_import_notes(keep, silent):
+def keep_import_notes(keep, opts):
     try:
         dir_path = FileService().inpath()
         in_labels = Config().get("input_labels").split(",")
@@ -551,11 +553,12 @@ def keep_import_notes(keep, silent):
                     data=md_file.read()
                     data += "\n\nCreated: " + crt_time + "   -   Updated: " + mod_time
                     title = file.replace('.md', '').replace('.txt', '')
-                    print('Importing note:', title + " from " + file)
+                    FileService.log("Importing note: '" + title + "' from " + file, opts.silent_mode)
                     keep.createnote(title, data)
                     for in_label in in_labels:
                         keep.setnotelabel(in_label.strip())
                     keep.keep_sync()
+                    os.rename(dir_path + file, dir_path + INPUTDEFAULTCOMPLETE + "/" + file)
     except Exception as e:
         print('Error on note import:', str(e))
 
@@ -814,7 +817,7 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, q, i, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, lb  = opts
 
     if i and any([o, a, p, s, c, l, j, m, w]):
         raise click.UsageError("Import mode (-i) is not compatible " 
@@ -853,10 +856,10 @@ def _validate_options(opts) -> None:
                 f"Invalid date or date format for --ed. {date_filter_msg}", 
                                        param_hint='--ed')
     if i:
-        print(
-            "WARNING!!! Attempting to import many notes at " + 
-                "once may risk Google Keep account limitations. Use caution!"
-        )
+        FileService.log(
+            "\r\nWARNING!!! Attempting to import many notes at " + 
+                "once may risk Google Keep account limitations. Use caution!", q)
+
 
 
 
@@ -874,6 +877,7 @@ def _validate_paths() -> None:
         fs.create_path(fs.outpath())
         fs.create_path(fs.media_path())
         fs.create_path(fs.inpath())
+        fs.create_path(fs.inpath() + INPUTDEFAULTCOMPLETE)
  
         #return defaults
     except Exception as e:
@@ -898,6 +902,7 @@ def _validate_paths() -> None:
 @click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
+@click.option('-lb', 'import_label', '--lb', help="Label for import - use only with (-i) flag")
 
 def main( 
     reset: boolean,
@@ -915,7 +920,8 @@ def main(
     create_date: str,
     edit_date: str,
     search_term: str,
-    master_token: str
+    master_token: str, 
+    import_label: str
     ):
 
     try:
@@ -933,7 +939,8 @@ def main(
             silent_mode,
             import_files,
             create_date,
-            edit_date
+            edit_date,
+            import_label
         )
 
         _validate_options(astuple(opts))
@@ -942,7 +949,7 @@ def main(
         keep = ui_login(master_token, opts)
 
         if import_files:
-            keep_import_notes(keep, silent_mode)
+            keep_import_notes(keep, opts)
         else:
             ui_query(keep, search_term, opts)
 

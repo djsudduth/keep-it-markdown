@@ -7,5 +7,6 @@ kim.log
 .DS_Store
 mdfiles/
 backup/
+import/
 .vscode/
 **/__pycache__
