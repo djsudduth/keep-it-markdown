@@ -27,6 +27,10 @@
 #### Export all active notes in batch and skip over notes already exported
 `python kim.py -s -b --all`
 
+## Import Files
+
+#### Import all markdown and text files in the import folder - move to complete when done
+`python kim.py -i`
 
 ## Complex Export
 #### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2024
@@ -54,6 +58,7 @@ Options:
   -j  Prepend notes with Joplin front matter tags and dates  
   -m  Move any exported Keep notes to Archive  
   -w  Convert pre-formatted markdown note-to-note links to wikilinks  
+  -q  Execute exporting or importing in silent mode - output to kim.log
   -i  Import notes from markdown files WARNING - EXPERIMENTAL!!  
   -cd, --cd TEXT  Export notes before or after the create date - < or >|YYYY-MM-DD  
   -ed, --ed TEXT  Export notes before or after the edit date - < or >|YYYY-MM-DD  
