@@ -75,6 +75,7 @@ logging.basicConfig(filename=LOG_FILE,
 
 @dataclass
 class Options:
+    reset: boolean
     overwrite: boolean
     archive_only: boolean
     preserve_labels: boolean
@@ -739,37 +740,44 @@ def keep_query_convert(keep, keepquery, opts):
 #--------------------- UI / CLI ------------------------------
 
 
-def ui_login(keyring_reset, master_token, silent):
+def ui_login(master_token, opts):
+
     try:
+        intro = "\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n"
+        if opts.silent_mode:
+            now = datetime.datetime.now()
+            intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro + "\r\n"
+        FileService.log(intro, opts.silent_mode)
+
         userid = Config().get("google_userid").strip().lower()
 
         if userid == USERID_EMPTY:
             userid = click.prompt('Enter your Google account username', type=str)
         else:
             FileService.log("Your Google account name in the " 
-                            + CONFIG_FILE + " file is: " + userid + " -- Welcome!", silent)
+                            + CONFIG_FILE + " file is: " + userid + " -- Welcome!", opts.silent_mode)
 
         #0.5.0 work
         keep = KeepService(userid)
-        ktoken = keep.set_token(keyring_reset, master_token)
+        ktoken = keep.set_token(opts.reset, master_token)
 
         if ktoken == None:
             pw = getpass.getpass(prompt='Enter your Google Password: ', stream=None)
             print("\r\n\r\nOne moment...")
 
-            ktoken = keep.login(pw, keyring_reset)
+            ktoken = keep.login(pw, opts.reset)
             if ktoken:
-                if keyring_reset:
-                    FileService.log("You've succesfully logged into Google Keep!", silent)
+                if opts.reset:
+                    FileService.log("You've succesfully logged into Google Keep!", opts.silent_mode)
                 else:
                     FileService.log("You've succesfully logged into Google Keep! " + 
-                        "Your Keep access token has been securely stored in this computer's keyring.", silent)
+                        "Your Keep access token has been securely stored in this computer's keyring.", opts.silent_mode)
             #else:
             #  print ("Invalid Google userid or pw! Please try again.")
 
         else:
             FileService.log("You've succesfully logged into Google Keep using " + 
-                            "local keyring access token!", silent)
+                            "local keyring access token!", opts.silent_mode)
 
         keep.resume()
         return keep
@@ -806,7 +814,7 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    o, a, p, s, c, l, j, m, w, q, i, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, q, i, cd, ed  = opts
 
     if i and any([o, a, p, s, c, l, j, m, w]):
         raise click.UsageError("Import mode (-i) is not compatible " 
@@ -835,7 +843,6 @@ def _validate_options(opts) -> None:
             raise click.BadParameter(
                 f"Invalid date or date format for --cd. {date_filter_msg}", 
                                        param_hint='--cd')
-
     if ed:
         if not (ed.startswith(VALID_PREFIXES)): # Note the space
             raise click.BadParameter(date_filter_msg, param_hint='--ed')
@@ -845,7 +852,6 @@ def _validate_options(opts) -> None:
             raise click.BadParameter(
                 f"Invalid date or date format for --ed. {date_filter_msg}", 
                                        param_hint='--ed')
-
     if i:
         print(
             "WARNING!!! Attempting to import many notes at " + 
@@ -914,6 +920,7 @@ def main(
 
     try:
         opts = Options(
+            reset,
             overwrite,
             archive_only,
             preserve_labels,
@@ -932,15 +939,7 @@ def main(
         _validate_options(astuple(opts))
         _validate_paths()
 
-
-        intro = "\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n"
-        if silent_mode:
-            now = datetime.datetime.now()
-            intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro
-        FileService.log(intro, silent_mode)
-
-
-        keep = ui_login(reset, master_token, silent_mode)
+        keep = ui_login(master_token, opts)
 
         if import_files:
             keep_import_notes(keep, silent_mode)
