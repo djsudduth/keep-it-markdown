@@ -3,6 +3,8 @@ skiptest.py
 fuzzy.py
 zz*.py
 configs.txt
+kim.log
+.DS_Store
 mdfiles/
 backup/
 .vscode/

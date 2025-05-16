@@ -12,7 +12,7 @@ import operator
 import logging
 from os.path import join
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 from xmlrpc.client import boolean
 from importlib.metadata import version
 from PIL import Image
@@ -392,7 +392,7 @@ class FileService:
 
     def create_path(self, path):
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
     def write_file(self, file_name, data):
         try:
@@ -536,12 +536,12 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
 
 
 
-def keep_import_notes(keep):
+def keep_import_notes(keep, silent):
     try:
         dir_path = FileService().inpath()
         in_labels = Config().get("input_labels").split(",")
         for file in os.listdir(dir_path):
-            if os.path.isfile(dir_path + file) and file.endswith('.md'):
+            if os.path.isfile(dir_path + file) and (file.endswith('.md') or file.endswith('.txt')):
                 with open(dir_path + file, 'r', encoding="utf8") as md_file:
                     mod_time = datetime.datetime.fromtimestamp(
                         os.path.getmtime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
@@ -549,8 +549,9 @@ def keep_import_notes(keep):
                         os.path.getctime(dir_path + file)).strftime('%Y-%m-%d %H:%M:%S')
                     data=md_file.read()
                     data += "\n\nCreated: " + crt_time + "   -   Updated: " + mod_time
-                    print('Importing note:', file.replace('.md', '') + " from " + file)
-                    keep.createnote(file.replace('.md', ''), data)
+                    title = file.replace('.md', '').replace('.txt', '')
+                    print('Importing note:', title + " from " + file)
+                    keep.createnote(title, data)
                     for in_label in in_labels:
                         keep.setnotelabel(in_label.strip())
                     keep.keep_sync()
@@ -800,21 +801,73 @@ def ui_query(keep, search_term, opts):
 
 
 
-   
 
-def ui_welcome_config():
+
+def _validate_options(opts) -> None:
+    VALID_PREFIXES = ("< ", "> ")
+    #reduced attribute names for compactness
+    o, a, p, s, c, l, j, m, w, q, i, cd, ed  = opts
+
+    if i and any([o, a, p, s, c, l, j, m, w]):
+        raise click.UsageError("Import mode (-i) is not compatible " 
+                                "with export options. Please use only "
+                                "(-i) to import notes.")
+    if o and s:
+        raise click.UsageError("Overwrite(-o) and Skip(-s) flags " 
+                                "are not compatible together "
+                                "-- please use one or the other...")
+    if a and m: # move to archive and search archived
+        raise click.UsageError("Exporting archived notes (-a) and moving " 
+                                "them to archive (-m) is incompatible. " 
+                                "-- please use archive with other options...")
+    if cd and ed:
+        raise click.UsageError("Filtering by both create date (-cd) and " 
+                                "edit date (-ed) is not compatible.")
+
+    date_filter_msg = "Date filter must be in the format '> YYYY-MM-DD' " \
+                        "or '< YYYY-MM-DD' (e.g., '> 2023-01-15')."
+    if cd:
+        if not cd.startswith(VALID_PREFIXES): # Note the space
+             raise click.BadParameter(date_filter_msg, param_hint='--cd')
+        try:
+            datetime.datetime.strptime(cd[2:], '%Y-%m-%d')
+        except ValueError:
+            raise click.BadParameter(
+                f"Invalid date or date format for --cd. {date_filter_msg}", 
+                                       param_hint='--cd')
+
+    if ed:
+        if not (ed.startswith(VALID_PREFIXES)): # Note the space
+            raise click.BadParameter(date_filter_msg, param_hint='--ed')
+        try:
+            datetime.datetime.strptime(ed[2:], '%Y-%m-%d')
+        except ValueError:
+            raise click.BadParameter(
+                f"Invalid date or date format for --ed. {date_filter_msg}", 
+                                       param_hint='--ed')
+
+    if i:
+        print(
+            "WARNING!!! Attempting to import many notes at " + 
+                "once may risk Google Keep account limitations. Use caution!"
+        )
+
+
+
+def _validate_paths() -> None:
     try:
         mp = Config().get("media_path")
 
         if ((":" in mp) or (mp[0] == '/')):
-            raise ValueError("Media path: '" + mp + "' within your config file - " + CONFIG_FILE +
-                             " - must be relative to the output path and cannot start with / or a drive-mount")
+            raise ValueError(f"Media path: '{mp}' within your config file - \
+                             {CONFIG_FILE} - must be relative to the output \
+                             path and cannot start with / or a drive-mount")
 
         #Make sure paths are set before doing anything
         fs = FileService()
         fs.create_path(fs.outpath())
         fs.create_path(fs.media_path())
-
+        fs.create_path(fs.inpath())
  
         #return defaults
     except Exception as e:
@@ -823,70 +876,74 @@ def ui_welcome_config():
 
 
 @click.command()
-@click.option('-r', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
-@click.option('-o', is_flag=True, help="Overwrite any existing markdown files with the same name")
-@click.option('-a', is_flag=True, help="Search and export only archived notes")
-@click.option('-p', is_flag=True, help="Preserve keep labels with spaces and special characters")
-@click.option('-s', is_flag=True, help="Skip over any existing notes with the same title")
-@click.option('-c', is_flag=True, help="Use starting content within note body instead of create date for md filename")
-@click.option('-l', is_flag=True, help="Prepend paragraphs with Logseq style bullets and preserve namespaces")
-@click.option('-j', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
-@click.option('-m', is_flag=True, help="Move any exported Keep notes to Archive")
-@click.option('-w', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
-@click.option('-q', is_flag=True, help="Execute in silent mode - output in kim.log")
-@click.option('-i', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
-@click.option('-cd', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
-@click.option('-ed', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
+@click.option('-r', 'reset', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
+@click.option('-o', 'overwrite', is_flag=True, help="Overwrite any existing markdown files with the same name")
+@click.option('-a', 'archive_only', is_flag=True, help="Search and export only archived notes")
+@click.option('-p', 'preserve_labels', is_flag=True, help="Preserve keep labels with spaces and special characters")
+@click.option('-s', 'skip_existing', is_flag=True, help="Skip over any existing notes with the same title")
+@click.option('-c', 'text_for_title', is_flag=True, help="Use starting content within note body instead of create date for md filename")
+@click.option('-l', 'logseq_style', is_flag=True, help="Prepend paragraphs with Logseq style bullets and preserve namespaces")
+@click.option('-j', 'joplin_frontmatter', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
+@click.option('-m', 'move_to_archive', is_flag=True, help="Move any exported Keep notes to Archive")
+@click.option('-w', 'wikilinks', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
+@click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
+@click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
+@click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
+@click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
 
-
-def main(r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, search_term, master_token):
-
-    #q = True
+def main( 
+    reset: boolean,
+    overwrite: boolean,
+    archive_only: boolean,
+    preserve_labels: boolean,
+    skip_existing: boolean,
+    text_for_title: boolean,
+    logseq_style: boolean,
+    joplin_frontmatter: boolean,
+    move_to_archive: boolean,
+    wikilinks: boolean,
+    silent_mode: boolean,
+    import_files: boolean,
+    create_date: str,
+    edit_date: str,
+    search_term: str,
+    master_token: str
+    ):
 
     try:
-        opts = Options(o, a, p, s, c, l, j, m, w, q, i, cd, ed)
+        opts = Options(
+            overwrite,
+            archive_only,
+            preserve_labels,
+            skip_existing,
+            text_for_title,
+            logseq_style,
+            joplin_frontmatter,
+            move_to_archive,
+            wikilinks,
+            silent_mode,
+            import_files,
+            create_date,
+            edit_date
+        )
+
+        _validate_options(astuple(opts))
+        _validate_paths()
+
 
         intro = "\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n"
-        if q:
+        if silent_mode:
             now = datetime.datetime.now()
             intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro
-        FileService.log(intro, q)
+        FileService.log(intro, silent_mode)
 
-        if i and (r or o or a or s or p or c or m or l or j):
-            print ("Importing markdown notes with export options is not compatible -- please use -i only to import")
-            exit()
 
-        if o and s:
-            print("Overwrite and Skip flags are not compatible together -- please use one or the other...")
-            exit()
+        keep = ui_login(reset, master_token, silent_mode)
 
-        if a and m:
-            print("Attempting to move archive notes to archive -- please use one or the other...")
-            exit()
-
-        if cd and ed:
-            print("Filtering by both create and edit date is not compatible -- please use one or the other...")
-            exit()
-    
-        if (cd and not cd.startswith("<") and not cd.startswith(">")):
-            print("Invalid create date filter - date filter must be in the form '> 2024-12-02' or '< 2024-12-02'")
-            exit()
-
-        if (ed and not ed.startswith("<") and not ed.startswith(">")):
-            print("Invalid edit date filter - date filter must be in the form '> 2024-12-02' or '< 2024-12-02'")                
-            exit()
-        
-        if i:
-            print("WARNING!!! Attempting to import more than 100 notes at a time may lock you out of your Google Keep account! Use caution!\n")
-
-        ui_welcome_config()
-
-        keep = ui_login(r, master_token, q)
-
-        if i:
-            keep_import_notes(keep)
+        if import_files:
+            keep_import_notes(keep, silent_mode)
         else:
             ui_query(keep, search_term, opts)
 
