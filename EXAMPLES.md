@@ -12,7 +12,7 @@
 #### User query and export active notes and overwrite existing markdown notes
 `python kim.py -o`
 
-#### User query and export active notes that were edited after Jun 15, 2023
+#### User query to export active notes that were edited after Jun 15, 2023
 `python kim.py -ed "> 2023-06-15"`
 
 #### Export all active notes in batch without user prompts
@@ -21,7 +21,7 @@
 #### Export only notes with the label #science in batch without user prompts
 `python kim.py -b "#science"`
 
-#### Export all active notes with silent mode in batch with create dates after Jan 1, 2023
+#### Export all active notes with silent mode with output to kim.log in batch with create dates after Jan 1, 2023
 `python kim.py -q -cd "> 2023-01-01" -b --all`
 
 #### Export all active notes in batch and skip over notes already exported
@@ -42,7 +42,7 @@
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
 `python kim.py -c -l -o -b "#computer"`
 
-#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode
+#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log)
 `python kim.py -p -s -m -q -b --all`
 
 #### Export all archived notes in batch, overwriting existing notes and modifying Keep note-to-note markdown links to wikilinks
