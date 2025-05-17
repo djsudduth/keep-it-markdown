@@ -88,9 +88,10 @@ class Options:
     wikilinks: boolean
     silent_mode: boolean
     import_files: boolean
+    import_labels: str
     create_date: str
     edit_date: str
-    import_label: str
+
 
 @dataclass
 class Note:
@@ -490,7 +491,7 @@ def add_wikilinks(text):
 
     
 
-def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
+def save_md_file(note, note_tags, note_date, opts):
     try:
         fs = FileService()
 
@@ -503,9 +504,9 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
  
 
         md_file = Path(fs.outpath(), note.title + ".md")
-        if not overwrite:
+        if not opts.overwrite:
             if md_file.exists():
-                if skip_existing:
+                if opts.skip_existing:
                     return (0)
                 else:
                     note.title = NameService().check_file_exists(
@@ -513,9 +514,9 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
                     md_file = Path(fs.outpath(), note.title + ".md")
 
         #if not (silent):
-        FileService.log(note.title, silent)
-        FileService.log(note_tags, silent)
-        FileService.log(note_date + "\r\n", silent)
+        fs.log(note.title, opts.silent_mode)
+        fs.log(note_tags, opts.silent_mode)
+        fs.log(note_date + "\r\n", opts.silent_mode)
 
         if not (note.timestamps):
             timestamps = ""
@@ -530,12 +531,14 @@ def save_md_file(note, note_tags, note_date, overwrite, skip_existing, silent):
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_tags + "\n\n" + 
             timestamps + 
-            Markdown().format_path(KEEP_NOTE_URL + str(note.id), "", False, "%20") + "\n\n")
+            Markdown().format_path(KEEP_NOTE_URL + str(note.id), 
+                                   "", False, "%20") + "\n\n")
 
         fs.write_file(md_file, markdown_data)
         return (1)
     except Exception as e:
-        raise Exception("Problem with markdown file creation: " + str(md_file) + " -- " + TECH_ERR + repr(e))
+        raise Exception("Problem with markdown file creation: " + 
+                        str(md_file) + " -- " + TECH_ERR + repr(e))
 
 
 
@@ -543,6 +546,8 @@ def keep_import_notes(keep, opts):
     try:
         dir_path = FileService().inpath()
         in_labels = Config().get("input_labels").split(",")
+        if len(opts.import_labels) > 0:
+            in_labels = opts.import_labels.split(",")
         for file in os.listdir(dir_path):
             if os.path.isfile(dir_path + file) and (file.endswith('.md') or file.endswith('.txt')):
                 with open(dir_path + file, 'r', encoding="utf8") as md_file:
@@ -708,9 +713,7 @@ def keep_query_convert(keep, keepquery, opts):
                     ccnt = save_md_file(note, 
                                         note_labels, 
                                         note_date, 
-                                        opts.overwrite, 
-                                        opts.skip_existing,
-                                        opts.silent_mode)
+                                        opts)
                 else:
                     ccnt = 0
             else:
@@ -719,9 +722,7 @@ def keep_query_convert(keep, keepquery, opts):
                     ccnt = save_md_file(note, 
                                         note_labels, 
                                         note_date, 
-                                        opts.overwrite, 
-                                        opts.skip_existing,
-                                        opts.silent_mode)
+                                        opts)
                 else:
                     ccnt = 0
 
@@ -817,12 +818,16 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, q, i, cd, ed, lb  = opts
+    r, o, a, p, s, c, l, j, m, w, q, i, lb, cd, ed  = opts
 
     if i and any([o, a, p, s, c, l, j, m, w]):
         raise click.UsageError("Import mode (-i) is not compatible " 
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
+    if lb and not i:
+        raise click.UsageError("Import labels (-lb) can only be " 
+                                "used with import mode (-i) in the "
+                                "form (-i -lb my_label).")
     if o and s:
         raise click.UsageError("Overwrite(-o) and Skip(-s) flags " 
                                 "are not compatible together "
@@ -857,8 +862,8 @@ def _validate_options(opts) -> None:
                                        param_hint='--ed')
     if i:
         FileService.log(
-            "\r\nWARNING!!! Attempting to import many notes at " + 
-                "once may risk Google Keep account limitations. Use caution!", q)
+            "\r\nWARNING!!! Attempting to import many notes at once " + 
+                "may risk Google Keep temporary account lockout. Use caution!", q)
 
 
 
@@ -898,11 +903,11 @@ def _validate_paths() -> None:
 @click.option('-w', 'wikilinks', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
 @click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
+@click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
-@click.option('-lb', 'import_label', '--lb', help="Label for import - use only with (-i) flag")
 
 def main( 
     reset: boolean,
@@ -917,11 +922,11 @@ def main(
     wikilinks: boolean,
     silent_mode: boolean,
     import_files: boolean,
+    import_labels: str,
     create_date: str,
     edit_date: str,
     search_term: str,
-    master_token: str, 
-    import_label: str
+    master_token: str
     ):
 
     try:
@@ -938,9 +943,9 @@ def main(
             wikilinks,
             silent_mode,
             import_files,
+            import_labels,
             create_date,
-            edit_date,
-            import_label
+            edit_date
         )
 
         _validate_options(astuple(opts))

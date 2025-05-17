@@ -21,16 +21,19 @@
 #### Export only notes with the label #science in batch without user prompts
 `python kim.py -b "#science"`
 
-#### Export all active notes in batch with create dates after Jan 1, 2023
-`python kim.py -cd "> 2023-01-01" -b --all`
+#### Export all active notes with silent mode in batch with create dates after Jan 1, 2023
+`python kim.py -q -cd "> 2023-01-01" -b --all`
 
 #### Export all active notes in batch and skip over notes already exported
 `python kim.py -s -b --all`
 
 ## Import Files
 
-#### Import all markdown and text files in the import folder - move to complete when done
+#### Import all markdown and text files in the import folder (labels in settings) - move files to completed folder when done (labels must pre-exist)
 `python kim.py -i`
+
+#### Import all markdown and text files in the import folder with labels input - move files to completed folder when done (labels must pre-exist)
+`python kim.py -i -lb movies,tv,media`
 
 ## Complex Export
 #### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2024
@@ -39,8 +42,8 @@
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
 `python kim.py -c -l -o -b "#computer"`
 
-#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export
-`python kim.py -p -s -m -b --all`
+#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode
+`python kim.py -p -s -m -q -b --all`
 
 #### Export all archived notes in batch, overwriting existing notes and modifying Keep note-to-note markdown links to wikilinks
 `python kim.py -a -o -w -b --all`
@@ -59,10 +62,11 @@ Options:
   -m  Move any exported Keep notes to Archive  
   -w  Convert pre-formatted markdown note-to-note links to wikilinks  
   -q  Execute exporting or importing in silent mode - output to kim.log
-  -i  Import notes from markdown files WARNING - EXPERIMENTAL!!  
-  -cd, --cd TEXT  Export notes before or after the create date - < or >|YYYY-MM-DD  
-  -ed, --ed TEXT  Export notes before or after the edit date - < or >|YYYY-MM-DD  
-  -b, --search-term TEXT  Run in batch mode with a specific Keep search term  
-  -t, --master-token TEXT  Log in using master keep token
+  -i  Import notes from markdown files WARNING - EXPERIMENTAL!! 
+  -lb TEXT  Comma delimited labels for import - for use with only with (-i) flag
+  -cd TEXT  Export notes before or after the create date - < or > YYYY-MM-DD  
+  -ed TEXT  Export notes before or after the edit date - < or > YYYY-MM-DD  
+  -b  --search-term TEXT  Run in batch mode with a specific Keep search term  
+  -t  --master-token TEXT  Log in using master keep token
   --help Show this message and exit.
 ```
