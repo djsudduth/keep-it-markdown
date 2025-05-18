@@ -65,7 +65,7 @@ You now need to save your Keep token within the KIM secure keyring
 ```
 If you entered your Google email and token correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 
-**If this step keeps failing see 'Key Callouts' #9 below, and have issues with the login - see Advanced Docker Setup below or read this note: https://github.com/djsudduth/keep-it-markdown/issues/72**
+**If this step keeps failing see 'Key Callouts' #9 below, and have issues with the login - see Advanced Docker Setup below**
 
 ## Usage
 Congrats! You can now run KIM. Simply start by running:  
@@ -171,6 +171,12 @@ or
 ```
 will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. Be sure the -b flag is the last of all option flags when combining them.
 
+### Silent Mode
+KIM can suppress any screen prompts or status messages using the -q flag. Silent or quiet mode will pipe all output to at file called `kim.log` in the install diretory. This is useful for batch mode execution. You must have `settings.cfg` setup with your google id so the user prompt will not display.  This works both for exporting and importing:
+```bash
+> python kim.py -q -b '#mylabel'
+```
+
 #### Archive Notes
 KIM has an option to export only Keep archive notes. All other note types are ignored with this option
 ```bash
@@ -185,20 +191,25 @@ KIM has an option to modify pre-existing Keep note-to-note links that are in mar
 ```
 This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
 
-#### Import Notes - EXPERIMENTAL (WARNING - GOOGLE RATE LIMITS)
-KIM now supports importing markdown note files back into Keep using 
+#### Import Notes - (WARNING - GOOGLE RATE LIMITS)
+KIM supports importing markdown note files back into Keep using 
 ```bash
 > python kim.py -i
 ```
 **WARNING! Google may lock you out of your account if you attempt to import more than a couple hundred files - use caution!**
 
-There are a number of restrictions for importing. First, KIM will only import files within a single directory (no subdirectories) and they must have an .md extension. KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use Robocopy). Only existing labels can be used and those must be setup in the **settings.cfg** file.
+There are a number of restrictions for importing. First, KIM will only import files from a single directory (no subdirectories) and they must have either a .txt or .md extension (both can be mixed in the import folder). KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use Robocopy). Only existing labels can be used.
 
 To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:  
 **input_path** = path to where the input md files are located. Windows users use forward slashes, e.g. -> c:/md-files/import  
 **input_labels** = a list of one or more comma delimited labels without the # leading character - e.g. -> computers, programming (this will tag all of the imported notes with both labels 'computers' and 'programming' within that import directory as long as you have those labels predefined within Keep already)
 
-NOTE: the import switch -i is incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
+You can override the settings `input_labels` in the command line with the (-lb) parameter - example:
+```bash
+> python kim.py -i -lb "computers,programming"
+```
+
+NOTE: the import switches -i and -lb are incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
 
 #### Combinations
@@ -217,7 +228,7 @@ Note: skip -s and overwrite -o cannot be used at the same time
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
 8. Keep uses AAC format for audio recordings. When notes are downloaded the audio is saved as M4A files. It is not known if this format will work on all markdown applications.
-9. There seems to be login issues due to some of the authentication and security library changes with Google and Python. Take a look at this note -> https://github.com/djsudduth/keep-it-markdown/issues/72 or use the Advanced Docker Setup in the next section
+9. It is possible there can be login issues due to some of the authentication and security library changes with Google and Python. If there are issues, use the Advanced Docker Setup in the next section.
 
 ## Advanced Docker Setup
 If you are having difficulty logging in to Google you can use Docker with the preconfigured OS and Python version to access KIM and save your exported notes (see alternative step 12 if you want to save the Keep token on your PC).
@@ -255,18 +266,6 @@ KIM markdown note exports also import very well into Joplin. Using the `-j` flag
 
 ## Typora Use
 KIM tries to adhere to strict markdown to be as compatible as possible.   No issues have been discovered using Typora on KIM markdown exports.
-
-## Feature Todos
-- [x] Add Keep audio and drawing files  
-- [x] Add overwrite flag to replace notes
-- [x] Clean-up code from MVP
-- [ ] Export from Google Takeout Keep backups
-- [ ] Build a simple installer  
-- [ ] Create setup scripts for Windows, macOS and Linux  
-- [ ] Tie Keep notes to Notion links for cross-linking of md imports  
-- [ ] Email notes to Keep   
-- [ ] Roam imports  
-- [x] Docker version  
 
 
 ## Thank You

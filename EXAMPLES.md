@@ -32,11 +32,11 @@
 #### Import all markdown and text files in the import folder (labels in settings) - move files to completed folder when done (labels must pre-exist)
 `python kim.py -i`
 
-#### Import all markdown and text files in the import folder with labels input - move files to completed folder when done (labels must pre-exist)
+#### Import all markdown and text files in the import folder with the labels as input - move files to completed folder when done (labels must pre-exist)
 `python kim.py -i -lb movies,tv,media`
 
 ## Complex Export
-#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2024
+#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023
 `python kim.py -j -m -ed "> 2023-05-14" -b --all`
 
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
@@ -62,7 +62,7 @@ Options:
   -m  Move any exported Keep notes to Archive  
   -w  Convert pre-formatted markdown note-to-note links to wikilinks  
   -q  Execute exporting or importing in silent mode - output to kim.log
-  -i  Import notes from markdown files WARNING - EXPERIMENTAL!! 
+  -i  Import notes from markdown files WARNING - RATE LIMITS!! 
   -lb TEXT  Comma delimited labels for import - for use with only with (-i) flag
   -cd TEXT  Export notes before or after the create date - < or > YYYY-MM-DD  
   -ed TEXT  Export notes before or after the edit date - < or > YYYY-MM-DD  

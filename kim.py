@@ -328,8 +328,7 @@ class KeepService:
             self._labelid = self._keepapi.findLabel(label)
             self._note.labels.add(self._labelid)
         except Exception as e:
-            print('Label doesn\'t exist! - label: ' +  label + "  Use pre-defined labels when importing")
-            raise
+            raise ValueError("Label doesn't exist! - label: " +  label + "  Use pre-defined labels when importing")
 
     def getmedia(self, blob):
         try:
@@ -421,8 +420,7 @@ class FileService:
                 return ("")
 
         except:
-            print("Error in download_file()")
-            raise
+            raise RuntimeError("Error in download_file()")
 
     def set_file_extensions(self, data_file, file_name, file_path):
         dest_path = file_path + file_name
@@ -545,9 +543,10 @@ def save_md_file(note, note_tags, note_date, opts):
 def keep_import_notes(keep, opts):
     try:
         dir_path = FileService().inpath()
-        in_labels = Config().get("input_labels").split(",")
+        labels = Config().get("input_labels").split(",")
         if len(opts.import_labels) > 0:
-            in_labels = opts.import_labels.split(",")
+            labels = opts.import_labels.split(",")
+        in_labels = [item.strip() for item in labels]
         for file in os.listdir(dir_path):
             if os.path.isfile(dir_path + file) and (file.endswith('.md') or file.endswith('.txt')):
                 with open(dir_path + file, 'r', encoding="utf8") as md_file:
@@ -565,7 +564,7 @@ def keep_import_notes(keep, opts):
                     keep.keep_sync()
                     os.rename(dir_path + file, dir_path + INPUTDEFAULTCOMPLETE + "/" + file)
     except Exception as e:
-        print('Error on note import:', str(e))
+        raise RuntimeError('Note import:', str(e))
 
 
 
@@ -596,7 +595,6 @@ def keep_query_convert(keep, keepquery, opts):
     try:
         count = 0
         ccnt = 0
-
 
         if keepquery == "--all":
             gnotes = keep.getnotes()
@@ -736,8 +734,8 @@ def keep_query_convert(keep, keepquery, opts):
 
         return (count)
     except:
-        print("Error in keep_query_convert()")
-        raise
+        raise RuntimeError("Error in keep_query_convert()")
+
 
 
 
@@ -751,14 +749,16 @@ def ui_login(master_token, opts):
         if opts.silent_mode:
             now = datetime.datetime.now()
             intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro + "\r\n"
-        FileService.log(intro, opts.silent_mode)
+
+        fs = FileService()
+        fs.log(intro, opts.silent_mode)
 
         userid = Config().get("google_userid").strip().lower()
 
         if userid == USERID_EMPTY:
             userid = click.prompt('Enter your Google account username', type=str)
         else:
-            FileService.log("Your Google account name in the " 
+            fs.log("Your Google account name in the " 
                             + CONFIG_FILE + " file is: " + userid + " -- Welcome!", opts.silent_mode)
 
         #0.5.0 work
@@ -772,23 +772,23 @@ def ui_login(master_token, opts):
             ktoken = keep.login(pw, opts.reset)
             if ktoken:
                 if opts.reset:
-                    FileService.log("You've succesfully logged into Google Keep!", opts.silent_mode)
+                    fs.log("You've succesfully logged into Google Keep!", opts.silent_mode)
                 else:
-                    FileService.log("You've succesfully logged into Google Keep! " + 
+                    fs.log("You've succesfully logged into Google Keep! " + 
                         "Your Keep access token has been securely stored in this computer's keyring.", opts.silent_mode)
             #else:
             #  print ("Invalid Google userid or pw! Please try again.")
 
         else:
-            FileService.log("You've succesfully logged into Google Keep using " + 
+            fs.log("You've succesfully logged into Google Keep using " + 
                             "local keyring access token!", opts.silent_mode)
 
         keep.resume()
         return keep
 
     except Exception as e:
-        print("\r\nUsername or password is incorrect (" + repr(e) + ")")
-        raise
+        raise ValueError("Username or password is incorrect") from e
+
 
 
 def ui_query(keep, search_term, opts):
@@ -808,8 +808,8 @@ def ui_query(keep, search_term, opts):
                 else:
                     return
     except Exception as e:
-        print("Conversion to markdown error - " + repr(e) + " ")
-        raise
+        raise Exception("Conversion to markdown error - " + repr(e) + " ")
+
 
 
 
@@ -833,9 +833,9 @@ def _validate_options(opts) -> None:
                                 "are not compatible together "
                                 "-- please use one or the other...")
     if a and m: # move to archive and search archived
-        raise click.UsageError("Exporting archived notes (-a) and moving " 
+        raise click.UsageError("Exporting archived notes (-a) and also moving " 
                                 "them to archive (-m) is incompatible. " 
-                                "-- please use archive with other options...")
+                                "-- please use export archive (-a) without (-m)")
     if cd and ed:
         raise click.UsageError("Filtering by both create date (-cd) and " 
                                 "edit date (-ed) is not compatible.")
@@ -873,9 +873,9 @@ def _validate_paths() -> None:
         mp = Config().get("media_path")
 
         if ((":" in mp) or (mp[0] == '/')):
-            raise ValueError(f"Media path: '{mp}' within your config file - \
-                             {CONFIG_FILE} - must be relative to the output \
-                             path and cannot start with / or a drive-mount")
+            raise ValueError(f"Media path: '{mp}' within your config file - " + 
+                             f"{CONFIG_FILE} - must be relative to the output " + 
+                             f"path and cannot start with / or a drive-mount")
 
         #Make sure paths are set before doing anything
         fs = FileService()
@@ -886,8 +886,9 @@ def _validate_paths() -> None:
  
         #return defaults
     except Exception as e:
-        print("\r\nConfiguration file error - " + CONFIG_FILE + " - " + repr(e) + " ")
-        raise
+        raise PermissionError("Path creation error (invalid or read-only) - " \
+                                "check paths in " + CONFIG_FILE + " - " + repr(e) + " ")
+
 
 
 @click.command()

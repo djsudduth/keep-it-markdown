@@ -3,7 +3,7 @@
 ## 0.6.7 Release (05/15/2025)
 - Added ability to import both markdown and text files from the import folder
 - Added `-lb`option to provide comma delimited labels/tags in the cli for import  
-- Added creation of both the import and import-completed folders on launch
+- Added creation and validation of both the import and import-completed folders on launch
 - Added `-q` option for quiet/silent mode when importing or exporting notes
 - Cleaned up cli structure
 
