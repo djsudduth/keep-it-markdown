@@ -124,6 +124,12 @@ If you want to skip or ignore notes that have already been exported then
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
+#### Preserve Labels 
+Many markdown applications cannot work with special characters in labels/tags (such as brackets, parentheses, asterisks, etc). By default, KIM will strip out all special characters and replace them with dashes(-). If you need to preserve labels in their original form, use the -p option:
+```bash
+> python kim.py -p
+```
+
 #### Logseq Style 
 Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
 ```bash
@@ -152,14 +158,6 @@ Or, you can filter on any notes edited after Oct 31, 2023 with:
 If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
 ```bash
 > python kim.py -m
-```
-
-#### Authentication Token Storage
-When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
-
-If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
-```bash
-> python kim.py -r
 ```
 
 #### Batch Mode
@@ -218,9 +216,16 @@ You can override the settings `input_labels` in the command line with the (-lb) 
 
 NOTE: the import switches -i and -lb are incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
+#### Authentication Token Storage
+When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
+
+If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
+```bash
+> python kim.py -r
+```
 
 #### Combinations
-Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing hashtags if embedded in note, with create dates > Oct 3, 2023 in batch:
+Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing labels if hashtags are embedded in note, with create dates > Oct 3, 2023 in batch:
 ```bash
 > python kim.py -c -o -p -l -d -cd "> 2023-10-03" -b --all
 ```

@@ -696,8 +696,13 @@ def keep_query_convert(keep, keepquery, opts):
 
             if opts.joplin_frontmatter:
                 joplin_labels = ""
-                for label in note_labels.replace("#", "").split():
-                    joplin_labels += "  - " + label + "\n"
+                jls = [item.strip() for item in note_labels.split("#")]
+                jls = list(filter(None, jls))
+                #for label in note_labels.replace("#", "").split():
+                for label in jls:
+                    jlabel = "  - " + label + "\n"
+                    if jlabel not in joplin_labels:
+                        joplin_labels += jlabel
                 note.header = ("---\ntitle: " + note.title + 
                             "\nupdated: " + note.timestamps["edited"] + 
                             "Z\ncreated: " + note.timestamps["created"] + 
