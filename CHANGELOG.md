@@ -5,6 +5,8 @@
 - Added `-lb`option to provide comma delimited labels/tags in the cli for import  
 - Added creation and validation of both the import and import-completed folders on launch
 - Added `-q` option for quiet/silent mode when importing or exporting notes
+- Added `-d` option to remove duplicate tags at the end of notes if already embedded in the note text
+- Fixed audio file extension error for Android mp3 audio types vs Apple m4a audio
 - Cleaned up cli structure
 
 ## 0.6.6 Release (N/A - reverted)

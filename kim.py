@@ -1,3 +1,5 @@
+__version__ = "0.6.7"
+
 import os
 import gkeepapi
 import keyring
@@ -17,7 +19,7 @@ from xmlrpc.client import boolean
 from importlib.metadata import version
 from PIL import Image
 
-KIM_VERSION = "0.6.7"
+
 
 KEEP_KEYRING_ID = 'google-keep-token'
 KEEP_NOTE_URL = "https://keep.google.com/#NOTE/"
@@ -86,6 +88,7 @@ class Options:
     joplin_frontmatter: boolean
     move_to_archive: boolean
     wikilinks: boolean
+    delete_labels: boolean
     silent_mode: boolean
     import_files: boolean
     import_labels: str
@@ -430,8 +433,7 @@ class FileService:
             what = image.format.lower()
             image.close()
         except:
-            what = ".m4a"
-
+            what = ".audio"
 
         if what == 'png':
             media_name = file_name + ".png"
@@ -446,7 +448,12 @@ class FileService:
             media_name = file_name + ".webp"
             blob_final_path = dest_path + ".webp"
         else:
-            extension = ".m4a"
+            with open(data_file, 'rb') as file:
+                val = file.read(8).hex()
+            if val == "0000001c66747970":
+                extension = ".m4a"
+            else:
+                extension = ".mp3"
             media_name = file_name + extension
             blob_final_path = dest_path + extension
 
@@ -492,6 +499,14 @@ def add_wikilinks(text):
 def save_md_file(note, note_tags, note_date, opts):
     try:
         fs = FileService()
+
+        # 0.6.6 - if label hashtags are embedded then don't append
+        if opts.delete_labels:
+            for label in note_tags.split():
+                pattern = rf"{re.escape(label)}"
+                if re.search(pattern, note.text):
+                    note_tags = note_tags.replace(label, "")
+
 
         md_text = Markdown().format_check_boxes(note.text)
         note.title = NameService().check_duplicate_name(note.title, note_date)
@@ -627,7 +642,8 @@ def keep_query_convert(keep, keepquery, opts):
             )
             if opts.move_to_archive:
                 gnote.archived = True
- 
+
+
         filter_date = opts.create_date or opts.edit_date or None
         coperator = ""
         compare_date = None
@@ -702,9 +718,7 @@ def keep_query_convert(keep, keepquery, opts):
                 
             note.title = note.title.replace("/", "")
             note.text = note.text.replace("(" + NOTE_PREFIX,"(" + KEEP_URL)
-            # 0.6.6 for label in note_labels.split():
-            #    note.text = note.text.replace(label, "")
-
+  
             if opts.archive_only:
                 if note.archived and note.trashed == False:
                     keep_get_blobs(keep, note)
@@ -745,7 +759,7 @@ def keep_query_convert(keep, keepquery, opts):
 def ui_login(master_token, opts):
 
     try:
-        intro = "\r\nWelcome to Keep it Markdown or KIM " + KIM_VERSION + "!\r\n"
+        intro = "\r\nWelcome to Keep it Markdown or KIM " + __version__ + "!\r\n"
         if opts.silent_mode:
             now = datetime.datetime.now()
             intro = "\r\n------\r\n" + now.strftime("%Y-%m-%d %H:%M:%S") + intro + "\r\n"
@@ -818,9 +832,9 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, q, i, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, i, lb, cd, ed  = opts
 
-    if i and any([o, a, p, s, c, l, j, m, w]):
+    if i and any([o, a, p, s, c, l, j, m, w, d]):
         raise click.UsageError("Import mode (-i) is not compatible " 
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
@@ -902,6 +916,7 @@ def _validate_paths() -> None:
 @click.option('-j', 'joplin_frontmatter', is_flag=True, help="Prepend notes with Joplin front matter tags and dates")
 @click.option('-m', 'move_to_archive', is_flag=True, help="Move any exported Keep notes to Archive")
 @click.option('-w', 'wikilinks', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
+@click.option('-d', 'delete_labels', is_flag=True, help="Remove any duplicate labels that are already embedded in a note as hashtags")
 @click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
@@ -921,6 +936,7 @@ def main(
     joplin_frontmatter: boolean,
     move_to_archive: boolean,
     wikilinks: boolean,
+    delete_labels: boolean,
     silent_mode: boolean,
     import_files: boolean,
     import_labels: str,
@@ -942,6 +958,7 @@ def main(
             joplin_frontmatter,
             move_to_archive,
             wikilinks,
+            delete_labels,
             silent_mode,
             import_files,
             import_labels,

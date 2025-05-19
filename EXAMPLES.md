@@ -18,8 +18,8 @@
 #### Export all active notes in batch without user prompts
 `python kim.py -b --all`
 
-#### Export only notes with the label #science in batch without user prompts
-`python kim.py -b "#science"`
+#### Export only notes with the label #science and remove duplicate trailing hashtags in batch without user prompts
+`python kim.py -d -b "#science"`
 
 #### Export all active notes with silent mode with output to kim.log in batch with create dates after Jan 1, 2023
 `python kim.py -q -cd "> 2023-01-01" -b --all`
@@ -61,6 +61,7 @@ Options:
   -j  Prepend notes with Joplin front matter tags and dates  
   -m  Move any exported Keep notes to Archive  
   -w  Convert pre-formatted markdown note-to-note links to wikilinks  
+  -d  Remove any duplicate labels that are already embedded in a note as hashtags
   -q  Execute exporting or importing in silent mode - output to kim.log
   -i  Import notes from markdown files WARNING - RATE LIMITS!! 
   -lb TEXT  Comma delimited labels for import - for use with only with (-i) flag

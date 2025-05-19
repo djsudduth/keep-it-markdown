@@ -171,10 +171,16 @@ or
 ```
 will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. Be sure the -b flag is the last of all option flags when combining them.
 
-### Silent Mode
+#### Silent Mode
 KIM can suppress any screen prompts or status messages using the -q flag. Silent or quiet mode will pipe all output to at file called `kim.log` in the install diretory. This is useful for batch mode execution. You must have `settings.cfg` setup with your google id so the user prompt will not display.  This works both for exporting and importing:
 ```bash
 > python kim.py -q -b '#mylabel'
+```
+
+#### Remove Duplicate Labels/Hashtags
+KIM by default appends labels as hashtags at the end of notes. However, Keep can create labels either from the menu or by using hashtags embedded within the note text. KIM can remove any duplicate tags at the end of exported notes using the -d flag. This will allow in-line tags in notes so that apps like Obsidian and Logseq won't have duplicates appended:
+```bash
+> python kim.py -d
 ```
 
 #### Archive Notes
@@ -213,9 +219,9 @@ NOTE: the import switches -i and -lb are incompatible with all other switches fo
 
 
 #### Combinations
-Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, with create dates > Oct 3, 2023 in batch:
+Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing hashtags if embedded in note, with create dates > Oct 3, 2023 in batch:
 ```bash
-> python kim.py -c -o -p -l -cd "> 2023-10-03" -b --all
+> python kim.py -c -o -p -l -d -cd "> 2023-10-03" -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time
 
