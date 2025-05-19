@@ -182,6 +182,7 @@ KIM by default appends labels as hashtags at the end of notes. However, Keep can
 ```bash
 > python kim.py -d
 ```
+**NOTE: If you've used inline hashtagging within notes that have unusual characters, this option will not modify the hashtag within the note. Use the -p option to preserve labels and hashtags in their original form without modification**
 
 #### Archive Notes
 KIM has an option to export only Keep archive notes. All other note types are ignored with this option

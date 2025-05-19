@@ -500,14 +500,6 @@ def save_md_file(note, note_tags, note_date, opts):
     try:
         fs = FileService()
 
-        # 0.6.6 - if label hashtags are embedded then don't append
-        if opts.delete_labels:
-            for label in note_tags.split():
-                pattern = rf"{re.escape(label)}"
-                if re.search(pattern, note.text):
-                    note_tags = note_tags.replace(label, "")
-
-
         md_text = Markdown().format_check_boxes(note.text)
         note.title = NameService().check_duplicate_name(note.title, note_date)
 
@@ -718,7 +710,15 @@ def keep_query_convert(keep, keepquery, opts):
                 
             note.title = note.title.replace("/", "")
             note.text = note.text.replace("(" + NOTE_PREFIX,"(" + KEEP_URL)
-  
+            
+            # 0.6.6 - if label hashtags are embedded then don't append
+            if opts.delete_labels:
+                for label in note_labels.split():
+                    pattern = rf"{re.escape(label)}"
+                    if re.search(pattern, note.text):
+                        note_labels = note_labels.replace(label, "")
+                note_labels = note_labels.lstrip()
+
             if opts.archive_only:
                 if note.archived and note.trashed == False:
                     keep_get_blobs(keep, note)
