@@ -1,4 +1,4 @@
-__version__ = "0.6.7"
+__version__ = "0.6.8"
 
 import os
 import gkeepapi
@@ -304,8 +304,12 @@ class KeepService:
         else:
             self._keepapi.authenticate(self._userid, self._keep_token)
 
+    def getnote(self, id):
+        return(self._keepapi.get(id))
+    
     def getnotes(self):
         return(self._keepapi.all())
+
 
     def findnotes(self, kquery, labels, archive_only):
         if labels:
@@ -632,8 +636,8 @@ def keep_query_convert(keep, keepquery, opts):
                     ""
                    )
             )
-            if opts.move_to_archive:
-                gnote.archived = True
+            #if opts.move_to_archive:
+            #    gnote.archived = True
 
 
         filter_date = opts.create_date or opts.edit_date or None
@@ -723,6 +727,11 @@ def keep_query_convert(keep, keepquery, opts):
                     if re.search(pattern, note.text):
                         note_labels = note_labels.replace(label, "")
                 note_labels = note_labels.lstrip()
+
+            # 0.6.8 - fix to archiving 
+            if opts.move_to_archive:
+                gnote_archive = keep.getnote(note.id)
+                gnote_archive.archived = True
 
             if opts.archive_only:
                 if note.archived and note.trashed == False:
