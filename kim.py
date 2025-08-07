@@ -636,9 +636,8 @@ def keep_query_convert(keep, keepquery, opts):
                     ""
                    )
             )
-            #if opts.move_to_archive:
-            #    gnote.archived = True
 
+        #opts.create_date = "< 2018-01-01" Testing
 
         filter_date = opts.create_date or opts.edit_date or None
         coperator = ""
