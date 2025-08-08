@@ -154,7 +154,7 @@ Or, you can filter on any notes edited after Oct 31, 2023 with:
 (Note that Linux users my have to use single quotes)
 
 #### Move Notes to Archive After Export  
-**CAUTION! This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
+**CAUTION! This setting ALTERS the edit date of the note when moved to archive - be aware that you cannot revert it. This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
 If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
 ```bash
 > python kim.py -m

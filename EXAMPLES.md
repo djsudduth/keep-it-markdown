@@ -36,13 +36,13 @@
 `python kim.py -i -lb movies,tv,media`
 
 ## Complex Export
-#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023
+#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023 (NOTE: edit date will be changed to current day when notes are moved to archive)
 `python kim.py -j -m -ed "> 2023-05-14" -b --all`
 
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
 `python kim.py -c -l -o -b "#computer"`
 
-#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log)
+#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log) (NOTE: edit date will be changed to current day when notes are moved to archive)
 `python kim.py -p -s -m -q -b --all`
 
 #### Export all archived notes in batch, overwriting existing notes and modifying Keep note-to-note markdown links to wikilinks
