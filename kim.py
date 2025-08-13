@@ -727,7 +727,7 @@ def keep_query_convert(keep, keepquery, opts):
                         note_labels = note_labels.replace(label, "")
                 note_labels = note_labels.lstrip()
 
-            # 0.6.8 - fix to archiving 
+            # 0.6.8 - fix to move to archive
             if opts.move_to_archive:
                 gnote_archive = keep.getnote(note.id)
                 gnote_archive.archived = True
