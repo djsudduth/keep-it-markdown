@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.8 Release (08/15/2025)
+- Fixed bug using `-m` option to move notes to archive with the `--all` flag when filtering notes by create or edit dates (all notes were being moved vs only those filtered)
+- Added warning that using the `-m` option will alter the edit dates of notes moved to archive
+
 ## 0.6.7 Release (05/15/2025)
 - Added ability to import both markdown and text files from the import folder
 - Added `-lb`option to provide comma delimited labels/tags in the cli for import  

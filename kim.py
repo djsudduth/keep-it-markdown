@@ -892,6 +892,10 @@ def _validate_options(opts) -> None:
             "\r\nWARNING!!! Attempting to import many notes at once " + 
                 "may risk Google Keep temporary account lockout. Use caution!", q)
 
+    if m:
+        FileService.log(
+            "\r\nWARNING!!! Moving notes to archive will alter the " + 
+                "edit dates of the notes. You cannot recover edit dates. Use caution!", q)
 
 
 
