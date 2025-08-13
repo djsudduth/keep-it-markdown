@@ -895,7 +895,7 @@ def _validate_options(opts) -> None:
     if m:
         FileService.log(
             "\r\nWARNING!!! Moving notes to archive will alter the " + 
-                "edit dates of the notes. You cannot recover edit dates. Use caution!", q)
+                "edit dates of the archived notes. You cannot recover edit dates. Use caution!", q)
 
 
 
