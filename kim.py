@@ -1,4 +1,4 @@
-__version__ = "0.6.8"
+__version__ = "0.6.9"
 
 import os
 import gkeepapi
@@ -17,6 +17,7 @@ from pathlib import Path
 from dataclasses import dataclass, astuple
 from xmlrpc.client import boolean
 from importlib.metadata import version
+from urllib.parse import urlparse
 from PIL import Image
 
 
@@ -90,6 +91,7 @@ class Options:
     wikilinks: boolean
     delete_labels: boolean
     silent_mode: boolean
+    no_labels: boolean
     import_files: boolean
     import_labels: str
     create_date: str
@@ -487,7 +489,9 @@ def replace_wikilinks(text):
 
 def replace_func(match):
     link_text, url = match.groups()
-    if "keep.google.com" in url:
+    parsed_url = urlparse(url)
+    if parsed_url.netloc == "keep.google.com": # use search of zztzz for testing
+    # if "keep.google.com" in url: # security fix in 0.6.9 - still bug of keep url in both link_text and url
       return f"[[{link_text}]]"
     else:
       return match.group(0)
@@ -650,8 +654,12 @@ def keep_query_convert(keep, keepquery, opts):
 
 
         for note in notes:
-            #if not note.labels:
-                #print ("!!!!!!!!!Missing Labels:  " + note.title + note.text)
+            if opts.no_labels:
+                if not note.labels and not note.trashed:
+                    print ("Note Missing Labels:  " + note.title + note.text[:30] + note.timestamps["created"])
+                    continue
+                else:
+                    continue
     
             if compare_date:
                 op = comparison_operators.get(coperator, None)
@@ -808,7 +816,7 @@ def ui_login(master_token, opts):
 
         else:
             fs.log("You've succesfully logged into Google Keep using " + 
-                            "local keyring access token!", opts.silent_mode)
+                            "local keyring access token!\n", opts.silent_mode)
 
         keep.resume()
         return keep
@@ -845,7 +853,7 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, d, q, i, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, n, i, lb, cd, ed  = opts
 
     if i and any([o, a, p, s, c, l, j, m, w, d]):
         raise click.UsageError("Import mode (-i) is not compatible " 
@@ -897,6 +905,10 @@ def _validate_options(opts) -> None:
             "\r\nWARNING!!! Moving notes to archive will alter the " + 
                 "edit dates of the archived notes. You cannot recover edit dates. Use caution!", q)
 
+    if n:
+        FileService.log(
+            "\r\nAll notes that are missing labels will be reported by title, first 30 " + 
+                "characters of text and create date. NO NOTES ARE EXPORTED with this option!", q)
 
 
 def _validate_paths() -> None:
@@ -935,6 +947,7 @@ def _validate_paths() -> None:
 @click.option('-w', 'wikilinks', is_flag=True, help="Convert pre-formatted markdown note-to-note links to wikilinks")
 @click.option('-d', 'delete_labels', is_flag=True, help="Remove any duplicate labels that are already embedded in a note as hashtags")
 @click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
+@click.option('-n', 'no_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
@@ -955,6 +968,7 @@ def main(
     wikilinks: boolean,
     delete_labels: boolean,
     silent_mode: boolean,
+    no_labels: boolean,
     import_files: boolean,
     import_labels: str,
     create_date: str,
@@ -977,6 +991,7 @@ def main(
             wikilinks,
             delete_labels,
             silent_mode,
+            no_labels,
             import_files,
             import_labels,
             create_date,
