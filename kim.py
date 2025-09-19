@@ -337,9 +337,10 @@ class KeepService:
     def createlabel(self, label):
         try:
             self._labelid = self._keepapi.createLabel(label)
+            return(True)
         except Exception as e:
             if str(e) == 'Label exists':
-                return(None)
+                return(False)
             else:
                 raise ValueError("Label create error! - label: " +  label + " " + repr(e))
 
@@ -708,12 +709,14 @@ def keep_query_convert(keep, keepquery, opts):
             if opts.hashtags_to_labels:
                 gnote_add_labels = keep.getnote(note.id)
                 hashtags = re.findall(r"#[^\s!@#$%^=+.\/,\[{\]};:'><]+", note.text)
+                #if len(hashtags) != 0:
+                #    count += 1
                 cleaned_hashtags = [tag.lstrip('#') for tag in hashtags]
                 for label in cleaned_hashtags:
-                    keep.createlabel(label.strip())
+                    c = keep.createlabel(label.strip())
                     keep.setnotelabel(label.strip())
+                continue
 
-            #0.6.9 - Todo - need to add missing new labels to the label list
 
             labels = note.labels
             note_labels = ""
@@ -876,10 +879,16 @@ def _validate_options(opts) -> None:
     #reduced attribute names for compactness
     r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, lb, cd, ed  = opts
 
-    if i and any([o, a, p, s, c, l, j, m, w, d]):
+    if i and any([o, a, p, s, c, l, j, m, w, d, h]):
         raise click.UsageError("Import mode (-i) is not compatible " 
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
+    
+    if h and any([o, a, p, s, c, l, j, m, w, d, i]):
+        raise click.UsageError("Converting hashtags (-h) is not compatible " 
+                                "with export options. Please use only "
+                                "(-h) to convert hashtags to labels.")
+
     if lb and not i:
         raise click.UsageError("Import labels (-lb) can only be " 
                                 "used with import mode (-i) in the "
@@ -916,6 +925,11 @@ def _validate_options(opts) -> None:
             raise click.BadParameter(
                 f"Invalid date or date format for --ed. {date_filter_msg}", 
                                        param_hint='--ed')
+    if h:
+        FileService.log(
+            "\r\nWARNING!!! This switch will alter your notes by adding labels " + 
+                "from hashtags. Be sure to backup. Test this feature first!", q)
+        
     if i:
         FileService.log(
             "\r\nWARNING!!! Attempting to import many notes at once " + 
