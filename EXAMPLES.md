@@ -63,6 +63,8 @@ Options:
   -w  Convert pre-formatted markdown note-to-note links to wikilinks  
   -d  Remove any duplicate labels that are already embedded in a note as hashtags
   -q  Execute exporting or importing in silent mode - output to kim.log
+  -n  Report notes that are missing labels - no notes are exported
+  -h  Convert hashtags in notes to labels - no notes are exported
   -i  Import notes from markdown files WARNING - RATE LIMITS!! 
   -lb TEXT  Comma delimited labels for import - for use with only with (-i) flag
   -cd TEXT  Export notes before or after the create date - < or > YYYY-MM-DD  

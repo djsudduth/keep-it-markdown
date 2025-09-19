@@ -969,7 +969,7 @@ def _validate_paths() -> None:
 @click.option('-d', 'delete_labels', is_flag=True, help="Remove any duplicate labels that are already embedded in a note as hashtags")
 @click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
 @click.option('-n', 'no_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
-@click.option('-h', 'hashtags_to_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
+@click.option('-h', 'hashtags_to_labels', is_flag=True, help="Convert hashtags in notes to labels - no notes are exported")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
