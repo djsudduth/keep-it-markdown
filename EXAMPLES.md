@@ -37,7 +37,7 @@
 
 ## Convert Hashtags
 
-#### Convert any embedded hashtags (example: #mytag) within notes to new or existing Keep labels - no notes are exported (WARNING - this will modify your notes)
+#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported (WARNING - this will modify your notes)
 `python kim.py -h`
 
 ## Complex Export

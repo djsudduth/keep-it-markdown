@@ -196,6 +196,12 @@ KIM has an option to modify pre-existing Keep note-to-note links that are in mar
 ```
 This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
 
+#### Convert Hashtags within Existing Notes - (WARNING - This modifies your Keep notes)
+KIM supports converting embedded hashtags to Keep labels that haven't been added to the note. For example, you may have a note like ("Today I found an interesting article #readlater") - and, #readlater is not a label yet. This allows you to convert that tag automatically to either an existing label or a new label.
+```bash
+> python kim.py -h
+```
+
 #### Import Notes - (WARNING - GOOGLE RATE LIMITS)
 KIM supports importing markdown note files back into Keep using 
 ```bash
