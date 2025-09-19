@@ -35,6 +35,11 @@
 #### Import all markdown and text files in the import folder with the labels as input - move files to completed folder when done (labels must pre-exist)
 `python kim.py -i -lb movies,tv,media`
 
+## Convert Hashtags
+
+#### Convert any embedded hashtags (example: #mytag) within notes to new or existing Keep labels - no notes are exported (WARNING - this will modify your notes)
+`python kim.py -h`
+
 ## Complex Export
 #### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023 (NOTE: edit dates will be changed to current day when notes are moved to archive)
 `python kim.py -j -m -ed "> 2023-05-14" -b --all`
