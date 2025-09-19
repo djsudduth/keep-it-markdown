@@ -92,6 +92,7 @@ class Options:
     delete_labels: boolean
     silent_mode: boolean
     no_labels: boolean
+    hashtags_to_labels: boolean
     import_files: boolean
     import_labels: str
     create_date: str
@@ -307,7 +308,8 @@ class KeepService:
             self._keepapi.authenticate(self._userid, self._keep_token)
 
     def getnote(self, id):
-        return(self._keepapi.get(id))
+        self._note = self._keepapi.get(id)
+        return(self._note)
     
     def getnotes(self):
         return(self._keepapi.all())
@@ -331,6 +333,15 @@ class KeepService:
             gnote.text += "\n\n" + append_text
         self.keep_sync()
         return(None)
+
+    def createlabel(self, label):
+        try:
+            self._labelid = self._keepapi.createLabel(label)
+        except Exception as e:
+            if str(e) == 'Label exists':
+                return(None)
+            else:
+                raise ValueError("Label create error! - label: " +  label + " " + repr(e))
 
     def setnotelabel(self, label):
         try:
@@ -693,6 +704,16 @@ def keep_query_convert(keep, keepquery, opts):
                 else:
                     note.text = "- " + note.text.replace("\n\n", "\n- ")
 
+            # 0.6.9 - if hashtags are embedded but not labels yet - convert them
+            if opts.hashtags_to_labels:
+                gnote_add_labels = keep.getnote(note.id)
+                hashtags = re.findall(r"#[^\s!@#$%^=+.\/,\[{\]};:'><]+", note.text)
+                cleaned_hashtags = [tag.lstrip('#') for tag in hashtags]
+                for label in cleaned_hashtags:
+                    keep.createlabel(label.strip())
+                    keep.setnotelabel(label.strip())
+
+            #0.6.9 - Todo - need to add missing new labels to the label list
 
             labels = note.labels
             note_labels = ""
@@ -764,12 +785,12 @@ def keep_query_convert(keep, keepquery, opts):
         if opts.overwrite or opts.skip_existing:
             NameService().clear_name_list()
 
-        if opts.move_to_archive:
+        if opts.move_to_archive or opts.hashtags_to_labels:  #0.6.9
             keep.keep_sync()
 
         return (count)
-    except:
-        raise RuntimeError("Error in keep_query_convert()")
+    except Exception as e:
+        raise RuntimeError("Error in keep_query_convert() - " + repr(e))
 
 
 
@@ -853,7 +874,7 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, d, q, n, i, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, lb, cd, ed  = opts
 
     if i and any([o, a, p, s, c, l, j, m, w, d]):
         raise click.UsageError("Import mode (-i) is not compatible " 
@@ -948,6 +969,7 @@ def _validate_paths() -> None:
 @click.option('-d', 'delete_labels', is_flag=True, help="Remove any duplicate labels that are already embedded in a note as hashtags")
 @click.option('-q', 'silent_mode', is_flag=True, help="Execute in silent mode - output in kim.log")
 @click.option('-n', 'no_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
+@click.option('-h', 'hashtags_to_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
@@ -969,6 +991,7 @@ def main(
     delete_labels: boolean,
     silent_mode: boolean,
     no_labels: boolean,
+    hashtags_to_labels: boolean,
     import_files: boolean,
     import_labels: str,
     create_date: str,
@@ -992,6 +1015,7 @@ def main(
             delete_labels,
             silent_mode,
             no_labels,
+            hashtags_to_labels,
             import_files,
             import_labels,
             create_date,
