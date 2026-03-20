@@ -94,6 +94,7 @@ class Options:
     no_labels: boolean
     hashtags_to_labels: boolean
     import_files: boolean
+    apple_notes: boolean
     import_labels: str
     create_date: str
     edit_date: str
@@ -527,8 +528,8 @@ def save_md_file(note, note_tags, note_date, opts):
             md_text = Markdown().format_path(Config().get("media_path") + 
                 "/" + media, "", True, "_") + "\n" + md_text
  
-
         md_file = Path(fs.outpath(), note.title + ".md")
+
         if not opts.overwrite:
             if md_file.exists():
                 if opts.skip_existing:
@@ -550,8 +551,16 @@ def save_md_file(note, note_tags, note_date, opts):
                         [ : note.timestamps["created"].rfind('.') ] + "   ---   " + 
                         "Updated: " + note.timestamps["edited"]
                         [ : note.timestamps["edited"].rfind('.') ] + "\n\n")
+            
+        # 0.6.9 add Apple Notes output prepend the title
+        if opts.apple_notes:
+            apple_title = "# " + note.title
+        else:
+            apple_title = ""
+
 
         markdown_data = (
+            apple_title  + "\n\n" + 
             note.header + 
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_tags + "\n\n" + 
@@ -560,6 +569,18 @@ def save_md_file(note, note_tags, note_date, opts):
                                    "", False, "%20") + "\n\n")
 
         fs.write_file(md_file, markdown_data)
+
+        # 0.6.9 Move Apple Notes with media to separate folders for each (MacOS 26.3.x)
+        if opts.apple_notes and note.media:
+            move_md_file = Path(fs.outpath() + "/" + note.title + "/", note.title + ".md")
+            new_mediapath = (fs.outpath() + "/" + note.title + "/" + Config().get("media_path").rstrip("/") + "/")
+            fs.create_path(fs.outpath() + "/" + note.title)
+            fs.create_path(new_mediapath)
+            shutil.move(md_file, move_md_file)
+            for idx, media_file in enumerate(note.media):
+                #if os.path.exists(mediapath + media_file) is False:
+                shutil.move(fs.media_path() + media_file, new_mediapath + media_file)
+
         return (1)
     except Exception as e:
         raise Exception("Problem with markdown file creation: " + 
@@ -595,17 +616,19 @@ def keep_import_notes(keep, opts):
 
 
 
-def keep_get_blobs(keep, note):
+def keep_get_blobs(keep, note, opts):
     fs = FileService()
+    mediapath = fs.media_path()
+
     for idx, blob in enumerate(note.blobs):
         note.blob_names[idx] = note.title.replace(" ", "_") + str(idx)
         if blob != None:
             url = keep.getmedia(blob)
             blob_file = None
             if url:
-                blob_file = fs.download_file(url, note.blob_names[idx] + ".dat", fs.media_path()) 
+                blob_file = fs.download_file(url, note.blob_names[idx] + ".dat", mediapath) 
                 if blob_file:
-                    data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], fs.media_path())
+                    data_file = fs.set_file_extensions(blob_file, note.blob_names[idx], mediapath)
                     note.media.append(data_file)
                 else:
                     print ("Download of Keep media failed...")
@@ -653,7 +676,8 @@ def keep_query_convert(keep, keepquery, opts):
                    )
             )
 
-        #opts.create_date = "< 2018-01-01" Testing
+        #opts.create_date = "> 2025-09-18" #Testing
+        #print (opts.create_date)
 
         filter_date = opts.create_date or opts.edit_date or None
         coperator = ""
@@ -709,11 +733,11 @@ def keep_query_convert(keep, keepquery, opts):
             if opts.hashtags_to_labels:
                 gnote_add_labels = keep.getnote(note.id)
                 hashtags = re.findall(r"#[^\s!@#$%^=+.\/,\[{\]};:'><]+", note.text)
-                #if len(hashtags) != 0:
-                #    count += 1
+                if len(note.labels) != len(hashtags):
+                    count += 1
                 cleaned_hashtags = [tag.lstrip('#') for tag in hashtags]
                 for label in cleaned_hashtags:
-                    c = keep.createlabel(label.strip())
+                    keep.createlabel(label.strip())
                     keep.setnotelabel(label.strip())
                 continue
 
@@ -766,7 +790,7 @@ def keep_query_convert(keep, keepquery, opts):
 
             if opts.archive_only:
                 if note.archived and note.trashed == False:
-                    keep_get_blobs(keep, note)
+                    keep_get_blobs(keep, note, opts)
                     ccnt = save_md_file(note, 
                                         note_labels, 
                                         note_date, 
@@ -775,7 +799,7 @@ def keep_query_convert(keep, keepquery, opts):
                     ccnt = 0
             else:
                 if note.archived == False and note.trashed == False:
-                    keep_get_blobs(keep, note)
+                    keep_get_blobs(keep, note, opts)
                     ccnt = save_md_file(note, 
                                         note_labels, 
                                         note_date, 
@@ -877,14 +901,14 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, an, lb, cd, ed  = opts
 
-    if i and any([o, a, p, s, c, l, j, m, w, d, h]):
+    if i and any([o, a, p, s, c, l, j, m, w, d, h, an]):
         raise click.UsageError("Import mode (-i) is not compatible " 
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
     
-    if h and any([o, a, p, s, c, l, j, m, w, d, i]):
+    if h and any([o, a, p, s, c, l, j, m, w, d, i, an]):
         raise click.UsageError("Converting hashtags (-h) is not compatible " 
                                 "with export options. Please use only "
                                 "(-h) to convert hashtags to labels.")
@@ -928,21 +952,21 @@ def _validate_options(opts) -> None:
     if h:
         FileService.log(
             "\r\nWARNING!!! This switch will alter your notes by adding labels " + 
-                "from hashtags. Be sure to backup. Test this feature first!", q)
+                "from hashtags. Be sure to backup. Test this feature first!!", q)
         
     if i:
         FileService.log(
             "\r\nWARNING!!! Attempting to import many notes at once " + 
                 "may risk Google Keep temporary account lockout. Use caution!", q)
 
-    if m:
+    if an:
         FileService.log(
-            "\r\nWARNING!!! Moving notes to archive will alter the " + 
-                "edit dates of the archived notes. You cannot recover edit dates. Use caution!", q)
+            "\r\nNOTE!!! Formatting markdown output for Apple Notes " + 
+                "will overwrite existing exported markdown notes in some cases. Use caution!", q)
 
     if n:
         FileService.log(
-            "\r\nAll notes that are missing labels will be reported by title, first 30 " + 
+            "\r\nNOTE!! All notes that are missing labels will be reported by title, first 30 " + 
                 "characters of text and create date. NO NOTES ARE EXPORTED with this option!", q)
 
 
@@ -985,6 +1009,7 @@ def _validate_paths() -> None:
 @click.option('-n', 'no_labels', is_flag=True, help="Report notes that are missing labels - no notes are exported")
 @click.option('-h', 'hashtags_to_labels', is_flag=True, help="Convert hashtags in notes to labels - no notes are exported")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
+@click.option('-an', 'apple_notes', is_flag=True, help="Format output markdown for proper Apple Notes import")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
@@ -1007,6 +1032,7 @@ def main(
     no_labels: boolean,
     hashtags_to_labels: boolean,
     import_files: boolean,
+    apple_notes: boolean,
     import_labels: str,
     create_date: str,
     edit_date: str,
@@ -1031,15 +1057,19 @@ def main(
             no_labels,
             hashtags_to_labels,
             import_files,
+            apple_notes,
             import_labels,
             create_date,
             edit_date
         )
+ 
+        opts.apple_notes = True
+        #opts.overwrite = True
 
-        _validate_options(astuple(opts))
         _validate_paths()
 
         keep = ui_login(master_token, opts)
+        _validate_options(astuple(opts))
 
         if import_files:
             keep_import_notes(keep, opts)
