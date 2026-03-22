@@ -11,7 +11,7 @@ importing markdown files with media links unless the markdown and media are wrap
 - Find the folder where KIM exported your markdown files
 - Select either the folders or files or both in the same directory where KIM exported - you do not need to drop into each markdown folder - just select the folders and/or files
 - Run the import
-- All markdown folder imports that have media will end up in the current Apple Notes folder you have open at the time in the UI 
+- All markdown folder imports that have media will end up as notes in the current Apple Notes folder you have open at the time in the UI 
 - All markdown simple files will end up in the Mac "Imported Notes" folder
 - Once transferred, run this special Apple Shortcut (https://www.icloud.com/shortcuts/0be7572bb70c4f808a9e1c73a08e4dda) that will convert your Keep labels to Apple Notes tags (NOTE: the Shortcut may take a long time to run if you've imported a lot of Keep notes)
 
