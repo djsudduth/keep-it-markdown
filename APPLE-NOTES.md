@@ -2,7 +2,7 @@
 
 ### Overview
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
-importing markdown files with media link unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. Once exported from Keep using the `-an` option you must then use the "Import Markdown..." menu option in the Apple Notes UI to import them successfully. 
+importing markdown files with media links unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. Once exported from Keep using the `-an` option you must then use the "Import Markdown..." menu option in the Apple Notes UI to import them successfully. 
 
 ### Steps for Migrating to Apple Notes
 - Run KIM (example `python kim.py -an -b #arthistory` or `python kim.py -an -cd "> 2026-01-01"`) - see EXAMPLES.md
