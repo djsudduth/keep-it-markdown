@@ -1,8 +1,9 @@
 # Changelog
 ## 0.6.9 Release (03/23/2026)
 - Added new `-an` option to export markdown in a fully compatible format with Apple Notes markdown file import
-- Added new `-h` option to dynamically change hashtags to labels in existing Keep notes (experimental - up to 5 at a time)
-- Added special instructions for Apple Notes (APPLE-NOTES.md) and Hashtag conversions
+- Added new `-h` option to dynamically find hashtagged words in Keep notes to create labels (experimental - up to 5 notes at a time for limits) - no notes are exported
+- Added new `-n` option to report any Keep notes missing labels. Nothing is exported - just a list of notes missing labels is returned 
+- Added special instructions for Apple Notes (APPLE-NOTES.md) conversion
 - Removed warning that using the `-m` option will alter the edit dates of notes moved to archive (API fixed)
 
 ## 0.6.8 Release (08/13/2025)

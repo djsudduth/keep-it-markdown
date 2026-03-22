@@ -15,4 +15,6 @@ importing markdown files with media links unless the markdown and media are wrap
 - All markdown simple files will end up in the Mac "Imported Notes" folder
 - Once transferred, run this special Apple Shortcut (https://www.icloud.com/shortcuts/0be7572bb70c4f808a9e1c73a08e4dda) that will convert your Keep labels to Apple Notes tags (NOTE: the Shortcut may take a long time to run if you've imported a lot of Keep notes)
 
+If you want to export all your notes (run both `python kim.py -an -d -b --all` and `python kim.py -an -d -a -b --all` to export both active and archive (`-a`) notes). The `-d` option removes duplicate labels in notes - e.g., if you have both #mytag in the note and the label 'mytag' as well.
+
 All media types should transfer (images, audios, and drawings). Reminders, formatted text and note colors do not transfer (reminder notes will transfer - just not the actual Tasks to Apple Reminders)

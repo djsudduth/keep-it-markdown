@@ -923,6 +923,11 @@ def _validate_options(opts) -> None:
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
     
+    if n and any([o, p, s, c, l, j, m, w, d, h, i, an]):
+        raise click.UsageError("Finding missing labels (-n) is not compatible " 
+                                "with any export options other than (-b). Please use only "
+                                "(-n) to find notes missing labels.")
+    
     if h and any([o, a, p, s, c, l, j, m, w, d, i, an]):
         raise click.UsageError("Dynamically converting hashtags (-h) is not " 
                                 "compatible with export options. Please use only "

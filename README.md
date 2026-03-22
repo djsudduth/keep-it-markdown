@@ -180,6 +180,12 @@ KIM can suppress any screen prompts or status messages using the -q flag. Silent
 > python kim.py -q -b '#mylabel'
 ```
 
+#### Find Notes with Missing Labels
+Sometimes you need to find Keep notes that do not have labels. Keep doesn't offer this type of search. Use the `-n` flog to output a report of all notes missing labels. No notes are exported - only a list of notes is provided:
+```bash
+> python kim.py -n -b --all
+```
+
 #### Remove Duplicate Labels/Hashtags
 KIM by default appends labels as hashtags at the end of notes. However, Keep can create labels either from the menu or by using hashtags embedded within the note text. KIM can remove any duplicate tags at the end of exported notes using the -d flag. This will allow in-line tags in notes so that apps like Obsidian and Logseq won't have duplicates appended:
 ```bash
@@ -202,7 +208,7 @@ KIM has an option to modify pre-existing Keep note-to-note links that are in mar
 This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
 
 #### Convert Hashtags within Existing Notes - (WARNING - This modifies your Keep notes)
-KIM supports converting embedded hashtags to Keep labels that haven't been added to the note. For example, you may have a note like ("Today I found an interesting article #readlater") - and, #readlater is not a label yet. This allows you to convert that tag automatically to either an existing label or a new label.
+KIM supports converting embedded hashtags to Keep labels that haven't been added to the note. For example, you may have a note like ("Today I found an interesting article #readlater") - and, #readlater is not a label yet. This allows you to convert that tag automatically to either an existing label or a new label. Number of notes to alter is limited to a few and no notes are exported.
 ```bash
 > python kim.py -h
 ```
