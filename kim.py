@@ -941,6 +941,10 @@ def _validate_options(opts) -> None:
         raise click.UsageError("Exporting archived notes (-a) and also moving " 
                                 "them to archive (-m) is incompatible. " 
                                 "-- please use export archive (-a) without (-m)")
+    if an and (j or l):
+        raise click.UsageError("Exporting to Apple Notes format (-an) is " 
+                                "not compatible with Logseq (-l) or Joplin (-j) formats.")
+
     if cd and ed:
         raise click.UsageError("Filtering by both create date (-cd) and " 
                                 "edit date (-ed) is not compatible.")
@@ -975,10 +979,6 @@ def _validate_options(opts) -> None:
             "\r\nWARNING!!! Attempting to import many notes at once " + 
                 "may risk Google Keep temporary account lockout. Use caution!", q)
 
-    if an:
-        FileService.log(
-            "\r\nNOTE!!! Formatting markdown output for Apple Notes " + 
-                "will overwrite existing exported markdown notes in some cases. Use caution!", q)
 
     if n:
         FileService.log(
