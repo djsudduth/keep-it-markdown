@@ -564,13 +564,13 @@ def save_md_file(note, note_tags, note_date, opts):
             
         # 0.6.9 add Apple Notes output prepend the title
         if opts.apple_notes:
-            apple_title = "# " + note.title
+            apple_title = "# " + note.title + "\n\n"
         else:
             apple_title = ""
 
 
         markdown_data = (
-            apple_title  + "\n\n" + 
+            apple_title  + 
             note.header + 
             Markdown().convert_urls(md_text) + "\n" + 
             "\n" + note_tags + "\n\n" + 
@@ -1079,8 +1079,6 @@ def main(
             edit_date
         )
  
-        #opts.apple_notes = True
-        opts.hashtags_to_labels = True
 
         _validate_options(astuple(opts))
         _validate_paths()

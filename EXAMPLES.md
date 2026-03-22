@@ -37,11 +37,14 @@
 
 ## Convert Hashtags
 
-#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported (WARNING - this will modify your notes)
+#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported (WARNING - this will modify your notes - only a few at a time allowed)
 `python kim.py -h`
 
 ## Complex Export
-#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023 (NOTE: edit dates will be changed to current day when notes are moved to archive)
+#### Export all active notes with the label #arthistory in batch formatted to Apple Notes compatible markdown, and move them to archive after export with create dates after Jan 24, 2025 
+`python kim.py -an -m -cd "> 2025-01-24" -b #arthistory`
+
+#### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023 
 `python kim.py -j -m -ed "> 2023-05-14" -b --all`
 
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
@@ -71,6 +74,7 @@ Options:
   -n  Report notes that are missing labels - no notes are exported
   -h  Convert hashtags in notes to labels - no notes are exported
   -i  Import notes from markdown files WARNING - RATE LIMITS!! 
+  -an Format output markdown for proper Apple Notes import
   -lb TEXT  Comma delimited labels for import - for use with only with (-i) flag
   -cd TEXT  Export notes before or after the create date - < or > YYYY-MM-DD  
   -ed TEXT  Export notes before or after the edit date - < or > YYYY-MM-DD  
