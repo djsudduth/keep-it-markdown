@@ -276,6 +276,10 @@ Since KIM converts Google Keep notes to markdown, you can use some of the Obsidi
 ## Logseq Use
 Notes will import into Logseq similar to the Obsidian Use description, however, you need to set your mdfiles path to the `pages` folder in Logseq. For images to render properly be sure to set your media path to `../assets`. Also, to format notes correctly, a switch has been configured (`-l`) to add paragraph bullets within each exported note so Logseq will render them better. Also, namespaces are supported by using the `/` character in Keep titles (example a Keep note title of "Journal/2024-May" will export to "Journal___2024-May.md" - when opened in Logseq the namespace will be "Journal/2024-May").
 
+## Apple Notes Use
+KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
+importing markdown with media files unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. You must then use the "Import Markdown..." menu option in Apple Notes to import them successfully. From Apple Notes select the KIM export folder instead of the markdown file to get the media imported. All media (photos, audio, etc) types should import. NOTE: media import notes will end up in the current Apple Notes folder you have open in the UI whereas plain markdown files without media will end up in the "Imported Notes" folder - notes are split across both folders (odd behavior, but that's how it works).
+
 ## Notion Use
 KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
 

@@ -383,7 +383,15 @@ class NameService:
     def check_file_exists(self, md_file, outpath, note_title, note_date):
         #md_file = Path(outpath, note_title + ".md")
         self._namelist.remove(note_title)
-        while md_file.exists():
+        
+        # Helper to check if either a file OR a subdirectory is blocking the name
+        def has_collision(md_file):
+            file_exists = md_file.exists()
+            dir_exists = Path(outpath, note_title).exists()
+            return file_exists or dir_exists
+        
+        while has_collision(md_file):
+        #while md_file.exists():
             note_title = self.check_duplicate_name(note_title, note_date)
             self._namelist.append(note_title)
             md_file = Path(outpath, note_title + ".md")
@@ -529,15 +537,17 @@ def save_md_file(note, note_tags, note_date, opts):
                 "/" + media, "", True, "_") + "\n" + md_text
  
         md_file = Path(fs.outpath(), note.title + ".md")
+        dir_path = Path(fs.outpath(), note.title) # The potential subdirectory for apple notes
 
         if not opts.overwrite:
-            if md_file.exists():
+            if md_file.exists() or dir_path.exists():
                 if opts.skip_existing:
                     return (0)
                 else:
                     note.title = NameService().check_file_exists(
                             md_file, fs.outpath(), note.title, note_date)
                     md_file = Path(fs.outpath(), note.title + ".md")
+                    dir_path = Path(fs.outpath(), note.title) # The potential subdirectory for apple notes
 
         #if not (silent):
         fs.log(note.title, opts.silent_mode)
@@ -675,6 +685,11 @@ def keep_query_convert(keep, keepquery, opts):
                     ""
                    )
             )
+
+        # 0.6.9 lock out batching of hashtag changes for now - safety measure for now
+        if len(notes) > 5 and opts.hashtags_to_labels:
+            raise Exception("You can only modify up to 5 notes for hashtag conversion. "
+                            + "Use more precise search.")
 
         #opts.create_date = "> 2025-09-18" #Testing
         #print (opts.create_date)
@@ -909,9 +924,10 @@ def _validate_options(opts) -> None:
                                 "(-i) to import notes.")
     
     if h and any([o, a, p, s, c, l, j, m, w, d, i, an]):
-        raise click.UsageError("Converting hashtags (-h) is not compatible " 
-                                "with export options. Please use only "
-                                "(-h) to convert hashtags to labels.")
+        raise click.UsageError("Dynamically converting hashtags (-h) is not " 
+                                "compatible with export options. Please use only "
+                                "(-h) to convert hashtags to labels directly in Keep before exporting. "
+                                "Please see the README on converting hashtags.")
 
     if lb and not i:
         raise click.UsageError("Import labels (-lb) can only be " 
@@ -951,7 +967,7 @@ def _validate_options(opts) -> None:
                                        param_hint='--ed')
     if h:
         FileService.log(
-            "\r\nWARNING!!! This switch will alter your notes by adding labels " + 
+            "\r\nWARNING!!! This switch will alter your Keep notes directly by adding labels " + 
                 "from hashtags. Be sure to backup. Test this feature first!!", q)
         
     if i:
@@ -1063,13 +1079,13 @@ def main(
             edit_date
         )
  
-        opts.apple_notes = True
-        #opts.overwrite = True
+        #opts.apple_notes = True
+        opts.hashtags_to_labels = True
 
+        _validate_options(astuple(opts))
         _validate_paths()
 
         keep = ui_login(master_token, opts)
-        _validate_options(astuple(opts))
 
         if import_files:
             keep_import_notes(keep, opts)
