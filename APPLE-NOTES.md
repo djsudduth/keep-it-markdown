@@ -6,7 +6,7 @@ importing markdown files with media links unless the markdown and media are wrap
 
 ### Steps for Migrating to Apple Notes
   (be sure to run a test on a small set of notes first!)
-- Run KIM (example `python kim.py -an -b #arthistory` or `python kim.py -an -cd "> 2026-01-01"`) - see EXAMPLES.md
+- Run KIM (example `python kim.py -an -b #arthistory` or `python kim.py -an -cd "> 2026-01-01"`). Just be sure to use the `-an` option - see EXAMPLES.md
 - Open Apple Notes in MacOS and select the "Import Markdown..." menu
 - Find the folder where KIM exported your markdown files
 - Select either the folders or files or both in the same directory where KIM exported - you do not need to drop into each markdown folder - just select the folders and/or files
