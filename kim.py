@@ -1,4 +1,4 @@
-__version__ = "0.6.9"
+__version__ = "0.7.0"
 
 import os
 import gkeepapi
@@ -367,7 +367,7 @@ class NameService:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(NameService, cls).__new__(cls)
-            cls.instance._namelist = []
+            cls.instance._namelist = set()
         return cls.instance
 
     def clear_name_list(self):
@@ -377,7 +377,8 @@ class NameService:
         if note_title in self._namelist:
             note_title = note_title + note_date
             note_title = self.check_duplicate_name(note_title, note_date)
-        self._namelist.append(note_title)
+        #self._namelist.append(note_title)
+        self._namelist.add(note_title)
         return (note_title)
 
     def check_file_exists(self, md_file, outpath, note_title, note_date):
@@ -393,10 +394,39 @@ class NameService:
         while has_collision(md_file):
         #while md_file.exists():
             note_title = self.check_duplicate_name(note_title, note_date)
-            self._namelist.append(note_title)
+            #self._namelist.append(note_title)
+            self._namelist.add(note_title)
             md_file = Path(outpath, note_title + ".md")
         return (note_title)
+    
 
+class FileService2:
+    def __init__(self):
+        self._namelist = set()
+
+    def clear_name_list(self):
+        self._namelist.clear()
+
+    def check_duplicate_name(self, note_title, note_date = ""):
+        if note_title in self._namelist:
+            note_title = note_title + note_date
+            note_title = self.check_duplicate_name(note_title, note_date)
+        else:
+            self._namelist.add(note_title)
+        return (note_title)
+
+    def check_file_exists(self, md_file, outpath, note_title, note_date):
+        note_title = ns.check_duplicate_name(note_title, note_date)
+
+        def has_collision(md_file):
+            file_exists = md_file.exists()
+            dir_exists = Path(outpath, note_title).exists()
+            return file_exists or dir_exists
+        
+        while has_collision(md_file):
+            note_title = self.check_duplicate_name(note_title, note_date)
+            md_file = Path(outpath, note_title + ".md")
+        return (note_title)
 
 
 class FileService:
@@ -707,7 +737,8 @@ def keep_query_convert(keep, keepquery, opts):
         for note in notes:
             if opts.no_labels:
                 if not note.labels and not note.trashed:
-                    print ("Note Missing Labels:  " + note.title + note.text[:30] + note.timestamps["created"])
+                    print ("Note Missing Labels:  " + note.title + " " + note.text[:30] +
+                            " Created:" + note.timestamps["created"] + " NoteID:" + note.id) #0.7.0 added id
                     continue
                 else:
                     continue
@@ -988,7 +1019,7 @@ def _validate_options(opts) -> None:
     if n:
         FileService.log(
             "\r\nNOTE!! All notes that are missing labels will be reported by title, first 30 " + 
-                "characters of text and create date. NO NOTES ARE EXPORTED with this option!", q)
+                "characters of text, create date and noteid. NO NOTES ARE EXPORTED with this option!", q)
 
 
 def _validate_paths() -> None:
@@ -1015,7 +1046,6 @@ def _validate_paths() -> None:
 
 
 @click.command()
-@click.option('-r', 'reset', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
 @click.option('-o', 'overwrite', is_flag=True, help="Overwrite any existing markdown files with the same name")
 @click.option('-a', 'archive_only', is_flag=True, help="Search and export only archived notes")
 @click.option('-p', 'preserve_labels', is_flag=True, help="Preserve keep labels with spaces and special characters")
@@ -1036,9 +1066,10 @@ def _validate_paths() -> None:
 @click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
+@click.option('-r', 'reset', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
+
 
 def main( 
-    reset: boolean,
     overwrite: boolean,
     archive_only: boolean,
     preserve_labels: boolean,
@@ -1058,7 +1089,8 @@ def main(
     create_date: str,
     edit_date: str,
     search_term: str,
-    master_token: str
+    master_token: str,
+    reset: boolean
     ):
 
     try:
