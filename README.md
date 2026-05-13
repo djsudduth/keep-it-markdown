@@ -135,6 +135,12 @@ Apple notes with media links will only import if both the note and media are com
 > python kim.py -an
 ```
 
+#### Notion Style 
+Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully. Once imported Notion will show all files under the folder name. Tags/labels are not support with Notion import. You can enable this feature with
+```bash
+> python kim.py -no
+```
+
 #### Logseq Style 
 Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
 ```bash
@@ -266,8 +272,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.6.9/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.6.9``  
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.7.0/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.7.0``  
 6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 7) Run the script in the KIM directory - `python get_token.py`
 8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
@@ -289,11 +295,11 @@ Notes will import into Logseq similar to the Obsidian Use description, however, 
 
 ## Apple Notes Use
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
-importing markdown with media files unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. You must then use the "Import Markdown..." menu option in Apple Notes to import them successfully. From Apple Notes select the KIM export folder instead of the markdown file to get the media imported. All media (photos, audio, etc) types should import. Markdown titles are added to each markdown file so Apple Notes will be named correctly. See the APPLE-NOTES.md file for more information.
+importing markdown with media files unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. You must then use the "Import Markdown..." menu option in Apple Notes to import them successfully. From Apple Notes select the KIM export folder instead of the markdown file to get the media imported. All media (photos, audio, etc) types should import. Markdown titles are added to each markdown file so Apple Notes will be named correctly. See the `APPLE-NOTES.md` file for more information.
 **NOTE:** media import notes will end up in the current Apple Notes folder you have open in the UI whereas plain markdown files without media will end up in the "Imported Notes" folder - notes are split across both folders (odd behavior, but that's how it works). Formatted text in Keep notes will not transfer - only plain text.
 
 ## Notion Use
-KIM markdown note exports seem to import into Notion successfully. However, Notion STILL fails to import linked image attachments (which seems to be a general Notion md import problem at this time). Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing (future feature). Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable.
+KIM markdown note exports will now import into Notion successfully (version 0.7.0+). Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully. Notion also ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing. Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable. See `NOTION.md` for more information.
 
 ## Joplin Use
 KIM markdown note exports also import very well into Joplin. Using the `-j` flag will add Keep labels as **Joplin front matter** to add them automatically as tags. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. If you have full markdown note-to-note links in Keep like `[Other Note](https://keep.google.com/#NOTE/....)`, add the `-w` flag to convert those to Wikilinks. Wikilinking between Keep notes will automatically convert to standard Joplin markdown note links connecting notes together.
