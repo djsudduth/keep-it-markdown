@@ -1,4 +1,11 @@
 # Changelog
+
+## 0.7.0 Release (06/15/2026)
+- Added new `-no` option to to export markdown in a fully compatible format with Notion markdown file import
+- Added warning that archived notes are not exported unless using the `-a` option
+- Added the Keep NoteID to the `-n` option for the no labels search report so that notes without text or labels can be found
+- Added special instructions for export to Notion (NOTION.md) 
+
 ## 0.6.9 Release (03/23/2026)
 - Added new `-an` option to export markdown in a fully compatible format with Apple Notes markdown file import
 - Added new `-h` option to dynamically find hashtagged words in Keep notes to create labels (experimental - up to 5 notes at a time for limits) - no notes are exported

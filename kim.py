@@ -95,6 +95,7 @@ class Options:
     hashtags_to_labels: boolean
     import_files: boolean
     apple_notes: boolean
+    notion: boolean
     import_labels: str
     create_date: str
     edit_date: str
@@ -882,6 +883,9 @@ def ui_login(master_token, opts):
         fs = FileService()
         fs.log(intro, opts.silent_mode)
 
+        if not opts.archive_only:
+            fs.log("Archived notes will be ignored - use (-a) to export archived notes\r\n", opts.silent_mode)
+
         userid = Config().get("google_userid").strip().lower()
 
         if userid == USERID_EMPTY:
@@ -947,19 +951,19 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, an, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, an, no, lb, cd, ed  = opts
 
-    if i and any([o, a, p, s, c, l, j, m, w, d, h, an]):
+    if i and any([o, a, p, s, c, l, j, m, w, d, h, an, no]):
         raise click.UsageError("Import mode (-i) is not compatible " 
                                 "with export options. Please use only "
                                 "(-i) to import notes.")
     
-    if n and any([o, p, s, c, l, j, m, w, d, h, i, an]):
+    if n and any([o, p, s, c, l, j, m, w, d, h, i, an, no]):
         raise click.UsageError("Finding missing labels (-n) is not compatible " 
                                 "with any export options other than (-b). Please use only "
                                 "(-n) to find notes missing labels.")
     
-    if h and any([o, a, p, s, c, l, j, m, w, d, i, an]):
+    if h and any([o, a, p, s, c, l, j, m, w, d, i, an, no]):
         raise click.UsageError("Dynamically converting hashtags (-h) is not " 
                                 "compatible with export options. Please use only "
                                 "(-h) to convert hashtags to labels directly in Keep before exporting. "
@@ -1020,6 +1024,8 @@ def _validate_options(opts) -> None:
         FileService.log(
             "\r\nNOTE!! All notes that are missing labels will be reported by title, first 30 " + 
                 "characters of text, create date and noteid. NO NOTES ARE EXPORTED with this option!", q)
+        
+
 
 
 def _validate_paths() -> None:
@@ -1061,6 +1067,7 @@ def _validate_paths() -> None:
 @click.option('-h', 'hashtags_to_labels', is_flag=True, help="Convert hashtags in notes to labels - no notes are exported")
 @click.option('-i', 'import_files', is_flag=True, help="Import notes from markdown files WARNING - EXPERIMENTAL!!")
 @click.option('-an', 'apple_notes', is_flag=True, help="Format output markdown for proper Apple Notes import")
+@click.option('-no', 'notion', is_flag=True, help="Format output markdown for proper Notion import")
 @click.option('-lb', 'import_labels', '--lb', help="Labels for import - use only with (-i) flag")
 @click.option('-cd', 'create_date', '--cd', help="Export notes before or after the create date - < or >|YYYY-MM-DD")
 @click.option('-ed', 'edit_date', '--ed', help="Export notes before or after the edit date - < or >|YYYY-MM-DD")
@@ -1085,6 +1092,7 @@ def main(
     hashtags_to_labels: boolean,
     import_files: boolean,
     apple_notes: boolean,
+    notion: boolean,
     import_labels: str,
     create_date: str,
     edit_date: str,
@@ -1111,6 +1119,7 @@ def main(
             hashtags_to_labels,
             import_files,
             apple_notes,
+            notion,
             import_labels,
             create_date,
             edit_date
