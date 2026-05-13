@@ -136,7 +136,7 @@ Apple notes with media links will only import if both the note and media are com
 ```
 
 #### Notion Style 
-Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully. Once imported Notion will show all files under the folder name. Tags/labels are not support with Notion import. You can enable this feature with
+Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully. Once imported Notion will show all files under the folder name. Tags/labels are not supported with Notion import. You can enable this feature with
 ```bash
 > python kim.py -no
 ```
@@ -165,7 +165,6 @@ Or, you can filter on any notes edited after Oct 31, 2023 with:
 (Note that Linux users my have to use single quotes)
 
 #### Move Notes to Archive After Export  
-**CAUTION! This setting ALTERS the edit date of the note when moved to archive - be aware that you cannot revert it. This is the only switch that alters your notes - even if it just an attribute change. Be sure to backup your Keep notes to Google Takeout before using this option!!**  
 If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
 ```bash
 > python kim.py -m
@@ -192,7 +191,7 @@ Sometimes you need to find Keep notes that do not have labels. Keep doesn't offe
 > python kim.py -n -b --all
 ```
 
-#### Remove Duplicate Labels/Hashtags
+#### Remove Duplicate Labels/Hashtags (WARNING - This modifies your Keep notes)
 KIM by default appends labels as hashtags at the end of notes. However, Keep can create labels either from the menu or by using hashtags embedded within the note text. KIM can remove any duplicate tags at the end of exported notes using the -d flag. This will allow in-line tags in notes so that apps like Obsidian and Logseq won't have duplicates appended:
 ```bash
 > python kim.py -d
@@ -211,7 +210,7 @@ KIM has an option to modify pre-existing Keep note-to-note links that are in mar
 ```bash
 > python kim.py -w
 ```
-This is very useful if you're using the *Markdown for Google Keep* plugin and want Wikilinks for note-to-note link in Obsidian or Joplin. 
+This is very useful if want to use Wikilinks for note-to-note links in Obsidian or Joplin. 
 
 #### Convert Hashtags within Existing Notes - (WARNING - This modifies your Keep notes)
 KIM supports converting embedded hashtags to Keep labels that haven't been added to the note. For example, you may have a note like ("Today I found an interesting article #readlater") - and, #readlater is not a label yet. This allows you to convert that tag automatically to either an existing label or a new label. Number of notes to alter is limited to a few and no notes are exported.
@@ -226,7 +225,7 @@ KIM supports importing markdown note files back into Keep using
 ```
 **WARNING! Google may lock you out of your account if you attempt to import more than a couple hundred files - use caution!**
 
-There are a number of restrictions for importing. First, KIM will only import files from a single directory (no subdirectories) and they must have either a .txt or .md extension (both can be mixed in the import folder). KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use Robocopy). Only existing labels can be used.
+There are a number of restrictions for importing. First, KIM will only import files from a single directory (no subdirectories) and they must have either a .txt or .md extension (both can be mixed in the import folder). KIM does not support importing any media (images/audio) at this point. Additionally, KIM will not scan files for tags/labels or create new ones. The file create date and update date will be appended to the note (**Windows users note** - if you copy markdown files to a new directory, the create date will reflect the current date rather than the file's original create date - unless you use `Robocopy`). Only existing labels can be used.
 
 To add the path and desired labels for import in **settings.cfg**, add or update these two additional settings:  
 **input_path** = path to where the input md files are located. Windows users use forward slashes, e.g. -> c:/md-files/import  
@@ -248,7 +247,7 @@ If you need to change or reset your access token or don't feel comfortable savin
 ```
 
 #### Combinations
-Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing labels if hashtags are embedded in note, with create dates > Oct 3, 2023 in batch:
+Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing labels if hashtags are embedded in note, with create dates > Oct 3, 2023 in batch - see `EXAMPLES.md` for more details:
 ```bash
 > python kim.py -c -o -p -l -d -cd "> 2023-10-03" -b --all
 ```
@@ -262,7 +261,7 @@ Note: skip -s and overwrite -o cannot be used at the same time
 5. Running KIM repeatably without the skip or overwrite options or clearing the output path without using a new path will continue to append date-time to the title of each exported note when it detects a note with the same title until it fails if the title is too long. 
 6. All notes' exported text are appended by their create date, update date and URL link back to the original Keep note.  
 7. Both standard PNG and JPEG image files are supported. However, not all image types or non-standard formats may export properly. Drawings in Keep should download as PNG files.
-8. Keep uses AAC format for audio recordings. When notes are downloaded the audio is saved as M4A files. It is not known if this format will work on all markdown applications.
+8. Keep uses M4A format for audio recordings on MacOS and iOS and MP3 on Android. When notes are downloaded the audio is saved as the associated file type. It is not known if these formats will work on all markdown applications.
 9. It is possible there can be login issues due to some of the authentication and security library changes with Google and Python. If there are issues, use the Advanced Docker Setup in the next section.
 
 ## Advanced Docker Setup
