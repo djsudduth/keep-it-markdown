@@ -907,15 +907,15 @@ def ui_login(master_token, opts):
             ktoken = keep.login(pw, opts.reset)
             if ktoken:
                 if opts.reset:
-                    fs.log("You've succesfully logged into Google Keep!", opts.silent_mode)
+                    fs.log("You've successfully logged into Google Keep!", opts.silent_mode)
                 else:
-                    fs.log("You've succesfully logged into Google Keep! " + 
+                    fs.log("You've successfully logged into Google Keep! " + 
                         "Your Keep access token has been securely stored in this computer's keyring.", opts.silent_mode)
             #else:
             #  print ("Invalid Google userid or pw! Please try again.")
 
         else:
-            fs.log("You've succesfully logged into Google Keep using " + 
+            fs.log("You've successfully logged into Google Keep using " + 
                             "local keyring access token!\n", opts.silent_mode)
 
         keep.resume()
