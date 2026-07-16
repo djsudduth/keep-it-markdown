@@ -1,4 +1,4 @@
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 import os
 import gkeepapi
@@ -13,6 +13,8 @@ import datetime
 import operator
 import logging
 import zipfile
+import string
+import secrets
 from os.path import join
 from pathlib import Path
 from dataclasses import dataclass, astuple
@@ -333,6 +335,11 @@ class KeepService:
         self._note = self._keepapi.createNote(title, notetext)
         return(None)
     
+    def appendnote(self, append_text):
+        self._note.text += "\n\n" + append_text
+        self.keep_sync()
+        return(None)
+  
     def appendnotes(self, kquery, append_text):
         gnotes = self.findnotes(kquery, False, False)
         for gnote in gnotes:
@@ -539,6 +546,12 @@ def replace_func(match):
       return f"[[{link_text}]]"
     else:
       return match.group(0)
+    
+
+def generate_base62_id() -> str:
+    # Combine 0-9 (10), a-z (26), and A-Z (26) to make 62 characters
+    base62_alphabet = string.digits + string.ascii_letters
+    return "".join(secrets.choice(base62_alphabet) for _ in range(3))
     
 
 def add_wikilinks(text):
@@ -778,6 +791,18 @@ def keep_query_convert(keep, keepquery, opts):
                 for label in cleaned_hashtags:
                     keep.createlabel(label.strip())
                     keep.setnotelabel(label.strip())
+
+                #0.7.1 testing only - not ready for production
+                # Split the text into individual lines
+                lines = note.text.strip().split("\n")
+                todo_lines = [line for line in lines if "#todos" in line.lower()]
+                todo_id = generate_base62_id()
+                keep.appendnote("\n#" + todo_id)
+                for todo in todo_lines:
+                    #todo = " ".join(todo.split())
+                    keep.createnote("", " ".join(todo.replace("#todos", "")
+                                                 .split()) + "\n- #" + todo_id)
+                keep.keep_sync()
                 continue
 
 
