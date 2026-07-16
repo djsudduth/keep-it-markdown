@@ -2,6 +2,7 @@
 
 ## 0.7.1 Release (08/xx/2026)
 - Added new option to extract todos from notes that can be turned into Google Tasks
+- PLACEHOLDER: Fix to link format for Apple Notes
 - Fixed spelling errors in prompts
 
 ## 0.7.0 Release (05/23/2026)
