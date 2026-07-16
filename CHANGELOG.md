@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 Release (08/xx/2026)
+- Added new option to extract todos from notes that can be turned into Google Tasks
+- Fixed spelling errors in prompts
+
 ## 0.7.0 Release (05/23/2026)
 - Added new `-no` option to to export markdown in a compatible format with Notion markdown file import
 - Added standard warning that archived notes are not exported unless using the `-a` option
