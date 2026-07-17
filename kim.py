@@ -21,6 +21,7 @@ from dataclasses import dataclass, astuple
 from xmlrpc.client import boolean
 from importlib.metadata import version
 from urllib.parse import urlparse
+from gkeepapi.node import NewListItemPlacementValue
 from PIL import Image
 
 
@@ -105,6 +106,7 @@ class Options:
     import_labels: str
     create_date: str
     edit_date: str
+    create_tasks: str
 
 
 @dataclass
@@ -122,6 +124,7 @@ class Note:
     blob_names: list
     media: list
     header: str
+    type: str
 
 
 
@@ -336,14 +339,21 @@ class KeepService:
         return(None)
     
     def appendnote(self, append_text):
-        self._note.text += "\n\n" + append_text
+        if self._note.type.value == "LIST":
+            #temp_note = self._keepapi.get(self._note.id) self._note.settings._new_listitem_placement
+            self._note.add(append_text, False, NewListItemPlacementValue.Bottom)
+        else:
+            self._note.text += "\n\n" + append_text
         self.keep_sync()
         return(None)
   
     def appendnotes(self, kquery, append_text):
         gnotes = self.findnotes(kquery, False, False)
         for gnote in gnotes:
-            gnote.text += "\n\n" + append_text
+            if gnote.type.value == "LIST":
+                gnote.add(append_text, False)
+            else:
+                gnote.text += "\n\n" + append_text
         self.keep_sync()
         return(None)
 
@@ -718,7 +728,8 @@ def keep_query_convert(keep, keepquery, opts):
                     [blob for blob in gnote.blobs],
                     ['' for blob in gnote.blobs], 
                     [],
-                    ""
+                    "",
+                    gnote.type.value
                    )
             )
 
@@ -783,7 +794,7 @@ def keep_query_convert(keep, keepquery, opts):
 
             # 0.6.9 - if hashtags are embedded but not labels yet - convert them
             if opts.hashtags_to_labels:
-                gnote_add_labels = keep.getnote(note.id)
+                cur_note = keep.getnote(note.id)
                 hashtags = re.findall(r"#[^\s!@#$%^=+.\/,\[{\]};:'><]+", note.text)
                 if len(note.labels) != len(hashtags):
                     count += 1
@@ -791,18 +802,22 @@ def keep_query_convert(keep, keepquery, opts):
                 for label in cleaned_hashtags:
                     keep.createlabel(label.strip())
                     keep.setnotelabel(label.strip())
+                continue
 
+            if opts.create_tasks:
                 #0.7.1 testing only - not ready for production
                 # Split the text into individual lines
+                cur_note = keep.getnote(note.id)
                 lines = note.text.strip().split("\n")
                 todo_lines = [line for line in lines if "#todos" in line.lower()]
                 todo_id = generate_base62_id()
-                keep.appendnote("\n#" + todo_id)
+                keep.appendnote("#" + todo_id)
                 for todo in todo_lines:
                     #todo = " ".join(todo.split())
                     keep.createnote("", " ".join(todo.replace("#todos", "")
                                                  .split()) + "\n- #" + todo_id)
-                keep.keep_sync()
+                #keep.keep_sync()
+                count += 1
                 continue
 
 
@@ -872,6 +887,7 @@ def keep_query_convert(keep, keepquery, opts):
                     ccnt = 0
 
             count = count + ccnt
+
 
         if opts.overwrite or opts.skip_existing:
             NameService().clear_name_list()
@@ -978,7 +994,7 @@ def ui_query(keep, search_term, opts):
 def _validate_options(opts) -> None:
     VALID_PREFIXES = ("< ", "> ")
     #reduced attribute names for compactness
-    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, an, no, lb, cd, ed  = opts
+    r, o, a, p, s, c, l, j, m, w, d, q, n, h, i, an, no, lb, cd, ed, ct = opts
 
     if i and any([o, a, p, s, c, l, j, m, w, d, h, an, no]):
         raise click.UsageError("Import mode (-i) is not compatible " 
@@ -995,6 +1011,13 @@ def _validate_options(opts) -> None:
                                 "compatible with export options. Please use only "
                                 "(-h) to convert hashtags to labels directly in Keep before exporting. "
                                 "Please see the README on converting hashtags.")
+    
+    if ct and any([o, a, p, s, c, l, j, m, w, d, i, an, no]):
+        raise click.UsageError("Dynamically creating task notes from paragraphs (-et) is not " 
+                                "compatible with export options. Please use only "
+                                "(-et) to convert reminders within notes to individual task notes "
+                                "first before exporting. "
+                                "Please see the README on generating task notes.")
 
     if lb and not i:
         raise click.UsageError("Import labels (-lb) can only be " 
@@ -1110,6 +1133,7 @@ def _validate_paths() -> None:
 @click.option('-b', '--search-term', help="Run in batch mode with a specific Keep search term")
 @click.option('-t', '--master-token', help="Log in using master keep token")
 @click.option('-r', 'reset', is_flag=True, help="Will reset and not use the local keep access token in your system's keyring")
+@click.option('-ct', 'create_tasks', is_flag=True, help="Paragraphs in notes with reminder tags will be extracted as new notes")
 
 
 def main( 
@@ -1134,7 +1158,8 @@ def main(
     edit_date: str,
     search_term: str,
     master_token: str,
-    reset: boolean
+    reset: boolean,
+    create_tasks: boolean
     ):
 
     try:
@@ -1158,8 +1183,11 @@ def main(
             notion,
             import_labels,
             create_date,
-            edit_date
+            edit_date,
+            create_tasks
         )
+
+        #opts.create_tasks = True
  
         _validate_options(astuple(opts))
         _validate_paths()
