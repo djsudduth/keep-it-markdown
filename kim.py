@@ -568,7 +568,10 @@ def add_wikilinks(text):
     pattern = r"\[([^\]]+)\]\(([^)]+)\)"
     return re.sub(pattern, replace_func, text)
 
-
+def add_applelinks(text: str):
+    wikitext = add_wikilinks(text)
+    pattern = r'\[\[([^\]\|]+)(?:\|[^\]]+)?\]\]'
+    return re.sub(pattern, r'\>\>\1', wikitext)
     
 
 def save_md_file(note, note_tags, note_date, opts):
@@ -611,6 +614,8 @@ def save_md_file(note, note_tags, note_date, opts):
         # 0.6.9 add Apple Notes output prepend the title
         if opts.apple_notes:
             apple_title = "# " + note.title + "\n\n"
+            if not opts.wikilinks: # 0.7.1 Apple linking format
+                md_text = add_applelinks(md_text)
         else:
             apple_title = ""
 
@@ -816,7 +821,7 @@ def keep_query_convert(keep, keepquery, opts):
                     #todo = " ".join(todo.split())
                     keep.createnote("", " ".join(todo.replace("#todos", "")
                                                  .split()) + "\n- #" + todo_id)
-                #keep.keep_sync()
+                keep.keep_sync()
                 count += 1
                 continue
 
@@ -1015,7 +1020,7 @@ def _validate_options(opts) -> None:
     if ct and any([o, a, p, s, c, l, j, m, w, d, i, an, no]):
         raise click.UsageError("Dynamically creating task notes from paragraphs (-et) is not " 
                                 "compatible with export options. Please use only "
-                                "(-et) to convert reminders within notes to individual task notes "
+                                "(-ct) to convert reminders within notes to individual task notes "
                                 "first before exporting. "
                                 "Please see the README on generating task notes.")
 
