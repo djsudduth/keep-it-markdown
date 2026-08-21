@@ -222,7 +222,7 @@ KIM supports converting embedded hashtags to Keep labels that haven't been added
 If you create any notes with the tag #todos embedding either in a paragraph or a list item, this option will extract just those items, create new notes from them with the text and add a 3 alpha-numeric id to the new task notes and the original note. The idea is you are taking notes down but don't have time to create Tasks - just add the #todos label and this can help create individual todo notes. 
 Example note:
  - I need to schedule my appt for an oil change #todos
- - Watch videos on notetaking #todos
+ - Watch videos on notetaking #todos  
 This option will create two new notes from each item that has #todo and then add an id like #4r9 to the new notes and existing list to identify them together. 
 ```bash
 > python kim.py -h
