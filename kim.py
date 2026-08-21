@@ -45,6 +45,7 @@ KEEP_URL = "https://keep.google.com/u/0/#NOTE/"
 LOG_FILE = "kim.log"
 NOTION = "notion"
 ZIPFILE = "keepexport.zip"
+TASKS = "#todos"
 
 TECH_ERR = " Technical Error Message: "
 
@@ -338,12 +339,13 @@ class KeepService:
         self._note = self._keepapi.createNote(title, notetext)
         return(None)
     
-    def appendnote(self, append_text):
-        if self._note.type.value == "LIST":
+    def appendnote(self, note, append_text):
+        # if self._note.type.value == "LIST":
+        if isinstance(note, gkeepapi.node.List):
             #temp_note = self._keepapi.get(self._note.id) self._note.settings._new_listitem_placement
-            self._note.add(append_text, False, NewListItemPlacementValue.Bottom)
+            note.add(append_text, False, NewListItemPlacementValue.Bottom)
         else:
-            self._note.text += "\n\n" + append_text
+            note.text += "\n\n" + append_text
         self.keep_sync()
         return(None)
   
@@ -813,14 +815,26 @@ def keep_query_convert(keep, keepquery, opts):
                 #0.7.1 testing only - not ready for production
                 # Split the text into individual lines
                 cur_note = keep.getnote(note.id)
-                lines = note.text.strip().split("\n")
-                todo_lines = [line for line in lines if "#todos" in line.lower()]
-                todo_id = generate_base62_id()
-                keep.appendnote("#" + todo_id)
-                for todo in todo_lines:
-                    #todo = " ".join(todo.split())
-                    keep.createnote("", " ".join(todo.replace("#todos", "")
+                if not isinstance(cur_note, gkeepapi.node.List):
+                    lines = note.text.strip().split("\n")
+                    todo_lines = [line for line in lines if TASKS in line.lower()]
+                    todo_id = generate_base62_id()
+                    keep.appendnote(cur_note, "#" + todo_id)
+                    for todo in todo_lines:
+                        #todo = " ".join(todo.split())
+                        keep.createnote("", " ".join(todo.replace(TASKS, "")
                                                  .split()) + "\n- #" + todo_id)
+                else:
+                    todo_found = False
+                    item_list = cur_note.items
+                    todo_id = generate_base62_id()
+                    for item in item_list:
+                        if TASKS in item.text:
+                            todo_found = True
+                            keep.createnote("", " ".join(item.text.replace(TASKS, "")
+                                                 .split()) + "\n- #" + todo_id)
+                    if todo_found:
+                        keep.appendnote(cur_note, "#" + todo_id)
                 keep.keep_sync()
                 count += 1
                 continue
@@ -1018,9 +1032,9 @@ def _validate_options(opts) -> None:
                                 "Please see the README on converting hashtags.")
     
     if ct and any([o, a, p, s, c, l, j, m, w, d, i, an, no]):
-        raise click.UsageError("Dynamically creating task notes from paragraphs (-et) is not " 
+        raise click.UsageError("Dynamically extracting task notes from text lines (-ct) is not " 
                                 "compatible with export options. Please use only "
-                                "(-ct) to convert reminders within notes to individual task notes "
+                                "(-ct) to convert todos within notes to individual task notes "
                                 "first before exporting. "
                                 "Please see the README on generating task notes.")
 
@@ -1067,9 +1081,23 @@ def _validate_options(opts) -> None:
                 f"Invalid date or date format for --ed. {date_filter_msg}", 
                                        param_hint='--ed')
     if h:
-        FileService.log(
-            "\r\nWARNING!!! This switch will alter your Keep notes directly by adding labels " + 
-                "from hashtags. Be sure to backup. Test this feature first!!", q)
+        try:
+            value = click.prompt("\r\nWARNING!!! This switch will alter your Keep notes directly by adding labels " + 
+                "from hashtags. Be sure to backup. Test this feature first!!\r\nPress Y to continue:", default="N").upper()
+            if value != "Y":
+                exit()
+        except click.Abort:
+            exit()
+
+    if ct:
+        try:
+            value = click.prompt("\r\nWARNING!!! This switch will alter your Keep notes directly by adding new task notes " + 
+                "and adding a key to your todos note. Be sure to backup. Test this feature first!!\r\nPress Y to continue:", default="N").upper()
+            if value != "Y":
+                exit()
+        except click.Abort:
+            exit()
+
         
     if i:
         FileService.log(
@@ -1191,8 +1219,6 @@ def main(
             edit_date,
             create_tasks
         )
-
-        #opts.create_tasks = True
  
         _validate_options(astuple(opts))
         _validate_paths()

@@ -37,8 +37,14 @@
 
 ## Convert Hashtags
 
-#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported (WARNING - this will modify your notes - only a few at a time allowed)
+#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported.  (WARNING - this will modify your notes - only a few at a time allowed)
 `python kim.py -h`
+(be sure the search term is just a keyword and not a tag search)
+
+## Extract Todos
+
+#### Find notes that have #todos labels/tags embedded in paragraphs or lists and create new individual notes to convert to Google Tasks. Task notes and original note will have a 3-character search index added to connect them (WARNING - this will modify and add new notes - only a few at a time allowed)
+`python kim.py -ct`
 
 ## Complex Export
 #### Export all active notes with the label #arthistory in batch formatted to Apple Notes compatible markdown, and move them to archive after export with create dates after Jan 24, 2025 

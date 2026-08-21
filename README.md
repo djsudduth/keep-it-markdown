@@ -218,6 +218,16 @@ KIM supports converting embedded hashtags to Keep labels that haven't been added
 > python kim.py -h
 ```
 
+#### Extract todos from a list of items - (WARNING - This modifies your Keep notes)
+If you create any notes with the tag #todos embedding either in a paragraph or a list item, this option will extract just those items, create new notes from them with the text and add a 3 alpha-numeric id to the new task notes and the original note. The idea is you are taking notes down but don't have time to create Tasks - just add the #todos label and this can help create individual todo notes. 
+Example note:
+ - I need to schedule my appt for an oil change #todos
+ - Watch videos on notetaking #todos
+This option will create two new notes from each item that has #todo and then add an id like #4r9 to the new notes and existing list to identify them together. 
+```bash
+> python kim.py -h
+```
+
 #### Import Notes - (WARNING - GOOGLE RATE LIMITS)
 KIM supports importing markdown note files back into Keep using 
 ```bash
@@ -295,7 +305,7 @@ Notes will import into Logseq similar to the Obsidian Use description, however, 
 ## Apple Notes Use
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
 importing markdown with media files unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. You must then use the "Import Markdown..." menu option in Apple Notes to import them successfully. From Apple Notes select the KIM export folder instead of the markdown file to get the media imported. All media (photos, audio, etc) types should import. Markdown titles are added to each markdown file so Apple Notes will be named correctly. See the `APPLE-NOTES.md` file for more information.
-**NOTE:** media import notes will end up in the current Apple Notes folder you have open in the UI whereas plain markdown files without media will end up in the "Imported Notes" folder - notes are split across both folders (odd behavior, but that's how it works). Formatted text in Keep notes will not transfer - only plain text.
+**NOTE:** media import notes will end up in the current Apple Notes folder you have open in the UI whereas plain markdown files without media will end up in the "Imported Notes" folder - notes are split across both folders (odd behavior, but that's how it works). Formatted text in Keep notes will not transfer - only plain text. Also, markdown links between Keep notes will convert to the Apple double `>>` link format (however, Apple import will not automatically link imported notes together)
 
 ## Notion Use
 KIM markdown exports will now import into Notion successfully (version 0.7.0+). Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully (the zip file will appear in the markdown output folder in the `notion` folder). Notion ties underlying ids to any cross-linked notes so that there is no automated cross-linking when importing. Also, tags are not supported in Notion so Keep labels will just be text hashtags within the note which are searchable. See `NOTION.md` for more information.
