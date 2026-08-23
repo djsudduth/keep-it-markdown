@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.1 Release (08/xx/2026)
+## 0.7.1 Release (08/23/2026)
 - Added new option to extract todos from notes that can be turned into Google Tasks
 - Added warnings that extracting hashtags to labels (-h) and creating Tasks notes (-ct) will alter your Keep notes
 - Fix for note-to-note linking format (>>) for Apple Notes

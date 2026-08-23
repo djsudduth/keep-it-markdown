@@ -2,7 +2,7 @@
 
 ### Overview
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
-importing markdown files with media links unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. Once exported from Keep using the `-an` option you must then use the "Import Markdown..." menu option in the Apple Notes UI to import them successfully. 
+importing markdown files with media links unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. Once exported from Keep using the `-an` option **you must then use the "Import Markdown..." menu option** in the Apple Notes UI to import them successfully. 
 
 ### Steps for Migrating to Apple Notes
   (be sure to run a test on a small set of notes first!)
@@ -13,6 +13,7 @@ importing markdown files with media links unless the markdown and media are wrap
 - Run the import
 - All markdown folder imports that have media will end up as notes in the current Apple Notes folder you have open at the time in the UI 
 - All markdown simple files will end up in the Mac "Imported Notes" folder
+- Any Keep note-to-note links will show up in Apple Notes in Apple note linking format using the `>>` vs. wikilinks - however, the link will not be active (you must activate it manually)
 - Once transferred, run this special Apple Shortcut (https://www.icloud.com/shortcuts/0be7572bb70c4f808a9e1c73a08e4dda) that will convert your Keep labels to Apple Notes tags (NOTE: the Shortcut may take a long time to run if you've imported a lot of Keep notes)
 
 If you want to export all your notes (run both `python kim.py -an -d -b --all` and `python kim.py -an -d -a -b --all` to export both active and archive (`-a`) notes). The `-d` option removes duplicate labels in notes - e.g., if you have both #mytag in the note and the label 'mytag' as well.
@@ -23,7 +24,7 @@ All media types should transfer (images, audios, and drawings). Reminders, forma
 Query used: `python kim.py -an -o -d -w -b Snelling`
 (export in Apple Notes format, overwrite existing, remove duplicate hashtags, convert note-to-note links to wikilinks, keyword search: Snelling)
 
-**Keep Notes and Imported Apple Notes**
+**Keep Notes (left) and Imported Apple Notes (right)**
 ![](images/apple1.jpg)
 
 

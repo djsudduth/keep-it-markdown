@@ -22,7 +22,7 @@ All image media types should transfer (images and drawings). Audio files will im
 Query used: `python kim.py -no -o -d -w -b Snelling`
 (export in Notion format, overwrite existing, remove duplicate hashtags, convert note-to-note links to wikilinks, keyword search: Snelling)
 
-**Keep Notes and Imported Notion Notes**
+**Keep Notes (left) and Imported Notion Notes (right)**
 
 ![](images/notion1.jpg)
 
