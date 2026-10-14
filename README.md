@@ -30,9 +30,9 @@ Unzip the files within your chosen directory.
 #### Step 3:
 Make sure you are in your KIM directory and install all needed dependencies with:  
 ```bash
-> pip install -r requirements.txt
+> pip install -e .
 ```
-(you may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed) This will install the additional libraries needed to run KIM. You only need to do this once. If you have Anaconda as your Python base you may need to find tutorials on how to get pip and install dependencies. Advanced users may want to setup a virtual environment for this.
+(or `pip install -r requirements.txt`). Installing with `pip install -e .` installs all dependencies and registers the standalone `kim` command in your environment. (You may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed). You only need to do this once. Advanced users may want to setup a virtual environment for this.
 
 #### Step 4:
 KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a Google page OAuth cookie. Install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM.  
@@ -61,8 +61,10 @@ Copy that token and save it in a safe place! If it didn't work your OAuth token 
 #### Step 5: 
 You now need to save your Keep token within the KIM secure keyring
 ```bash
-> python kim.py -t <your long token value here>
+> kim -t <your long token value here>
 ```
+*(or `python kim.py -t <your long token value here>`)*
+
 If you entered your Google email and token correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 
 **If this step keeps failing see 'Key Callouts' #9 below, and have issues with the login - see Advanced Docker Setup below**
@@ -70,8 +72,9 @@ If you entered your Google email and token correctly, you should see a successfu
 ## Usage
 Congrats! You can now run KIM. Simply start by running:  
 ```bash
-> python kim.py
+> kim
 ```
+
 After logging in you should see:
 ```bash
 > Enter a case sensitive keyword or label search or '--all' to convert Keep notes to md or '--x' to exit:
@@ -97,7 +100,7 @@ At first launch KIM will create a **settings.cfg** file in the directory where y
 ### Help and Options
 All KIM options can be discovered using
 ```bash
-> python kim.py --help
+> kim --help
 ```
 Also see **EXAMPLES.md** for many option combinations  
 
@@ -107,115 +110,115 @@ Searching for notes by labels just requires the # character in front of the sear
 #### Titles
 Exported note titles use Keep titles in conversion as best it can. In many cases Keep notes do not have titles and by default KIM will use the create date-time as the title. If you wish to use the beginning body content for blank Keep titles use
 ```bash
-> python kim.py -c
+> kim -c
 ```
 if the note has no title or text in the body then the date will be used as default.
 
 #### Overwriting or Skipping
 KIM by default does not overwrite markdown files when exporting, principally because Keep notes can have the same titles. KIM will try to rename duplicate notes. However, notes can be overwritten with
 ```bash
-> python kim.py -o
+> kim -o
 ```
 all exported md files will be overwritten. However, if 2 or more Keep notes have the same title, the create date will be appended on the note to be unique.
 
 If you want to skip or ignore notes that have already been exported then
 ```bash
-> python kim.py -s
+> kim -s
 ```
 will skip exporting Keep notes to markdown that already exist in the destination directory. If 2 or more Keep notes have the same title and a markdown file already exists with that name, a new export will be created for any exports that do not exist. (Note that overwrite and skip cannot be used at the same time)
 
 #### Preserve Labels 
 Many markdown applications cannot work with special characters in labels/tags (such as brackets, parentheses, asterisks, etc). By default, KIM will strip out all special characters and replace them with dashes(-). If you need to preserve labels in their original form, use the -p option:
 ```bash
-> python kim.py -p
+> kim -p
 ```
 #### Apple Notes Style 
 Apple notes with media links will only import if both the note and media are combined within a MacOS folder. With this switch KIM will create individual folders for each markdown file that has media - otherwise just a file is created. Markdown titles are also added to allow Apple Notes to have titles. You can enable this feature with
 ```bash
-> python kim.py -an
+> kim -an
 ```
 
 #### Notion Style 
 Notion requires the markdown files to be wrapped as a ZIP file first to import media successfully. Once imported Notion will show all files under the folder name. Tags/labels are not supported with Notion import. You can enable this feature with
 ```bash
-> python kim.py -no
+> kim -no
 ```
 
 #### Logseq Style 
 Some markdown systems prefer to have bullets prepended on each paragraph within a note. KIM will attempt to prepend a dash to any Keep note that has 2 linefeeds as well as the first line. You can enable this feature with
 ```bash
-> python kim.py -l
+> kim -l
 ```
 
 #### Joplin Front Matter 
 Joplin tags do not use the hashtag format. They are provided as front matter comments within the notes. With this switch KIM will prepend notes with the Joplin front matter comments to preserve tags and dates. You can enable this feature with
 ```bash
-> python kim.py -j
+> kim -j
 ```
 
 #### Filter by Create or Edit Date 
 KIM now supports filtering your export by either the created date (`-cd`) or edited date (`-ed`). This can be combined with the other options to export notes only after or before specific dates. Only the greater-than `>` or less-than `<` filters are available. You must provide the `<`|`>` preceeding the date. The date must be in the form `YYYY-MM-DD`. For example, you can filter on any notes created before Dec 9, 2022 with:
 ```bash
-> python kim.py -cd "< 2022-12-09"
+> kim -cd "< 2022-12-09"
 ```
 Or, you can filter on any notes edited after Oct 31, 2023 with:
 ```bash
-> python kim.py -ed "> 2023-10-31"
+> kim -ed "> 2023-10-31"
 ```
 (Note that Linux users my have to use single quotes)
 
 #### Move Notes to Archive After Export  
 If you have a large number of notes it can be confusing which ones have already been exported. With this switch any exported notes will be moved to the Keep archive. You can enable this feature with
 ```bash
-> python kim.py -m
+> kim -m
 ```
 
 #### Batch Mode
 KIM can run through your own script by using the -b flag. For example, running:
 ```bash
-> python kim.py -b 'my search term'
+> kim -b 'my search term'
 or
-> python kim.py -b --all
+> kim -b --all
 ```
 will execute KIM without input prompts as long as you have your Google ID in the setting.cfg file and you have stored your Keep access token by running KIM once manually on your device. Be sure the -b flag is the last of all option flags when combining them.
 
 #### Silent Mode
 KIM can suppress any screen prompts or status messages using the -q flag. Silent or quiet mode will pipe all output to at file called `kim.log` in the install diretory. This is useful for batch mode execution. You must have `settings.cfg` setup with your google id so the user prompt will not display.  This works both for exporting and importing:
 ```bash
-> python kim.py -q -b '#mylabel'
+> kim -q -b '#mylabel'
 ```
 
 #### Find Notes with Missing Labels
 Sometimes you need to find Keep notes that do not have labels. Keep doesn't offer this type of search. Use the `-n` flog to output a report of all notes missing labels. No notes are exported - only a list of notes is provided:
 ```bash
-> python kim.py -n -b --all
+> kim -n -b --all
 ```
 
 #### Remove Duplicate Labels/Hashtags (WARNING - This modifies your Keep notes)
 KIM by default appends labels as hashtags at the end of notes. However, Keep can create labels either from the menu or by using hashtags embedded within the note text. KIM can remove any duplicate tags at the end of exported notes using the -d flag. This will allow in-line tags in notes so that apps like Obsidian and Logseq won't have duplicates appended:
 ```bash
-> python kim.py -d
+> kim -d
 ```
 **NOTE: If you've used inline hashtagging within notes that have unusual characters, this option will not modify the hashtag within the note. Use the -p option to preserve labels and hashtags in their original form without modification**
 
 #### Archive Notes
 KIM has an option to export only Keep archive notes. All other note types are ignored with this option
 ```bash
-> python kim.py -a
+> kim -a
 ```
 Archive export can be combined with the -o and -b options. 
 
 #### Convert to Wikilinks
 KIM has an option to modify pre-existing Keep note-to-note links that are in markdown format such as `[Other Keep Note](https://keep.google.com/#NOTE/dks7r23ksdf...UI9kshweriuhv)` to just `[[Other Keep Note]]`
 ```bash
-> python kim.py -w
+> kim -w
 ```
 This is very useful if want to use Wikilinks for note-to-note links in Obsidian or Joplin. 
 
 #### Convert Hashtags within Existing Notes - (WARNING - This modifies your Keep notes)
 KIM supports converting embedded hashtags to Keep labels that haven't been added to the note. For example, you may have a note like ("Today I found an interesting article #readlater") - and, #readlater is not a label yet. This allows you to convert that tag automatically to either an existing label or a new label. Number of notes to alter is limited to a few and no notes are exported.
 ```bash
-> python kim.py -h
+> kim -h
 ```
 
 #### Extract todos from a list of items - (WARNING - This modifies your Keep notes)
@@ -225,13 +228,13 @@ Example note:
  - Watch videos on notetaking #todos  
 This option will create two new notes from each item that has #todo and then add an id like #4r9 to the new notes and existing list to identify them together. 
 ```bash
-> python kim.py -h
+> kim -h
 ```
 
 #### Import Notes - (WARNING - GOOGLE RATE LIMITS)
 KIM supports importing markdown note files back into Keep using 
 ```bash
-> python kim.py -i
+> kim -i
 ```
 **WARNING! Google may lock you out of your account if you attempt to import more than a couple hundred files - use caution!**
 
@@ -243,7 +246,7 @@ To add the path and desired labels for import in **settings.cfg**, add or update
 
 You can override the settings `input_labels` in the command line with the (-lb) parameter - example:
 ```bash
-> python kim.py -i -lb "computers,programming"
+> kim -i -lb "computers,programming"
 ```
 
 NOTE: the import switches -i and -lb are incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
@@ -253,13 +256,13 @@ When you run KIM for the first time and log in via your password, it will store 
 
 If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
 ```bash
-> python kim.py -r
+> kim -r
 ```
 
 #### Combinations
 Example: to export all non-archived notes, using content for blank note titles, with overwriting, preserving Keep label format, Logseq style paragraphs, removing trailing labels if hashtags are embedded in note, with create dates > Oct 3, 2023 in batch - see `EXAMPLES.md` for more details:
 ```bash
-> python kim.py -c -o -p -l -d -cd "> 2023-10-03" -b --all
+> kim -c -o -p -l -d -cd "> 2023-10-03" -b --all
 ```
 Note: skip -s and overwrite -o cannot be used at the same time
 
@@ -281,8 +284,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 1) Install Docker on any PC (find the online instructions for your particular operating system)
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
-4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.7.1/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.7.1``  
+4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.8.0/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
+5) Change the directory to Kim ``cd keep-it-markdown-0.8.0``  
 6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 7) Run the script in the KIM directory - `python get_token.py`
 8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
@@ -292,8 +295,8 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 ---
 11) Alternatively, exit the Docker image with ``exit``
 12) Download and install KIM in your current OS
-13) Install KIM dependencies your PC using `pip install -r requirements.txt`
-14) Run KIM with the `-t` switch once to save the Token in your PC keystore (``python kim.py -t <long token here>``)
+13) Install KIM dependencies your PC using `pip install -e .`
+14) Run KIM with the `-t` switch once to save the Token in your PC keystore (``kim -t <long token here>``)
 15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
