@@ -1,4 +1,5 @@
-__version__ = "0.7.1"
+#!/usr/bin/env python3
+__version__ = "0.8.0"
 
 import os
 import gkeepapi
