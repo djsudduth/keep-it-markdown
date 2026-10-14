@@ -1,5 +1,8 @@
 ## Apple Notes Conversion
 
+### WARNING!
+macOS 27.0 broke the media import for markdown files. If you have 26.x this should work without issues. However, the early 27.x releases will require manually importing the media until Apple (hopefully) fixes this.
+
 ### Overview
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
 importing markdown files with media links unless the markdown and media are wrapped in a folder. A new switch has been added (`-an`) to export in this special format. Once exported from Keep using the `-an` option **you must then use the "Import Markdown..." menu option** in the Apple Notes UI to import them successfully. 
