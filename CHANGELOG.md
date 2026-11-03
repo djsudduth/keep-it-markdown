@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.0 Release (10/xx/2026)
+## 0.8.0 Release (11/xx/2026)
 - Support running standalone as `kim` command directly without typing `python kim.py`
 - Added `pyproject.toml` packaging and console script entry point
 - Added Ruff linting configuration

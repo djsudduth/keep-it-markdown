@@ -1,7 +1,7 @@
 ## Apple Notes Conversion
 
 ### WARNING!
-macOS 27.0 broke the media import for markdown files. If you have 26.x this should work without issues. However, the early 27.x releases will require manually importing the media until Apple (hopefully) fixes this.
+macOS 27.0 and 27.2 broke the media import for markdown files. If you have 26.x this should work without issues. However, the early 27.x releases will require manually importing the media until Apple (hopefully) fixes this.
 
 ### Overview
 KIM can now export markdown files in a compatible format for Apple Notes import (OS versions 26.x). Apple Notes has issues
@@ -9,7 +9,7 @@ importing markdown files with media links unless the markdown and media are wrap
 
 ### Steps for Migrating to Apple Notes
   (be sure to run a test on a small set of notes first!)
-- Run KIM tests (examples `python kim.py -an -b #arthistory` or `python kim.py -an -cd "> 2026-01-01"`). Just be sure to use the `-an` option - see EXAMPLES.md
+- Run KIM tests (examples `kim -an -b #arthistory` or `kim -an -cd "> 2026-01-01"`). Just be sure to use the `-an` option - see EXAMPLES.md
 - Open Apple Notes in MacOS and select the "Import Markdown..." menu
 - Find the folder where KIM exported your markdown files
 - Select either the folders or files or both in the same directory where KIM exported - you do not need to drop into each markdown folder - just select the folders and/or files
@@ -19,12 +19,12 @@ importing markdown files with media links unless the markdown and media are wrap
 - Any Keep note-to-note links will show up in Apple Notes in Apple note linking format using the `>>` vs. wikilinks - however, the link will not be active (you must activate it manually)
 - Once transferred, run this special Apple Shortcut (https://www.icloud.com/shortcuts/0be7572bb70c4f808a9e1c73a08e4dda) that will convert your Keep labels to Apple Notes tags (NOTE: the Shortcut may take a long time to run if you've imported a lot of Keep notes)
 
-If you want to export all your notes (run both `python kim.py -an -d -b --all` and `python kim.py -an -d -a -b --all` to export both active and archive (`-a`) notes). The `-d` option removes duplicate labels in notes - e.g., if you have both #mytag in the note and the label 'mytag' as well.
+If you want to export all your notes (run both `kim -an -d -b --all` and `kim -an -d -a -b --all` to export both active and archive (`-a`) notes). The `-d` option removes duplicate labels in notes - e.g., if you have both #mytag in the note and the label 'mytag' as well.
 
 All media types should transfer (images, audios, and drawings). Reminders, formatted text and note colors do not transfer (reminder notes will transfer - just not the actual Tasks to Apple Reminders)
 
 ### Examples
-Query used: `python kim.py -an -o -d -w -b Snelling`
+Query used: `kim -an -o -d -w -b Snelling`
 (export in Apple Notes format, overwrite existing, remove duplicate hashtags, convert note-to-note links to wikilinks, keyword search: Snelling)
 
 **Keep Notes (left) and Imported Apple Notes (right)**

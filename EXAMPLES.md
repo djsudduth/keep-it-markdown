@@ -4,63 +4,63 @@
 `Enter a case sensitive keyword or label search or --all' to convert Keep notes to md or '--x' to exit:`
 
 #### User query and export active notes (no notes will be overwritten)
-`python kim.py`
+`kim`
 
 #### User query and export only archived notes
-`python kim.py -a`
+`kim -a`
 
 #### User query and export active notes and overwrite existing markdown notes
-`python kim.py -o`
+`kim -o`
 
 #### User query to export active notes that were edited after Jun 15, 2023
-`python kim.py -ed "> 2023-06-15"`
+`kim -ed "> 2023-06-15"`
 
 #### Export all active notes in batch without user prompts
-`python kim.py -b --all`
+`kim -b --all`
 
 #### Export only notes with the label #science and remove duplicate trailing hashtags in batch without user prompts
-`python kim.py -d -b "#science"`
+`kim -d -b "#science"`
 
 #### Export all active notes with silent mode with output to kim.log in batch with create dates after Jan 1, 2023
-`python kim.py -q -cd "> 2023-01-01" -b --all`
+`kim -q -cd "> 2023-01-01" -b --all`
 
 #### Export all active notes in batch and skip over notes already exported
-`python kim.py -s -b --all`
+`kim -s -b --all`
 
 ## Import Files
 
 #### Import all markdown and text files in the import folder (labels in settings) - move files to completed folder when done (labels must pre-exist)
-`python kim.py -i`
+`kim -i`
 
 #### Import all markdown and text files in the import folder with the labels as input - move files to completed folder when done (labels must pre-exist)
-`python kim.py -i -lb movies,tv,media`
+`kim -i -lb movies,tv,media`
 
 ## Complex Export
 #### Export all active notes with the label #arthistory in batch formatted to Apple Notes compatible markdown, and move them to archive after export with create dates after Jan 24, 2025 
-`python kim.py -an -m -cd "> 2025-01-24" -b #arthistory`
+`kim -an -m -cd "> 2025-01-24" -b #arthistory`
 
 #### Export all active notes in batch formatted to Joplin front matter headers, and move them to archive after export with edit dates after May 14, 2023 
-`python kim.py -j -m -ed "> 2023-05-14" -b --all`
+`kim -j -m -ed "> 2023-05-14" -b --all`
 
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
-`python kim.py -c -l -o -b "#computer"`
+`kim -c -l -o -b "#computer"`
 
 #### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log) (NOTE: edit dates will be changed to current day when notes are moved to archive)
-`python kim.py -p -s -m -q -b --all`
+`kim -p -s -m -q -b --all`
 
 #### Export all archived notes in batch, overwriting existing notes and modifying Keep note-to-note markdown links to wikilinks
-`python kim.py -a -o -w -b --all`
+`kim -a -o -w -b --all`
 
 ## Convert Hashtags
 
 #### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported.  (WARNING - this will modify your notes - only a few at a time allowed)
-`python kim.py -h`
+`kim -h`
 (be sure the search term is just a keyword and not a tag search)
 
 ## Extract Todos
 
 #### Find notes that have #todos labels/tags embedded in paragraphs or lists and create new individual notes to convert to Google Tasks. Task notes and original note will have a 3-character search index added to connect them (WARNING - this will modify and add new notes - only a few at a time allowed)
-`python kim.py -ct`
+`kim -ct`
 
 
 ### List of options
