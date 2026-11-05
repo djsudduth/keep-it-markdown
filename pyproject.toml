@@ -13,6 +13,7 @@ dependencies = [
     "keyring",
     "click",
     "pillow",
+    "keyrings.alt; sys_platform == 'linux'",
 ]
 
 [project.scripts]

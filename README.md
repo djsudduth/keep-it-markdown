@@ -8,7 +8,7 @@ The overall goal is to utilize Google Keep as an easy way to capture raw notes o
 ## Installation
 **Advanced Users:** see the **INSTALL.md** to skip over these installation details for simple step-by-steps  
 
-Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.10 or greater** and utilizes the unofficial gkeepapi. (**If you have Python versions 3.10+ and have login issues you may need to review Advanced Docker Setup below**)
+Install assumes you have some familiarity with running scripts through a terminal or command line. KIM is a command line script that **requires Python 3.10 or greater** and utilizes the unofficial gkeepapi. (**If you have install or have login issues you may need to review Advanced Docker Setup below**)
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
@@ -20,15 +20,20 @@ Install `pipx` based on your operating system. This will allow you to install `k
 ```bash
 brew install pipx && pipx ensurepath
 ```
-#### Windows (Win 10 and 11 should have winget - if not, find install instructions online):
+#### Windows (Win 10 and 11 should have winget installed - if not, find install instructions online):
 ```bash
 winget install pipx
 pipx ensurepath
 ```
-#### Linux:
+#### Debian/Ubuntu Linux:
 ```bash
 sudo apt install pipx && pipx ensurepath
 ```
+#### Fedora/RedHat/CentOS Linux:
+```bash
+sudo dnf install pipx && pipx ensurepath
+```
+#### Other Linux Distributions (Arch, Alpine, etc - find online instructions)
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
@@ -293,19 +298,18 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 2) Startup Docker (or it will autostart on reboot depending on how you installed it)
 3) Go to the command line and run ``docker build -t kim .`` in the directory where you installed KIM (it will take about 5 min to create the image)
 4) Run the Docker image with ``docker run --mount type=bind,source=(your PC's KIM directory)/mdfiles,target=/keep-it-markdown-0.8.0/mdfiles -it kim`` (you will be automatically logged into the Docker image and your PC's directory will be mapped to the Docker image directory)
-5) Change the directory to Kim ``cd keep-it-markdown-0.8.0``  
-6) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
-7) Run the script in the KIM directory - `python get_token.py`
-8) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
-9) Copy and save the Keep Token value output from `get_token.py` on your PC
+5) Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
+6) Run the script in the default KIM directory - `get-token`
+7) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
+8) Copy and save the Keep Token value output from `get-token` on your PC
 ---
-10) For one time or sporatic use, run KIM in Docker with ``python kim.py -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
+9) For one time or sporatic use, run KIM in Docker with ``kim -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
 ---
-11) Alternatively, exit the Docker image with ``exit``
-12) Download and install KIM in your current OS
-13) Install KIM dependencies your PC using `pip install -e .`
-14) Run KIM with the `-t` switch once to save the Token in your PC keystore (``kim -t <long token here>``)
-15) You can now run KIM on your PC (once you save the token) with Python v-3.10 or higher without having to run these steps again. The Token will be saved in your local PC's keystore
+10) Alternatively, exit the Docker image with ``exit``
+11) Download and install KIM in your current OS
+12) Install KIM dependencies your PC using `pipx install -e .` (Or, use `pip` with venv - see INSTALL)
+13) Run KIM with the `-t` switch once to save the Token in your PC keystore (``kim -t <long token here>``)
+14) You can now run KIM on your PC (once you save the token) without having to run these steps again. The Token will be saved in your local PC's keystore
 
 ## Obsidian Use
 Since KIM converts Google Keep notes to markdown, you can use some of the Obsidian text markdown features in your Keep notes as you're capturing information. For example, you can begin to cross-link notes in Keep by using the Wikilink double-brackets within a note like this `[[Title of another Keep note]]`. You can also cross-link notes in Keep like `[Other Note](https://keep.google.com/#NOTE/....)` and use the `-w` option to convert note-to-note links like this to wikilinks. Then, when you convert your notes to the Obsidian vault they will be automatically linked. This will also work for block references and other markdown notation. Most markdown types in Keep notes should convert successfully even if Keep cannot render them. KIM will try to map link any of Keep's URLs to markdown format for you or ignore markdown hyperlinks if they are already in the note.
