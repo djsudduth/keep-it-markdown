@@ -16,16 +16,16 @@ You only need to run installation steps 1 through 5 one time.
 
 #### Step 1: 
 Install `pipx` based on your operating system. This will allow you to install `kim` and run it directly without having to type `python` each time:
-# macOS (macOS should have brew installed - if not, find install instructions online):
+#### macOS (macOS should have brew installed - if not, find install instructions online):
 ```bash
 brew install pipx && pipx ensurepath
 ```
-# Windows (Win 10 and 11 should have winget - if not, find install instructions online):
+#### Windows (Win 10 and 11 should have winget - if not, find install instructions online):
 ```bash
 winget install pipx
 pipx ensurepath
 ```
-# Linux:
+#### Linux:
 ```bash
 sudo apt install pipx && pipx ensurepath
 ```
