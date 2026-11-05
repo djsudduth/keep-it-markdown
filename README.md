@@ -241,7 +241,7 @@ Example note:
  - Watch videos on notetaking #todos  
 This option will create two new notes from each item that has #todo and then add an id like #4r9 to the new notes and existing list to identify them together. 
 ```bash
-> kim -h
+> kim -ct
 ```
 
 #### Import Notes - (WARNING - GOOGLE RATE LIMITS)

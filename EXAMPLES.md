@@ -53,7 +53,7 @@
 
 ## Convert Hashtags
 
-#### Convert any embedded hashtags in notes (example: 'This is #mytag in a note') to new or existing Keep labels within the same notes - no notes are exported.  (WARNING - this will modify your notes - only a few at a time allowed)
+#### Convert any embedded hashtags in notes to new or existing Keep labels within the same notes (example: 'This is #mytag in a note') - no notes are exported.  (WARNING - this will modify your notes - only a few at a time allowed)
 `kim -h`
 (be sure the search term is just a keyword and not a tag search)
 
