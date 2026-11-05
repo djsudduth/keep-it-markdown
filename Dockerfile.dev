@@ -1,0 +1,11 @@
+# To run dev
+# docker build -f Dockerfile.dev -t kim:dev .
+# docker run --mount type=bind,source="$(pwd)/mdfiles",target=/keep-it-markdown-develop/mdfiles -it kim:dev
+FROM python:3.13-slim
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN curl -L -o tmp/develop.tar.gz https://github.com/djsudduth/keep-it-markdown/archive/refs/heads/develop.tar.gz \
+    && tar -zxvf tmp/develop.tar.gz \
+    && rm tmp/develop.tar.gz
+RUN pip install /keep-it-markdown-develop
+WORKDIR /keep-it-markdown-develop
+CMD ["/bin/bash"]
