@@ -17,6 +17,7 @@ dependencies = [
 
 [project.scripts]
 kim = "kim:main"
+get-token = "get_token:main"
 
 [project.optional-dependencies]
 dev = [

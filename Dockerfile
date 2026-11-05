@@ -7,3 +7,4 @@ RUN curl -L -o tmp/keep-it-markdown-0.8.0.tar.gz https://github.com/djsudduth/ke
 RUN pip install keyrings.alt
 RUN pip install /keep-it-markdown-0.8.0
 WORKDIR /keep-it-markdown-0.8.0
+CMD ["/bin/bash"]
