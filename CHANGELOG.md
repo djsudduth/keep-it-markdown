@@ -3,6 +3,7 @@
 ## 0.8.0 Release (11/xx/2026)
 - Support running standalone as `kim` command directly without typing `python kim.py`
 - Added `pyproject.toml` packaging and console script entry point
+- Modified install to use `pipx` 
 - Added Ruff linting configuration
 - Updated Dockerfile for running `kim` directly
 

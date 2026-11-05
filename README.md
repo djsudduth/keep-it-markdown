@@ -12,14 +12,23 @@ Install assumes you have some familiarity with running scripts through a termina
 
 **NOTE: Be aware that 'unofficial' implies that Google could change the API at any time that might stop the script from working!**
 
-You only need to run installation steps 1 through 6 one time.
+You only need to run installation steps 1 through 5 one time.
 
 #### Step 1: 
-Install Python (there are plenty of tutorials online for installation instructions) on you PC or Mac. If you have an older version of Python (3.8 or 3.9) installed and you want to leave it, you can install pyenv to run multiple versions. Start your command prompt, shell or terminal and verify your python version by running:
+Install `pipx` based on your operating system. This will allow you to install `kim` and run it directly without having to type `python` each time:
+# macOS (macOS should have brew installed - if not, find install instructions online):
 ```bash
-> python --version
+brew install pipx && pipx ensurepath
 ```
-If you had Python 2 installed already you may need to type 'python3' instead of just 'python' for the rest of these steps to use version 3.10+.
+# Windows (Win 10 and 11 should have winget - if not, find install instructions online):
+```bash
+winget install pipx
+pipx ensurepath
+```
+# Linux:
+```bash
+sudo apt install pipx && pipx ensurepath
+```
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
@@ -28,11 +37,11 @@ https://github.com/djsudduth/keep-it-markdown/releases
 Unzip the files within your chosen directory.
 
 #### Step 3:
-Make sure you are in your KIM directory and install all needed dependencies with:  
+Make sure you are in the downloaded keep-it-markdown directory and install all needed dependencies with:  
 ```bash
-> pip install -e .
+> pipx install .
 ```
-(or `pip install -r requirements.txt`). Installing with `pip install -e .` installs all dependencies and registers the standalone `kim` command in your environment. (You may need to use 'pip3' instead of 'pip' if you have both python versions 2 and 3 installed). You only need to do this once. Advanced users may want to setup a virtual environment for this.
+This installs all dependencies and registers the standalone `kim` command in your environment. You only need to do this once. Advanced users should use the INSTALL.md instructions.
 
 #### Step 4:
 KIM requires a Google Keep authentication token in order to run. The token can only be retrieved once you have a Google page OAuth cookie. Install the Chrome extension called 'Cookie Tab Viewer'. Change the directory to where you installed KIM.  
@@ -42,7 +51,7 @@ https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 
 Copy the cookie called `oauth_token` using the Chrome Cookie Tab Viewer from the cookies in your local browser. Then, run the script
 ```bash
-> python get_token.py
+> get-token
 ```
 You will be prompted for your Google email account name, OAuth token, and Android ID
 
@@ -63,7 +72,6 @@ You now need to save your Keep token within the KIM secure keyring
 ```bash
 > kim -t <your long token value here>
 ```
-*(or `python kim.py -t <your long token value here>`)*
 
 If you entered your Google email and token correctly, you should see a successful login with the statement -> "You've succesfully logged into Google Keep!"
 
