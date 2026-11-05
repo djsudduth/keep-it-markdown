@@ -3,7 +3,7 @@
 ### Pipx Install
 - Be sure `brew` (macOS), `winget` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - check with AI on installing with other Linux distributions such as Alpine or Arch)
 - Install `pipx` - see README or use AI for instructions for your OS 
-- Install KIM dependencies in the venv - `pipx install -e .` (go to **Continue here** section)
+- Install KIM dependencies - `pipx install -e .` (go to **Continue here** section)
 ### Pip Install
 - Create a fresh virtual environment within the working directory 
 - Activate a virtual environment 
