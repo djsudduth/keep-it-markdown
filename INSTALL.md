@@ -1,7 +1,7 @@
 ## Installation Steps for Advanced Users (only needs to run once)
 - Download latest version of `keep-it-markdown` from releases and unzip it to your working directory
 ### Pipx Install
-- Be sure `brew` (macOS), `winget` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - check with AI on installing with other Linux distributions such as Alpine or Arch)
+- Be sure `brew` (macOS), `python` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - check with AI on installing with other Linux distributions such as Alpine or Arch)
 - Install `pipx` - see README or use AI for instructions for your OS 
 - Install KIM dependencies - `pipx install -e .` (go to **Continue here** section)
 ### Pip Install

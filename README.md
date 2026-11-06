@@ -20,10 +20,10 @@ Install `pipx` based on your operating system. This will allow you to install `k
 ```bash
 brew install pipx && pipx ensurepath
 ```
-#### Windows (Win 10 and 11 should have winget installed - if not, find install instructions online):
+#### Windows (Win 10 and 11 should have python installed first - if not, find install instructions online):
 ```bash
-winget install pipx
-pipx ensurepath
+py -m pip install --user pipx
+py -m pipx ensurepath
 ```
 #### Debian/Ubuntu Linux:
 ```bash
