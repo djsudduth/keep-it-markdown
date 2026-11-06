@@ -1,13 +1,13 @@
 ## Installation Steps for Advanced Users (only needs to run once)
 - Download latest version of `keep-it-markdown` from releases and unzip it to your working directory
-### Pipx Install
+### Pipx Install Option 1
 - Be sure `brew` (macOS), `python` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - check with AI on installing with other Linux distributions such as Alpine or Arch)
 - Install `pipx` - see README or use AI for instructions for your OS 
-- Install KIM dependencies - `pipx install -e .` (go to **Continue here** section)
-### Pip Install
+- Install KIM dependencies - `pipx install .` (go to **Continue here** section)
+### Pip Install Option 2
 - Create a fresh virtual environment within the working directory 
 - Activate a virtual environment 
-- Install KIM dependencies in the venv - `pip install -e .` 
+- Install KIM dependencies in the venv - `pip install .` 
 ### Continue here
 - Follow **Second Way** instructions here to get a copy of the oauth_token cookie value - https://github.com/rukins/gpsoauth-java?tab=readme-ov-file
 - Run the script in the KIM directory - `get-token`
