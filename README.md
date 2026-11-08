@@ -20,7 +20,7 @@ Install `pipx` based on your operating system. This will allow you to install `k
 ```bash
 brew install pipx && pipx ensurepath
 ```
-#### Windows (Win 10 and 11 should have python installed first - if not, find install instructions online):
+#### Windows (Win 10 and 11 should have python 3.12 or greater installed first - if not, find install instructions online):
 ```bash
 py -m pip install --user pipx
 py -m pipx ensurepath
@@ -46,6 +46,7 @@ Make sure you are in the downloaded keep-it-markdown directory and install all n
 ```bash
 > pipx install .
 ```
+(On Linux you may need to restart your terminal to load the environment properly for next Steps)
 This installs all dependencies and registers the standalone `kim` command in your environment. You only need to do this once. Advanced users should use the INSTALL.md instructions.
 
 #### Step 4:

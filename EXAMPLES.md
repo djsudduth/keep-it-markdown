@@ -3,7 +3,7 @@
 ### All user queries have the prompt:
 `Enter a case sensitive keyword or label search or --all' to convert Keep notes to md or '--x' to exit:`
 
-#### User query and export active notes (no notes will be overwritten)
+#### User query and export active notes (no notes will be overwritten and no archive notes exported)
 `kim`
 
 #### User query and export only archived notes
@@ -45,7 +45,7 @@
 #### Export all active notes with the label #computer in batch using the first note line as the markdown file title if the title is missing (50 chars max), preserve Logseq namespaces and format Logseq bullets, and overwriting any existing notes
 `kim -c -l -o -b "#computer"`
 
-#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log) (NOTE: edit dates will be changed to current day when notes are moved to archive)
+#### Export all active notes in batch preserving Keep labels with spaces and special characters, skipping over existing notes, moving them to archive after export in silent mode (output to kim.log) 
 `kim -p -s -m -q -b --all`
 
 #### Export all archived notes in batch, overwriting existing notes and modifying Keep note-to-note markdown links to wikilinks
