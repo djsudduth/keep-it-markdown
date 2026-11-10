@@ -254,6 +254,7 @@ If you create any notes with the tag #todos embedding either in a paragraph or a
 Example note:
  - I need to schedule my appt for an oil change #todos
  - Watch videos on notetaking #todos  
+
 This option will create two new notes from each item that has #todo and then add an id like #4r9 to the new notes and existing list to identify them together. 
 ```bash
 > kim -ct
