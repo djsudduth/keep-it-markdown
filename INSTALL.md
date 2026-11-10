@@ -1,7 +1,7 @@
 ## Installation Steps for Advanced Users (only needs to run once)
 - Download latest version of `keep-it-markdown` from releases and unzip it to your working directory
 ### Pipx Install Option 1
-- Be sure `brew` (macOS), `python` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - check with AI on installing with other Linux distributions such as Alpine or Arch)
+- Be sure `brew` (macOS), `python` (Windows), are available on your OS (Linux users should have `apt` or `dnf` - other Linux distributions such as Alpine or Arch will have different installers)
 - Install `pipx` - see README (Step 1) or use AI for instructions for your OS 
 - Install KIM dependencies - `pipx install .` (go to **Continue here** section)
 ### Pip Install Option 2
@@ -16,3 +16,6 @@
 - Run KIM to save the Token in your local Keyring - `kim -t <your long token value here>` 
 
 Congratulations! You're done! Your Token is valid for all KIM versions now (unless Google changes it). You can now run KIM locally from this point on directly as `kim`  (see `kim --help` for switch options)
+
+## Pipx Uninstall
+- `pipx uninstall keep-it-markdown`

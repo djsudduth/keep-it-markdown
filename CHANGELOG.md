@@ -1,11 +1,12 @@
 # Changelog
 
-## 0.8.0 Release (11/xx/2026)
+## 0.8.0 Release (11/09/2026)
 - Support running standalone as `kim` command directly without typing `python kim.py`
 - Added `pyproject.toml` packaging and console script entry point
 - Modified install to use `pipx` 
 - Added Ruff linting configuration
-- Updated Dockerfile for running `kim` directly
+- Updated Dockerfile OS version for running `kim` directly
+- Added Dockerfile.dev for testing
 
 ## 0.7.1 Release (08/23/2026)
 - Added new option to extract todos from notes that can be turned into Google Tasks

@@ -16,6 +16,7 @@ You only need to run installation steps 1 through 5 one time.
 
 #### Step 1: 
 Install `pipx` based on your operating system. This will allow you to install `kim` and run it directly without having to type `python` each time:
+(NOTE: if you don't want to use `pipx` just install python and use `pip` with a venv - see INSTALL.md)
 #### macOS (macOS should have brew installed - if not, find install instructions online):
 ```bash
 brew install pipx && pipx ensurepath
@@ -34,6 +35,12 @@ sudo apt install pipx && pipx ensurepath
 sudo dnf install pipx && pipx ensurepath
 ```
 #### Other Linux Distributions (Arch, Alpine, etc - find online instructions)
+#### Linux Note (Keyring Setup for all Linux distributions)
+On Linux systems (or virtual machines/SSH sessions) where a desktop keyring daemon is locked or unavailable, tell Python to use the file-based keyring fallback:
+```bash
+pipx inject keep-it-markdown keyrings.alt
+```
+
 
 #### Step 2: 
 Download this project's zip file into any new directory of you choice. Select the most current release noted at the top right of this page and download 'Source code' using this link:  
@@ -83,8 +90,15 @@ If you entered your Google email and token correctly, you should see a successfu
 
 **If this step keeps failing see 'Key Callouts' #9 below, and have issues with the login - see Advanced Docker Setup below**
 
+**CONGRATS!!! You can now run KIM!! Also, with `pipx` installed you can update KIM to the next version with a single pipx command!**
+
+## Uninstall
+```bash
+> pipx uninstall keep-it-markdown
+```
+
 ## Usage
-Congrats! You can now run KIM. Simply start by running:  
+Simply start by running:  
 ```bash
 > kim
 ```
@@ -304,11 +318,11 @@ If you are having difficulty logging in to Google you can use Docker with the pr
 7) Enter your Google email account name, oauth_token, and Android ID when prompted (Android ID can be anything, OAuth token expires in about 5 min)
 8) Copy and save the Keep Token value output from `get-token` on your PC
 ---
-9) For one time or sporatic use, run KIM in Docker with ``kim -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker this way.(Exit the Docker image with ``exit``)
+9) For one time or sporatic use, run KIM in Docker with ``kim -t <long token here>`` using the saved Token above (note that in Docker python3 is aliased to python) - your exported notes will be exported to your PC. NOTE, however, that running Docker this way will not save any passwords or exported notes when you exit and you will need use the saved Token each time you use KIM with Docker again.(Exit the Docker image with ``exit``)
 ---
 10) Alternatively, exit the Docker image with ``exit``
 11) Download and install KIM in your current OS
-12) Install KIM dependencies your PC using `pipx install -e .` (Or, use `pip` with venv - see INSTALL)
+12) Install KIM dependencies your PC using `pipx install .` (Or, use `pip` with venv - see INSTALL)
 13) Run KIM with the `-t` switch once to save the Token in your PC keystore (``kim -t <long token here>``)
 14) You can now run KIM on your PC (once you save the token) without having to run these steps again. The Token will be saved in your local PC's keystore
 
