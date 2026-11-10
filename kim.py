@@ -66,7 +66,7 @@ KEYERR_CONFIG_FILE = ("Configuration key in " + CONFIG_FILE + " not found. "
                         "Key passed is: ")
 
 
-ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
+ILLEGAL_FILE_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r', '\t']
 ILLEGAL_TAG_CHARS = ['~', '`', '!', '@', '$', '%', '^', '(', ')', '+', '=', '{', '}', '[', \
         ']', '<', '>', ';', ':', ',', '.', '"', '/', '\\', '|', '?', '*', '&', '\n', '\r']
 
