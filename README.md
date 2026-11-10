@@ -281,9 +281,9 @@ You can override the settings `input_labels` in the command line with the (-lb) 
 NOTE: the import switches -i and -lb are incompatible with all other switches for export. Be sure to test simple import examples before using this feature!!! 
 
 #### Authentication Token Storage
-When you run KIM for the first time and log in via your password, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
+When you run KIM with the `-t` switch at first install, it will store your authenticated Google Keep token in your computer's safe storage (macOS - Keychain, Windows Credential Locker and Linux Secret Service or KWallet). You will not need to re-enter your password next time you run KIM.
 
-If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag (NOTE: this has changed from version 0.2.0):
+If you need to change or reset your access token or don't feel comfortable saving the token in safe storage, just run KIM with the -r flag to reset it (NOTE: this has changed from version 0.2.0):
 ```bash
 > kim -r
 ```
